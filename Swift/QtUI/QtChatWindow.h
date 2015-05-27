@@ -14,9 +14,9 @@
 #include <QString>
 #include <QTextCursor>
 
-#include <SwifTools/LastLineTracker.h>
-
 #include <Swift/Controllers/UIInterfaces/ChatWindow.h>
+
+#include <SwifTools/LastLineTracker.h>
 
 #include <Swift/QtUI/ChatSnippet.h>
 #include <Swift/QtUI/QtAffiliationEditor.h>
@@ -24,7 +24,6 @@
 #include <Swift/QtUI/QtMUCConfigurationWindow.h>
 #include <Swift/QtUI/QtSwiftUtil.h>
 #include <Swift/QtUI/QtTabbable.h>
-
 
 class QTextEdit;
 class QLineEdit;
@@ -133,6 +132,7 @@ namespace Swift {
 			void setBlockingState(BlockingState state);
 			virtual void setCanInitiateImpromptuChats(bool supportsImpromptu);
 			virtual void showBookmarkWindow(const MUCBookmark& bookmark);
+			virtual void setBookmarkState(RoomBookmarkState bookmarkState);
 			virtual std::string getID() const;
 
 		public slots:
@@ -149,7 +149,6 @@ namespace Swift {
 			void fontResized(int);
 
 		protected slots:
-			void qAppFocusChanged(QWidget* old, QWidget* now);
 			void closeEvent(QCloseEvent* event);
 			void resizeEvent(QResizeEvent* event);
 			void moveEvent(QMoveEvent* event);
@@ -173,6 +172,8 @@ namespace Swift {
 			void handleCurrentLabelChanged(int);
 			void handleEmoticonsButtonClicked();
 			void handleEmoticonClicked(QString emoticonAsText);
+			void handleTextInputReceivedFocus();
+			void handleTextInputLostFocus();
 
 		private:
 			void updateTitleWithUnreadCount();
@@ -225,6 +226,7 @@ namespace Swift {
 			bool impromptu_;
 			bool isMUC_;
 			bool supportsImpromptuChat_;
+			RoomBookmarkState roomBookmarkState_;
 			QMenu* emoticonsMenu_;
 	};
 }

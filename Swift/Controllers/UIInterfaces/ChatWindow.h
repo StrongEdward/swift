@@ -6,22 +6,23 @@
 
 #pragma once
 
-#include <vector>
 #include <string>
+#include <vector>
 
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/make_shared.hpp>
 #include <boost/optional.hpp>
 #include <boost/shared_ptr.hpp>
-#include <boost/make_shared.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
 
+#include <Swiften/Base/Tristate.h>
 #include <Swiften/Base/boost_bsignals.h>
-#include <Swiften/Elements/SecurityLabelsCatalog.h>
 #include <Swiften/Elements/ChatState.h>
 #include <Swiften/Elements/Form.h>
 #include <Swiften/Elements/MUCOccupant.h>
+#include <Swiften/Elements/SecurityLabelsCatalog.h>
 #include <Swiften/MUC/MUCBookmark.h>
-#include <Swift/Controllers/HighlightManager.h>
 
+#include <Swift/Controllers/HighlightManager.h>
 
 namespace Swift {
 	class AvatarManager;
@@ -86,7 +87,6 @@ namespace Swift {
 
 			enum AckState {Pending, Received, Failed};
 			enum ReceiptState {ReceiptRequested, ReceiptReceived, ReceiptFailed};
-			enum Tristate {Yes, No, Maybe};
 			enum OccupantAction {Kick, Ban, MakeModerator, MakeParticipant, MakeVisitor, AddContact, ShowProfile};
 			enum RoomAction {ChangeSubject, Configure, Affiliations, Destroy, Invite};
 			enum FileTransferState {WaitingForAccept, Negotiating, Transferring, Canceled, Finished, FTFailed};
@@ -95,6 +95,7 @@ namespace Swift {
 			enum Direction { UnknownDirection, DefaultDirection };
 			enum MUCType { StandardMUC, ImpromptuMUC };
 			enum TimestampBehaviour { KeepTimestamp, UpdateTimestamp };
+			enum RoomBookmarkState { RoomNotBookmarked, RoomBookmarked, RoomAutoJoined };
 
 			ChatWindow() {}
 			virtual ~ChatWindow() {}
@@ -157,6 +158,7 @@ namespace Swift {
 			virtual void setBlockingState(BlockingState state) = 0;
 			virtual void setCanInitiateImpromptuChats(bool supportsImpromptu) = 0;
 			virtual void showBookmarkWindow(const MUCBookmark& bookmark) = 0;
+			virtual void setBookmarkState(RoomBookmarkState bookmarkState) = 0;
 
 			/**
 			 * A handle that uniquely identities an alert message.

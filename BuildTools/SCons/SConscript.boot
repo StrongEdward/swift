@@ -107,15 +107,15 @@ vars.Add(BoolVariable("install_git_hooks", "Install git hooks", "true"))
 ################################################################################
 
 env_ENV = {
-  'PATH' : os.environ['PATH'],
-  'LD_LIBRARY_PATH' : os.environ.get("LD_LIBRARY_PATH", ""),
-  'TERM' : os.environ.get("TERM", ""),
+	'PATH' : os.environ['PATH'],
+	'LD_LIBRARY_PATH' : os.environ.get("LD_LIBRARY_PATH", ""),
+	'TERM' : os.environ.get("TERM", ""),
 }
 
 if "MSVC_VERSION" in ARGUMENTS :
-  env = Environment(ENV = env_ENV, variables = vars, MSVC_VERSION = ARGUMENTS["MSVC_VERSION"], platform = ARGUMENTS.get("PLATFORM", None))
+	env = Environment(ENV = env_ENV, variables = vars, MSVC_VERSION = ARGUMENTS["MSVC_VERSION"], platform = ARGUMENTS.get("PLATFORM", None))
 else :
-  env = Environment(ENV = env_ENV, variables = vars, platform = ARGUMENTS.get("PLATFORM", None))
+	env = Environment(ENV = env_ENV, variables = vars, platform = ARGUMENTS.get("PLATFORM", None))
 
 Help(vars.GenerateHelpText(env))
 
@@ -221,6 +221,9 @@ if env["debug"] :
 	if env["PLATFORM"] == "win32" :
 		env.Append(CCFLAGS = ["/Zi"])
 		env.Append(LINKFLAGS = ["/DEBUG"])
+		if GetOption("num_jobs") > 1 :
+			env["CCPDBFLAGS"] = '/Fd${TARGET}.pdb'
+			env["PDB"] = '${TARGET.base}.pdb'
 		if env["set_iterator_debug_level"] :
 			env.Append(CPPDEFINES = ["_ITERATOR_DEBUG_LEVEL=0"])
 		if env["optimize"] :
@@ -282,7 +285,7 @@ if env["experimental"] :
 
 # If we build shared libs on AMD64, we need -fPIC.
 # This should have no performance impact om AMD64
-if env["PLATFORM"] == "posix" and platform.machine() == "x86_64" :
+if env["PLATFORM"] == "posix" and platform.machine() in ["x86_64", "amd64"] :
 	env.Append(CCFLAGS = ["-fPIC"])
 
 # Warnings
@@ -304,6 +307,7 @@ else :
 			"-Wno-weak-vtables", # Virtually none of our elements have outlined methods. This also seems to affect classes in .cpp files, which in turn affects all our tests, which may need fixing in CLang
 			"-Wno-shadow", # Also warns for shadowing on constructor arguments, which we do a lot
 			"-Wno-documentation", # We don't care about documentation warnings
+			"-Wno-documentation-unknown-command", # We don't care about documentation warnings
 			"-Wno-exit-time-destructors", # Used a lot in e.g. CPPUnit
 			"-Wno-c++98-compat-pedantic", # We do different things that violate this, but they could be fixed
 			"-Wno-global-constructors", # We depend on this for e.g. string constants
@@ -313,6 +317,7 @@ else :
 			"-Wno-padded",
 			"-Wno-missing-variable-declarations", # Getting rid of CPPUnit warnings
 			"-Wno-direct-ivar-access", # Obj-C code warning
+			"-Wno-potentially-evaluated-expression", # Caused due to calling shared_ptr::get() inside typeid()
 			])
 	else :
 		env.Append(CXXFLAGS = ["-Wextra", "-Wall", "-Wnon-virtual-dtor", "-Wundef", "-Wold-style-cast", "-Wno-long-long", "-Woverloaded-virtual", "-Wfloat-equal", "-Wredundant-decls", "-Wno-unknown-pragmas"])

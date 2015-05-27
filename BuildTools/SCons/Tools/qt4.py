@@ -200,7 +200,11 @@ def _detect(env):
 	try: return os.environ['QTDIR']
 	except KeyError: pass
 
-	moc = env.WhereIs('moc-qt4') or env.WhereIs('moc4') or env.WhereIs('moc')
+	moc = None
+	if env["qt5"]:
+		moc = env.WhereIs('moc-qt5') or env.WhereIs('moc5') or env.WhereIs('moc')
+	else :
+		moc = env.WhereIs('moc-qt4') or env.WhereIs('moc4') or env.WhereIs('moc')
 	if moc:
 		import sys
 		if sys.platform == "darwin" :
@@ -222,14 +226,24 @@ def generate(env):
 	def locateQt4Command(env, command, qtdir) :
 		if len(qtdir) == 0 :
 			qtdir = "/usr"
-		suffixes = [
-			'-qt4',
-			'-qt4.exe',
-			'4',
-			'4.exe',
-			'',
-			'.exe',
-		]
+		if env["qt5"]:
+			suffixes = [
+				'-qt5',
+				'-qt5.exe',
+				'5',
+				'5.exe',
+				'',
+				'.exe',
+			]
+		else :
+			suffixes = [
+				'-qt4',
+				'-qt4.exe',
+				'4',
+				'4.exe',
+				'',
+				'.exe',
+			]
 		triedPaths = []
 		for suffix in suffixes :
 			fullpath = os.path.join(qtdir,'bin',command + suffix)
@@ -425,7 +439,10 @@ def enable_modules(self, modules, debug=False, crosscompiling=False, version='4'
 		'QtWidgets',
 		'QtMultimedia',
 		'QtWebKitWidgets',
+		'QtWebChannel',
 		]
+	if sys.platform != "win32" and sys.platform != "darwin" and not crosscompiling :
+		validModules += ['QtX11Extras']
 	staticModules = [
 		'QtUiTools',
 	]
@@ -455,17 +472,51 @@ def enable_modules(self, modules, debug=False, crosscompiling=False, version='4'
 		except: pass
 	debugSuffix = ''
 
+
+	include_flag = "-I"
+	if os.path.basename(self["CC"]) in ("gcc", "clang"):
+		include_flag = "-isystem"
+
+
 	if sys.platform != "win32" and sys.platform != "darwin" and not crosscompiling :
-		if debug : debugSuffix = '_debug'
-		if version == '4' :
-			self.AppendUnique(CPPPATH=[os.path.join("$QTDIR","include", "phonon")])
-		for module in modules :
-			self.AppendUnique(LIBS=[module+debugSuffix])
-			self.AppendUnique(LIBPATH=[os.path.join("$QTDIR","lib")])
-			self.AppendUnique(CPPPATH=[os.path.join("$QTDIR","include")])
-			self.AppendUnique(CPPPATH=[os.path.join("$QTDIR","include",module)])
-		self["QT4_MOCCPPPATH"] = self["CPPPATH"]
-		return
+		if self["qt"]:
+			# The user specified qt path in config.py and we are going to use the
+			# installation under that location.
+			UsePkgConfig = False
+		else:
+			# The user did not specify a qt path in config py and we are going to
+			# ask pkg-config for the correct flags.
+			UsePkgConfig = True
+		if not UsePkgConfig:
+			if debug : debugSuffix = '_debug'
+			if version == '4' :
+				self.AppendUnique(CPPFLAGS = [include_flag + os.path.join("$QTDIR", "include", "phonon")])
+			for module in modules :
+				module_str = module
+				if not version == '4' :
+					module_str = module_str.replace('Qt', 'Qt5')
+				self.AppendUnique(LIBS=[module_str+debugSuffix])
+				self.AppendUnique(LIBPATH=[os.path.join("$QTDIR","lib")])
+				self.AppendUnique(CPPFLAGS = [include_flag + os.path.join("$QTDIR","include")])
+				self.AppendUnique(CPPFLAGS = [include_flag + os.path.join("$QTDIR","include", module)])
+			self["QT4_MOCCPPPATH"] = self["CPPPATH"]
+			return
+		else:
+			test_env = self.Clone()
+			modules_str = " ".join(modules)
+			if not version == '4' :
+				modules_str = modules_str.replace('Qt', 'Qt5')
+
+			# Check if Qt is registed at pkg-config
+			ret = test_env.TryAction('pkg-config --exists \'%s\'' % modules_str)[0]
+			test_env.Result( ret )
+			if not ret:
+				print("Qt not found.")
+				return
+			test_env.ParseConfig("pkg-config --cflags --libs " + modules_str)
+			self.AppendUnique(LIBS=test_env["LIBS"], LIBPATH=test_env["LIBPATH"], CPPPATH=test_env["CPPPATH"])
+			self["QT4_MOCCPPPATH"] = self["CPPPATH"]
+			return
 
 	if sys.platform == "win32" or crosscompiling :
 		if crosscompiling:
@@ -499,6 +550,7 @@ def enable_modules(self, modules, debug=False, crosscompiling=False, version='4'
 		else :
 			self["QT4_MOCCPPPATH"] = self["CPPPATH"]
 		self.AppendUnique(LIBPATH=[os.path.join('$QTDIR','lib')])
+		self.PrependUnique(LIBS=["shell32"])
 		return
 
 	if sys.platform=="darwin" :
@@ -507,7 +559,7 @@ def enable_modules(self, modules, debug=False, crosscompiling=False, version='4'
 		if len(self["QTDIR"]) > 0 :
 			self.AppendUnique(LIBPATH=[os.path.join('$QTDIR','lib')])
 			self.AppendUnique(LINKFLAGS="-F$QTDIR/lib")
-			self.AppendUnique(CPPFLAGS="-F$QTDIR/lib")
+			self.AppendUnique(CPPFLAGS="-iframework$QTDIR/lib")
 			self.AppendUnique(LINKFLAGS="-L$QTDIR/lib") #TODO clean!
 
 		# FIXME: Phonon Hack
@@ -520,9 +572,9 @@ def enable_modules(self, modules, debug=False, crosscompiling=False, version='4'
 				self.AppendUnique(LIBPATH=[os.path.join("$QTDIR","lib")])
 			else :
 				if len(self["QTDIR"]) > 0 :
-					self.Append(CPPFLAGS = ["-I" + os.path.join("$QTDIR", "lib", module + ".framework", "Versions", version, "Headers")])
+					self.Append(CPPFLAGS = [include_flag + os.path.join("$QTDIR", "lib", module + ".framework", "Versions", version, "Headers")])
 				else :
-					self.Append(CPPFLAGS = ["-I" + os.path.join("/Library/Frameworks", module + ".framework", "Versions", version, "Headers")])
+					self.Append(CPPFLAGS = [include_flag + os.path.join("/Library/Frameworks", module + ".framework", "Versions", version, "Headers")])
 				self.Append(LINKFLAGS=['-framework', module])
 		if 'QtOpenGL' in modules:
 			self.AppendUnique(LINKFLAGS="-F/System/Library/Frameworks")

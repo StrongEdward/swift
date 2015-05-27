@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2014 Isode Limited.
+ * Copyright (c) 2010-2015 Isode Limited.
  * All rights reserved.
  * See the COPYING file for more information.
  */
@@ -10,6 +10,7 @@
 
 #include <Swift/QtUI/QtXMLConsoleWidget.h>
 #include <Swift/QtUI/QtChatTabs.h>
+#include <Swift/QtUI/QtChatTabsBase.h>
 #include <Swift/QtUI/QtMainWindow.h>
 #include <Swift/QtUI/QtLoginWindow.h>
 #include <Swift/QtUI/QtSystemTray.h>
@@ -36,28 +37,24 @@
 
 namespace Swift {
 
-QtUIFactory::QtUIFactory(SettingsProviderHierachy* settings, QtSettingsProvider* qtOnlySettings, QtChatTabs* tabs, QtSingleWindow* netbookSplitter, QtSystemTray* systemTray, QtChatWindowFactory* chatWindowFactory, TimerFactory* timerFactory, StatusCache* statusCache, bool startMinimized, bool emoticonsExist, bool enableAdHocCommandOnJID) : settings(settings), qtOnlySettings(qtOnlySettings), tabs(tabs), netbookSplitter(netbookSplitter), systemTray(systemTray), chatWindowFactory(chatWindowFactory), timerFactory_(timerFactory), lastMainWindow(NULL), loginWindow(NULL), statusCache(statusCache), startMinimized(startMinimized), emoticonsExist_(emoticonsExist), enableAdHocCommandOnJID_(enableAdHocCommandOnJID) {
+QtUIFactory::QtUIFactory(SettingsProviderHierachy* settings, QtSettingsProvider* qtOnlySettings, QtChatTabsBase* tabs, QtSingleWindow* netbookSplitter, QtSystemTray* systemTray, QtChatWindowFactory* chatWindowFactory, TimerFactory* timerFactory, StatusCache* statusCache, bool startMinimized, bool emoticonsExist, bool enableAdHocCommandOnJID) : settings(settings), qtOnlySettings(qtOnlySettings), tabsBase(tabs), netbookSplitter(netbookSplitter), systemTray(systemTray), chatWindowFactory(chatWindowFactory), timerFactory_(timerFactory), lastMainWindow(NULL), loginWindow(NULL), statusCache(statusCache), startMinimized(startMinimized), emoticonsExist_(emoticonsExist), enableAdHocCommandOnJID_(enableAdHocCommandOnJID) {
 	chatFontSize = settings->getSetting(QtUISettingConstants::CHATWINDOW_FONT_SIZE);
 	historyFontSize_ = settings->getSetting(QtUISettingConstants::HISTORYWINDOW_FONT_SIZE);
+	this->tabs = dynamic_cast<QtChatTabs*>(tabsBase);
 }
 
 XMLConsoleWidget* QtUIFactory::createXMLConsoleWidget() {
 	QtXMLConsoleWidget* widget = new QtXMLConsoleWidget();
-	tabs->addTab(widget);
-	if (!tabs->isVisible()) {
-		tabs->show();
-	}
+	tabsBase->addTab(widget);
+	showTabs();
 	widget->show();
 	return widget;
 }
 
 HistoryWindow* QtUIFactory::createHistoryWindow(UIEventStream* uiEventStream) {
 	QtHistoryWindow* window = new QtHistoryWindow(settings, uiEventStream);
-	tabs->addTab(window);
-	if (!tabs->isVisible()) {
-		tabs->show();
-	}
-
+	tabsBase->addTab(window);
+	showTabs();
 	connect(window, SIGNAL(fontResized(int)), this, SLOT(handleHistoryWindowFontResized(int)));
 
 	window->handleFontResized(historyFontSize_);
@@ -72,10 +69,8 @@ void QtUIFactory::handleHistoryWindowFontResized(int size) {
 
 FileTransferListWidget* QtUIFactory::createFileTransferListWidget() {
 	QtFileTransferListWidget* widget = new QtFileTransferListWidget();
-	tabs->addTab(widget);
-	if (!tabs->isVisible()) {
-		tabs->show();
-	}
+	tabsBase->addTab(widget);
+	showTabs();
 	widget->show();
 	return widget;
 }
@@ -177,6 +172,14 @@ BlockListEditorWidget *QtUIFactory::createBlockListEditorWidget() {
 
 AdHocCommandWindow* QtUIFactory::createAdHocCommandWindow(boost::shared_ptr<OutgoingAdHocCommandSession> command) {
 	return new QtAdHocCommandWindow(command);
+}
+
+void QtUIFactory::showTabs() {
+	if (tabs) {
+		if (!tabs->isVisible()) {
+			tabs->show();
+		}
+	}
 }
 
 }

@@ -10,12 +10,12 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/smart_ptr/make_shared.hpp>
 
-#include <qdebug.h>
 #include <QApplication>
 #include <QBoxLayout>
 #include <QCloseEvent>
 #include <QComboBox>
 #include <QCursor>
+#include <QDebug>
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QInputDialog>
@@ -34,7 +34,6 @@
 #include <QTime>
 #include <QToolButton>
 #include <QUrl>
-#include <QMimeData>
 
 #include <Swiften/Base/Log.h>
 
@@ -42,25 +41,26 @@
 #include <Swift/Controllers/Roster/Roster.h>
 #include <Swift/Controllers/Roster/RosterItem.h>
 #include <Swift/Controllers/Settings/SettingsProvider.h>
-#include <Swift/Controllers/UIEvents/UIEventStream.h>
-#include <Swift/Controllers/UIEvents/SendFileUIEvent.h>
 #include <Swift/Controllers/UIEvents/JoinMUCUIEvent.h>
+#include <Swift/Controllers/UIEvents/SendFileUIEvent.h>
+#include <Swift/Controllers/UIEvents/UIEventStream.h>
 
 #include <SwifTools/TabComplete.h>
 
-#include <Swift/QtUI/Roster/QtOccupantListWidget.h>
 #include <Swift/QtUI/QtAddBookmarkWindow.h>
+#include <Swift/QtUI/QtEditBookmarkWindow.h>
 #include <Swift/QtUI/QtPlainChatView.h>
-#include <Swift/QtUI/QtSettingsProvider.h>
 #include <Swift/QtUI/QtScaledAvatarCache.h>
+#include <Swift/QtUI/QtSettingsProvider.h>
 #include <Swift/QtUI/QtTextEdit.h>
 #include <Swift/QtUI/QtUISettingConstants.h>
 #include <Swift/QtUI/QtUtilities.h>
 #include <Swift/QtUI/QtWebKitChatView.h>
+#include <Swift/QtUI/Roster/QtOccupantListWidget.h>
 
 namespace Swift {
 
-QtChatWindow::QtChatWindow(const QString& contact, QtChatTheme* theme, UIEventStream* eventStream, SettingsProvider* settings, const std::map<std::string, std::string>& emoticons) : QtTabbable(), id_(Q2PSTRING(contact)), contact_(contact), nextAlertId_(0), eventStream_(eventStream), blockingState_(BlockingUnsupported), isMUC_(false), supportsImpromptuChat_(false) {
+QtChatWindow::QtChatWindow(const QString& contact, QtChatTheme* theme, UIEventStream* eventStream, SettingsProvider* settings, const std::map<std::string, std::string>& emoticons) : QtTabbable(), id_(Q2PSTRING(contact)), contact_(contact), nextAlertId_(0), eventStream_(eventStream), blockingState_(BlockingUnsupported), isMUC_(false), supportsImpromptuChat_(false), roomBookmarkState_(RoomNotBookmarked) {
 	settings_ = settings;
 	unreadCount_ = 0;
 	isOnline_ = true;
@@ -143,6 +143,8 @@ QtChatWindow::QtChatWindow(const QString& contact, QtChatTheme* theme, UIEventSt
 	inputBarLayout->addWidget(correctingLabel_);
 	correctingLabel_->hide();
 
+	connect(input_, SIGNAL(receivedFocus()), this, SLOT(handleTextInputReceivedFocus()));
+	connect(input_, SIGNAL(lostFocus()), this, SLOT(handleTextInputLostFocus()));
 	QPushButton* emoticonsButton_ = new QPushButton(this);
 	emoticonsButton_->setIcon(QIcon(":/emoticons/smile.png"));
 	connect(emoticonsButton_, SIGNAL(clicked()), this, SLOT(handleEmoticonsButtonClicked()));
@@ -171,7 +173,6 @@ QtChatWindow::QtChatWindow(const QString& contact, QtChatTheme* theme, UIEventSt
 	logRosterSplitter_->setFocusProxy(input_);
 	midBar_->setFocusProxy(input_);
 	messageLog_->setFocusProxy(input_);
-	connect(qApp, SIGNAL(focusChanged(QWidget*, QWidget*)), this, SLOT(qAppFocusChanged(QWidget*, QWidget*)));
 	connect(messageLog_, SIGNAL(gotFocus()), input_, SLOT(setFocus()));
 	resize(400,300);
 	connect(messageLog_, SIGNAL(fontResized(int)), this, SIGNAL(fontResized(int)));
@@ -279,7 +280,7 @@ void QtChatWindow::handleKeyPressEvent(QKeyEvent* event) {
 		cancelCorrection();
 	}
 	else if (key == Qt::Key_Down || key == Qt::Key_Up) {
-		/* Drop */
+		event->ignore();
 	}
 	else {
 		messageLog_->handleKeyPressEvent(event);
@@ -288,10 +289,10 @@ void QtChatWindow::handleKeyPressEvent(QKeyEvent* event) {
 
 void QtChatWindow::beginCorrection() {
 	boost::optional<AlertID> newCorrectingAlert;
-	if (correctionEnabled_ == ChatWindow::Maybe) {
+	if (correctionEnabled_ == Maybe) {
 		newCorrectingAlert = addAlert(Q2PSTRING(tr("This chat may not support message correction. If you send a correction anyway, it may appear as a duplicate message")));
 	}
-	else if (correctionEnabled_ == ChatWindow::No) {
+	else if (correctionEnabled_ == No) {
 		newCorrectingAlert = addAlert(Q2PSTRING(tr("This chat does not support message correction.  If you send a correction anyway, it will appear as a duplicate message")));
 	}
 
@@ -458,17 +459,6 @@ void QtChatWindow::convertToMUC(MUCType mucType) {
 	subject_->setVisible(!impromptu_);
 }
 
-void QtChatWindow::qAppFocusChanged(QWidget* /*old*/, QWidget* now) {
-	if (now && isWidgetSelected()) {
-		lastLineTracker_.setHasFocus(true);
-		input_->setFocus();
-		onAllMessagesRead();
-	}
-	else {
-		lastLineTracker_.setHasFocus(false);
-	}
-}
-
 void QtChatWindow::setOnline(bool online) {
 	isOnline_ = online;
 	if (!online) {
@@ -523,9 +513,6 @@ void QtChatWindow::updateTitleWithUnreadCount() {
 	}
 	emit titleUpdated();
 }
-
-
-
 
 void QtChatWindow::flash() {
 	emit requestFlash();
@@ -615,7 +602,7 @@ void QtChatWindow::dragEnterEvent(QDragEnterEvent *event) {
 }
 
 void QtChatWindow::dropEvent(QDropEvent *event) {
-	if (fileTransferEnabled_ == ChatWindow::Yes && event->mimeData()->hasUrls()) {
+	if (fileTransferEnabled_ == Yes && event->mimeData()->hasUrls()) {
 		if (event->mimeData()->urls().size() == 1) {
 			onSendFileRequest(Q2PSTRING(event->mimeData()->urls().at(0).toLocalFile()));
 		}
@@ -658,6 +645,16 @@ void QtChatWindow::handleEmoticonsButtonClicked() {
 
 void QtChatWindow::handleEmoticonClicked(QString emoticonAsText) {
 	input_->textCursor().insertText(emoticonAsText);
+}
+
+void QtChatWindow::handleTextInputReceivedFocus() {
+	lastLineTracker_.setHasFocus(true);
+	input_->setFocus();
+	onAllMessagesRead();
+}
+
+void QtChatWindow::handleTextInputLostFocus() {
+	lastLineTracker_.setHasFocus(false);
 }
 
 void QtChatWindow::handleActionButtonClicked() {
@@ -725,8 +722,16 @@ void QtChatWindow::handleActionButtonClicked() {
 		}
 	}
 
-	QAction* bookmark = contextMenu.addAction(tr("Add bookmark..."));
-	bookmark->setEnabled(isOnline_);
+	QAction* bookmark = NULL;
+	if (isMUC_) {
+		if (roomBookmarkState_ == RoomNotBookmarked) {
+			bookmark = contextMenu.addAction(tr("Bookmark this room..."));
+		}
+		else {
+			bookmark = contextMenu.addAction(tr("Edit bookmark..."));
+		}
+		bookmark->setEnabled(isOnline_);
+	}
 
 	QAction* result = contextMenu.exec(QCursor::pos());
 	if (result == NULL) {
@@ -797,8 +802,14 @@ void QtChatWindow::setCanInitiateImpromptuChats(bool supportsImpromptu) {
 }
 
 void QtChatWindow::showBookmarkWindow(const MUCBookmark& bookmark) {
-	QtAddBookmarkWindow* window = new QtAddBookmarkWindow(eventStream_, bookmark);
-	window->show();
+	if (roomBookmarkState_ == RoomNotBookmarked) {
+		QtAddBookmarkWindow* window = new QtAddBookmarkWindow(eventStream_, bookmark);
+		window->show();
+	}
+	else {
+		QtEditBookmarkWindow* window = new QtEditBookmarkWindow(eventStream_, bookmark);
+		window->show();
+	}
 }
 
 std::string QtChatWindow::getID() const {
@@ -879,7 +890,6 @@ void QtChatWindow::setFileTransferStatus(std::string id, const FileTransferState
 	messageLog_->setFileTransferStatus(id, state, msg);
 }
 
-
 std::string QtChatWindow::addWhiteboardRequest(bool senderIsSelf) {
 	handleAppendedToLog();
 	return messageLog_->addWhiteboardRequest(contact_, senderIsSelf);
@@ -899,6 +909,10 @@ void QtChatWindow::setAckState(const std::string& id, AckState state) {
 
 void QtChatWindow::setMessageReceiptState(const std::string& id, ChatWindow::ReceiptState state) {
 	messageLog_->setMessageReceiptState(id, state);
+}
+
+void QtChatWindow::setBookmarkState(RoomBookmarkState bookmarkState) {
+	roomBookmarkState_ = bookmarkState;
 }
 
 }

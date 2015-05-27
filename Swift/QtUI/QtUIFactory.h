@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2014 Isode Limited.
+ * Copyright (c) 2010-2015 Isode Limited.
  * All rights reserved.
  * See the COPYING file for more information.
  */
@@ -16,6 +16,7 @@ class QSplitter;
 namespace Swift {
 	class QtSettingsProvider;
 	class SettingsProviderHierachy;
+	class QtChatTabsBase;
 	class QtChatTabs;
 	class QtSystemTray;
 	class QtLoginWindow;
@@ -32,7 +33,7 @@ namespace Swift {
 	class QtUIFactory : public QObject, public UIFactory {
 			Q_OBJECT
 		public:
-			QtUIFactory(SettingsProviderHierachy* settings, QtSettingsProvider* qtOnlySettings, QtChatTabs* tabs, QtSingleWindow* netbookSplitter, QtSystemTray* systemTray, QtChatWindowFactory* chatWindowFactory, TimerFactory* timerFactory, StatusCache* statusCache, bool startMinimized, bool emoticonsExist, bool enableAdHocCommandOnJID);
+			QtUIFactory(SettingsProviderHierachy* settings, QtSettingsProvider* qtOnlySettings, QtChatTabsBase* tabs, QtSingleWindow* netbookSplitter, QtSystemTray* systemTray, QtChatWindowFactory* chatWindowFactory, TimerFactory* timerFactory, StatusCache* statusCache, bool startMinimized, bool emoticonsExist, bool enableAdHocCommandOnJID);
 
 			virtual XMLConsoleWidget* createXMLConsoleWidget();
 			virtual HistoryWindow* createHistoryWindow(UIEventStream*);
@@ -58,8 +59,12 @@ namespace Swift {
 			void handleHistoryWindowFontResized(int);
 
 		private:
+			void showTabs();
+
+		private:
 			SettingsProviderHierachy* settings;
 			QtSettingsProvider* qtOnlySettings;
+			QtChatTabsBase* tabsBase;
 			QtChatTabs* tabs;
 			QtSingleWindow* netbookSplitter;
 			QtSystemTray* systemTray;
