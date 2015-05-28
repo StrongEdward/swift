@@ -103,11 +103,13 @@ namespace Swift {
 			bool useDelayForLatency);
 		~MainController();
 
+		ProfileSettingsProvider* profileSettings_; // temporarily public to use it from QtSwift
+		void handleLoginRequest(const std::string& username, const std::string& password, const std::string& certificatePath, CertificateWithKey::ref certificate, const ClientOptions& options, bool remember, bool loginAutomatically);
 
 		private:
 			void resetClient();
 			void handleConnected();
-			void handleLoginRequest(const std::string& username, const std::string& password, const std::string& certificatePath, CertificateWithKey::ref certificate, const ClientOptions& options, bool remember, bool loginAutomatically);
+
 			void handleCancelLoginRequest();
 			void handleQuitRequest();
 			void handleChangeStatusRequest(StatusShow::Type show, const std::string &statusText);
@@ -125,6 +127,7 @@ namespace Swift {
 			void setReconnectTimer();
 			void resetPendingReconnects();
 			void resetCurrentError();
+			std::string serializeClientOptions(const ClientOptions& options); // to be moved to AccountsManager
 	
 			void performLoginFromCachedCredentials();
 			void reconnectAfterError();
@@ -132,8 +135,6 @@ namespace Swift {
 			void handleNotificationClicked(const JID& jid);
 			void handleForceQuit();
 			void purgeCachedCredentials();
-			std::string serializeClientOptions(const ClientOptions& options);
-			ClientOptions parseClientOptions(const std::string& optionString);
 
 		private:
 			EventLoop* eventLoop_;
@@ -148,7 +149,7 @@ namespace Swift {
 			bool clientInitialized_;
 			boost::shared_ptr<Client> client_;
 			SettingsProvider *settings_;
-			ProfileSettingsProvider* profileSettings_;
+
 			Dock* dock_;
 			URIHandler* uriHandler_;
 			IdleDetector* idleDetector_;
@@ -180,7 +181,7 @@ namespace Swift {
 			std::string vCardPhotoHash_;
 			std::string password_;
 			CertificateWithKey::ref certificate_;
-			ClientOptions clientOptions_;
+			ClientOptions clientOptions_; // remove?
 			boost::shared_ptr<ErrorEvent> lastDisconnectError_;
 			bool useDelayForLatency_;
 			UserSearchController* userSearchControllerChat_;

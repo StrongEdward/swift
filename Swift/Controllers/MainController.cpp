@@ -15,7 +15,7 @@
 
 #include <Swiften/Base/format.h>
 #include <Swiften/Base/Algorithm.h>
-#include <Swiften/Base/String.h>
+#include <Swiften/Base/String.h> // need here?
 #include <Swiften/StringCodecs/Base64.h>
 #include <Swiften/Network/TimerFactory.h>
 #include <Swiften/Client/Storages.h>
@@ -171,7 +171,7 @@ MainController::MainController(
 
 	xmppURIController_ = new XMPPURIController(uriHandler_, uiEventStream_);
 
-	std::string selectedLoginJID = settings_->getSetting(SettingConstants::LAST_LOGIN_JID);
+	/*std::string selectedLoginJID = settings_->getSetting(SettingConstants::LAST_LOGIN_JID);
 	bool loginAutomatically = settings_->getSetting(SettingConstants::LOGIN_AUTOMATICALLY);
 	std::string cachedPassword;
 	std::string cachedCertificate;
@@ -193,7 +193,7 @@ MainController::MainController(
 		}
 		loginWindow_->selectUser(selectedLoginJID);
 		loginWindow_->setLoginAutomatically(loginAutomatically);
-	}
+	}*/
 
 
 	loginWindow_->onLoginRequest.connect(boost::bind(&MainController::handleLoginRequest, this, _1, _2, _3, _4, _5, _6, _7));
@@ -210,13 +210,13 @@ MainController::MainController(
 
 	settings_->onSettingChanged.connect(boost::bind(&MainController::handleSettingChanged, this, _1));
 
-	if (loginAutomatically) {
-		profileSettings_ = new ProfileSettingsProvider(selectedLoginJID, settings_);
+	//if (loginAutomatically) {
+	//	profileSettings_ = new ProfileSettingsProvider(selectedLoginJID, settings_);
 		/* FIXME: deal with autologin with a cert*/
-		handleLoginRequest(selectedLoginJID, cachedPassword, cachedCertificate, CertificateWithKey::ref(), cachedOptions, true, true);
-	} else {
-		profileSettings_ = NULL;
-	}
+	//	handleLoginRequest(selectedLoginJID, cachedPassword, cachedCertificate, CertificateWithKey::ref(), cachedOptions, true, true);
+	//} else {
+	//	profileSettings_ = NULL;
+	//}*/
 }
 
 MainController::~MainController() {
@@ -849,55 +849,6 @@ std::string MainController::serializeClientOptions(const ClientOptions& options)
 	SERIALIZE_SAFE_STRING(boshHTTPConnectProxyAuthID);
 	SERIALIZE_SAFE_STRING(boshHTTPConnectProxyAuthPassword);
 	SERIALIZE_BOOL(tlsOptions.schannelTLS1_0Workaround);
-	return result;
-}
-
-#define CHECK_PARSE_LENGTH if (i >= segments.size()) {return result;}
-#define PARSE_INT_RAW(defaultValue) CHECK_PARSE_LENGTH intVal = defaultValue; try {intVal = boost::lexical_cast<int>(segments[i]);} catch(const boost::bad_lexical_cast&) {};i++;
-#define PARSE_STRING_RAW CHECK_PARSE_LENGTH stringVal = byteArrayToString(Base64::decode(segments[i]));i++;
-
-#define PARSE_BOOL(option, defaultValue) PARSE_INT_RAW(defaultValue); result.option = (intVal == 1);
-#define PARSE_INT(option, defaultValue) PARSE_INT_RAW(defaultValue); result.option = intVal;
-#define PARSE_STRING(option) PARSE_STRING_RAW; result.option = stringVal;
-#define PARSE_SAFE_STRING(option) PARSE_STRING_RAW; result.option = SafeString(createSafeByteArray(stringVal));
-#define PARSE_URL(option) {PARSE_STRING_RAW; result.option = URL::fromString(stringVal);}
-
-
-ClientOptions MainController::parseClientOptions(const std::string& optionString) {
-	ClientOptions result;
-	size_t i = 0;
-	int intVal = 0;
-	std::string stringVal;
-	std::vector<std::string> segments = String::split(optionString, ',');
-
-	PARSE_BOOL(useStreamCompression, 1);
-	PARSE_INT_RAW(-1);
-	switch (intVal) {
-		case 1: result.useTLS = ClientOptions::NeverUseTLS;break;
-		case 2: result.useTLS = ClientOptions::UseTLSWhenAvailable;break;
-		case 3: result.useTLS = ClientOptions::RequireTLS;break;
-		default:;
-	}
-	PARSE_BOOL(allowPLAINWithoutTLS, 0);
-	PARSE_BOOL(useStreamResumption, 0);
-	PARSE_BOOL(useAcks, 1);
-	PARSE_STRING(manualHostname);
-	PARSE_INT(manualPort, -1);
-	PARSE_INT_RAW(-1);
-	switch (intVal) {
-		case 1: result.proxyType = ClientOptions::NoProxy;break;
-		case 2: result.proxyType = ClientOptions::SystemConfiguredProxy;break;
-		case 3: result.proxyType = ClientOptions::SOCKS5Proxy;break;
-		case 4: result.proxyType = ClientOptions::HTTPConnectProxy;break;
-	}
-	PARSE_STRING(manualProxyHostname);
-	PARSE_INT(manualProxyPort, -1);
-	PARSE_URL(boshURL);
-	PARSE_URL(boshHTTPConnectProxyURL);
-	PARSE_SAFE_STRING(boshHTTPConnectProxyAuthID);
-	PARSE_SAFE_STRING(boshHTTPConnectProxyAuthPassword);
-	PARSE_BOOL(tlsOptions.schannelTLS1_0Workaround, false);
-
 	return result;
 }
 

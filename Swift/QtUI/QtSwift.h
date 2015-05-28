@@ -14,6 +14,7 @@
 #include <string>
 #include "Swiften/Base/Platform.h"
 #include "Swiften/EventLoop/Qt/QtEventLoop.h"
+#include "Swiften/Client/ClientOptions.h"
 #include "QtSettingsProvider.h"
 #if defined(SWIFTEN_PLATFORM_MACOSX)
 #include "SwifTools/Application/CocoaApplication.h"
@@ -24,6 +25,7 @@
 #endif
 #include "SwifTools/Idle/PlatformIdleQuerier.h"
 #include "SwifTools/Idle/ActualIdleDetector.h"
+
 
 namespace po = boost::program_options;
 
@@ -63,6 +65,9 @@ namespace Swift {
 		private:
 			XMLSettingsProvider* loadSettingsFile(const QString& fileName);
 			void loadEmoticonsFile(const QString& fileName, std::map<std::string, std::string>& emoticons);
+
+			ClientOptions parseClientOptions(const std::string& optionString); // to be moved to AccountsManager
+
 		private:
 			QtEventLoop clientMainThreadCaller_;
 			UIEventStream* uiEventStream_;
