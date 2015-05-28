@@ -220,7 +220,44 @@ QtSwift::QtSwift(const po::variables_map& options) : networkFactories_(&clientMa
 		splitter_->show();
 	}
 
-	for (int i = 0; i < numberOfAccounts; i++) {
+
+	uiEventStream_ = new UIEventStream();
+	QtUIFactory* uiFactory = new QtUIFactory(
+				settingsHierachy_,
+				qtSettings_,
+				tabs_,
+				splitter_,
+				systemTrays_[0], // replacing i
+				chatWindowFactory_,
+				networkFactories_.getTimerFactory(),
+				statusCache_,
+				startMinimized,
+				!emoticons.empty(),
+				enableAdHocCommandOnJID);
+	LoginWindow* loginWindow = uiFactory->createLoginWindow(uiEventStream_);
+
+	uiFactories_.push_back(uiFactory);
+	MainController* mainController = new MainController(
+				&clientMainThreadCaller_,
+				uiEventStream_,
+				&networkFactories_,
+				uiFactory,
+				loginWindow,
+				settingsHierachy_,
+				systemTrays_[0], // replacing i
+				soundPlayer_,
+				storagesFactory_,
+				certificateStorageFactory_,
+				dock_,
+				notifier_,
+				uriHandler_,
+				&idleDetector_,
+				emoticons,
+				options.count("latency-debug") > 0);
+	mainControllers_.push_back(mainController);
+
+
+	/*for (int i = 0; i < numberOfAccounts; i++) {
 		if (i > 0) {
 			// Don't add the first tray (see note above)
 			systemTrays_.push_back(new QtSystemTray());
@@ -243,7 +280,7 @@ QtSwift::QtSwift(const po::variables_map& options) : networkFactories_(&clientMa
 				emoticons,
 				options.count("latency-debug") > 0);
 		mainControllers_.push_back(mainController);
-	}
+	}*/
 
 
 	// PlatformAutoUpdaterFactory autoUpdaterFactory;
@@ -278,6 +315,7 @@ QtSwift::~QtSwift() {
 	delete certificateStorageFactory_;
 	delete storagesFactory_;
 	delete applicationPathProvider_;
+	delete uiEventStream_;
 }
 
 }

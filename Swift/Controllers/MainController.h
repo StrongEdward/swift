@@ -84,22 +84,24 @@ namespace Swift {
 
 	class MainController {
 		public:
-			MainController(
-					EventLoop* eventLoop,
-					NetworkFactories* networkFactories,
-					UIFactory* uiFactories,
-					SettingsProvider *settings,
-					SystemTray* systemTray,
-					SoundPlayer* soundPlayer,
-					StoragesFactory* storagesFactory,
-					CertificateStorageFactory* certificateStorageFactory,
-					Dock* dock,
-					Notifier* notifier,
-					URIHandler* uriHandler,
-					IdleDetector* idleDetector,
-					const std::map<std::string, std::string>& emoticons,
-					bool useDelayForLatency);
-			~MainController();
+		MainController(
+			EventLoop* eventLoop,
+			UIEventStream* uiEventStream,
+			NetworkFactories* networkFactories,
+			UIFactory* uiFactories,
+			LoginWindow *loginWindow,
+			SettingsProvider *settings,
+			SystemTray* systemTray,
+			SoundPlayer* soundPlayer,
+			StoragesFactory* storagesFactory,
+			CertificateStorageFactory* certificateStorageFactory,
+			Dock* dock,
+			Notifier* notifier,
+			URIHandler* uriHandler,
+			IdleDetector* idleDetector,
+			const std::map<std::string, std::string>& emoticons,
+			bool useDelayForLatency);
+		~MainController();
 
 
 		private:
@@ -135,6 +137,7 @@ namespace Swift {
 
 		private:
 			EventLoop* eventLoop_;
+			UIEventStream* uiEventStream_;
 			NetworkFactories* networkFactories_;
 			UIFactory* uiFactory_;
 			StoragesFactory* storagesFactory_;
@@ -157,7 +160,6 @@ namespace Swift {
 			EventWindowController* eventWindowController_;
 			AdHocManager* adHocManager_;
 			LoginWindow* loginWindow_;
-			UIEventStream* uiEventStream_;
 			XMLConsoleController* xmlConsoleController_;
 			HistoryViewController* historyViewController_;
 			HistoryController* historyController_;
