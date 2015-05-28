@@ -96,8 +96,10 @@ static const std::string CLIENT_NODE = "http://swift.im";
 
 MainController::MainController(
 		EventLoop* eventLoop,
+		UIEventStream *uiEventStream,
 		NetworkFactories* networkFactories,
 		UIFactory* uiFactories,
+		LoginWindow* loginWindow,
 		SettingsProvider* settings,
 		SystemTray* systemTray,
 		SoundPlayer* soundPlayer,
@@ -109,18 +111,19 @@ MainController::MainController(
 		IdleDetector* idleDetector,
 		const std::map<std::string, std::string>& emoticons,
 		bool useDelayForLatency) :
-			eventLoop_(eventLoop),
-			networkFactories_(networkFactories),
-			uiFactory_(uiFactories),
-			storagesFactory_(storagesFactory),
-			certificateStorageFactory_(certificateStorageFactory),
-			settings_(settings),
-			uriHandler_(uriHandler),
-			idleDetector_(idleDetector),
-			loginWindow_(NULL) ,
-			useDelayForLatency_(useDelayForLatency),
-			ftOverview_(NULL),
-			emoticons_(emoticons) {
+				eventLoop_(eventLoop),
+				uiEventStream_(uiEventStream),
+				networkFactories_(networkFactories),
+				uiFactory_(uiFactories),
+				storagesFactory_(storagesFactory),
+				certificateStorageFactory_(certificateStorageFactory),
+				settings_(settings),
+				uriHandler_(uriHandler),
+				idleDetector_(idleDetector),
+				loginWindow_(loginWindow) ,
+				useDelayForLatency_(useDelayForLatency),
+				ftOverview_(NULL),
+				emoticons_(emoticons) {
 	storages_ = NULL;
 	certificateStorage_ = NULL;
 	certificateTrustChecker_ = NULL;
@@ -150,7 +153,7 @@ MainController::MainController(
 
 	timeBeforeNextReconnect_ = -1;
 	dock_ = dock;
-	uiEventStream_ = new UIEventStream();
+	//uiEventStream_ = new UIEventStream();
 
 	notifier_ = new TogglableNotifier(notifier);
 	notifier_->setPersistentEnabled(settings_->getSetting(SettingConstants::SHOW_NOTIFICATIONS));
@@ -158,7 +161,7 @@ MainController::MainController(
 	eventController_->onEventQueueLengthChange.connect(boost::bind(&MainController::handleEventQueueLengthChange, this, _1));
 
 	systemTrayController_ = new SystemTrayController(eventController_, systemTray);
-	loginWindow_ = uiFactory_->createLoginWindow(uiEventStream_);
+	//loginWindow_ = uiFactory_->createLoginWindow(uiEventStream_);
 	loginWindow_->setShowNotificationToggle(!notifier->isExternallyConfigured());
 
 	highlightManager_ = new HighlightManager(settings_);
@@ -233,7 +236,7 @@ MainController::~MainController() {
 	delete systemTrayController_;
 	delete eventController_;
 	delete notifier_;
-	delete uiEventStream_;
+	//delete uiEventStream_;
 }
 
 void MainController::purgeCachedCredentials() {

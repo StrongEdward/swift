@@ -52,6 +52,7 @@ namespace Swift {
 	class XMLSettingsProvider;
 	class StatusCache;
 	class QtSingleWindow;
+	class UIEventStream;
 		
 	class QtSwift : public QObject {
 		Q_OBJECT
@@ -64,6 +65,7 @@ namespace Swift {
 			void loadEmoticonsFile(const QString& fileName, std::map<std::string, std::string>& emoticons);
 		private:
 			QtEventLoop clientMainThreadCaller_;
+			UIEventStream* uiEventStream_;
 			PlatformTLSFactories tlsFactories_;
 			BoostNetworkFactories networkFactories_;
 			QtChatWindowFactory* chatWindowFactory_;
