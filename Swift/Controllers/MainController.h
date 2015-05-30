@@ -87,6 +87,7 @@ namespace Swift {
 		MainController(
 			EventLoop* eventLoop,
 			UIEventStream* uiEventStream,
+			EventController* eventController,
 			NetworkFactories* networkFactories,
 			UIFactory* uiFactories,
 			LoginWindow *loginWindow,
@@ -140,6 +141,7 @@ namespace Swift {
 		private:
 			EventLoop* eventLoop_;
 			UIEventStream* uiEventStream_;
+			EventController* eventController_;
 			NetworkFactories* networkFactories_;
 			UIFactory* uiFactory_;
 			StoragesFactory* storagesFactory_;
@@ -158,7 +160,6 @@ namespace Swift {
 			PresenceNotifier* presenceNotifier_;
 			EventNotifier* eventNotifier_;
 			RosterController* rosterController_;
-			EventController* eventController_;
 			EventWindowController* eventWindowController_;
 			AdHocManager* adHocManager_;
 			LoginWindow* loginWindow_;

@@ -35,6 +35,7 @@
 #include <Swift/Controllers/Storages/FileStoragesFactory.h>
 #include <Swift/Controllers/Settings/XMLSettingsProvider.h>
 #include <Swift/Controllers/Settings/SettingsProviderHierachy.h>
+#include <Swift/Controllers/XMPPEvents/EventController.h>
 #include <Swift/Controllers/SettingConstants.h>
 #include <Swift/Controllers/MainController.h>
 #include <Swift/Controllers/ApplicationInfo.h>
@@ -220,6 +221,7 @@ QtSwift::QtSwift(const po::variables_map& options) : networkFactories_(&clientMa
 		splitter_->show();
 	}
 
+	// Putting extracted things from MainController here:
 
 	uiEventStream_ = new UIEventStream();
 	QtUIFactory* uiFactory = new QtUIFactory(
@@ -239,10 +241,13 @@ QtSwift::QtSwift(const po::variables_map& options) : networkFactories_(&clientMa
 	togglableNotifier_ = new TogglableNotifier(notifier_);
 	togglableNotifier_->setPersistentEnabled(settingsHierachy_->getSetting(SettingConstants::SHOW_NOTIFICATIONS));
 
+	eventController_ = new EventController();
+
 	uiFactories_.push_back(uiFactory);
 	MainController* mainController = new MainController(
 				&clientMainThreadCaller_,
 				uiEventStream_,
+				eventController_,
 				&networkFactories_,
 				uiFactory,
 				loginWindow,
@@ -354,6 +359,9 @@ QtSwift::~QtSwift() {
 	delete storagesFactory_;
 	delete applicationPathProvider_;
 	delete uiEventStream_;
+
+	eventController_->disconnectAll();
+	delete eventController_;
 }
 
 #define CHECK_PARSE_LENGTH if (i >= segments.size()) {return result;}
