@@ -50,6 +50,7 @@ namespace Swift {
 	class QtMUCSearchWindowFactory;
 	class QtUserSearchWindowFactory;
 	class EventLoop;
+	class EventController;
 	class URIHandler;
 	class SettingsProviderHierachy;
 	class XMLSettingsProvider;
@@ -92,6 +93,7 @@ namespace Swift {
 			AutoUpdater* autoUpdater_;
 			Notifier* notifier_;
 			TogglableNotifier* togglableNotifier_;
+			EventController* eventController_;
 			StatusCache* statusCache_;
 			PlatformIdleQuerier idleQuerier_;
 			ActualIdleDetector idleDetector_;

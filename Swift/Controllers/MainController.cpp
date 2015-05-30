@@ -97,6 +97,7 @@ static const std::string CLIENT_NODE = "http://swift.im";
 MainController::MainController(
 		EventLoop* eventLoop,
 		UIEventStream *uiEventStream,
+		EventController* eventController,
 		NetworkFactories* networkFactories,
 		UIFactory* uiFactories,
 		LoginWindow* loginWindow,
@@ -114,6 +115,7 @@ MainController::MainController(
 		bool useDelayForLatency) :
 				eventLoop_(eventLoop),
 				uiEventStream_(uiEventStream),
+				eventController_(eventController),
 				networkFactories_(networkFactories),
 				uiFactory_(uiFactories),
 				storagesFactory_(storagesFactory),
@@ -160,7 +162,7 @@ MainController::MainController(
 	//togglableNotifier_ = togglableNotifier;
 	//togglableNotifier_ = new TogglableNotifier(notifier);
 	//togglableNotifier_->setPersistentEnabled(settings_->getSetting(SettingConstants::SHOW_NOTIFICATIONS));
-	eventController_ = new EventController();
+	//eventController_ = new EventController();
 	eventController_->onEventQueueLengthChange.connect(boost::bind(&MainController::handleEventQueueLengthChange, this, _1));
 
 	systemTrayController_ = new SystemTrayController(eventController_, systemTray);
@@ -227,7 +229,7 @@ MainController::~MainController() {
 
 	purgeCachedCredentials();
 	//setManagersOffline();
-	eventController_->disconnectAll();
+	//eventController_->disconnectAll();
 
 	resetClient();
 	delete highlightEditorController_;
@@ -237,7 +239,7 @@ MainController::~MainController() {
 	delete xmppURIController_;
 	delete soundEventController_;
 	delete systemTrayController_;
-	delete eventController_;
+	//delete eventController_;
 	//delete togglableNotifier_;
 	//delete uiEventStream_;
 }
