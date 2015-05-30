@@ -36,6 +36,7 @@
 #include <Swift/Controllers/Settings/XMLSettingsProvider.h>
 #include <Swift/Controllers/Settings/SettingsProviderHierachy.h>
 #include <Swift/Controllers/XMPPEvents/EventController.h>
+#include <Swift/Controllers/SystemTrayController.h>
 #include <Swift/Controllers/SettingConstants.h>
 #include <Swift/Controllers/MainController.h>
 #include <Swift/Controllers/ApplicationInfo.h>
@@ -243,6 +244,8 @@ QtSwift::QtSwift(const po::variables_map& options) : networkFactories_(&clientMa
 
 	eventController_ = new EventController();
 
+	systemTrayController_ = new SystemTrayController(eventController_, systemTrays_[0]);
+
 	uiFactories_.push_back(uiFactory);
 	MainController* mainController = new MainController(
 				&clientMainThreadCaller_,
@@ -252,7 +255,7 @@ QtSwift::QtSwift(const po::variables_map& options) : networkFactories_(&clientMa
 				uiFactory,
 				loginWindow,
 				settingsHierachy_,
-				systemTrays_[0], // replacing i
+				systemTrayController_,
 				soundPlayer_,
 				storagesFactory_,
 				certificateStorageFactory_,
@@ -362,6 +365,7 @@ QtSwift::~QtSwift() {
 
 	eventController_->disconnectAll();
 	delete eventController_;
+	delete systemTrayController_;
 }
 
 #define CHECK_PARSE_LENGTH if (i >= segments.size()) {return result;}

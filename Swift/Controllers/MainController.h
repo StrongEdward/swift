@@ -52,7 +52,7 @@ namespace Swift {
 	class TogglableNotifier;
 	class PresenceNotifier;
 	class EventNotifier;
-	class SystemTray;
+	//class SystemTray;
 	class SystemTrayController;
 	class SoundEventController;
 	class SoundPlayer;
@@ -92,7 +92,7 @@ namespace Swift {
 			UIFactory* uiFactories,
 			LoginWindow *loginWindow,
 			SettingsProvider *settings,
-			SystemTray* systemTray,
+			SystemTrayController* systemTrayController,
 			SoundPlayer* soundPlayer,
 			StoragesFactory* storagesFactory,
 			CertificateStorageFactory* certificateStorageFactory,
