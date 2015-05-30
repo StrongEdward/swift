@@ -59,7 +59,7 @@
 #include <Swift/Controllers/SoundEventController.h>
 #include <Swift/Controllers/SoundPlayer.h>
 #include <Swift/Controllers/StatusTracker.h>
-#include <Swift/Controllers/SystemTray.h>
+//#include <Swift/Controllers/SystemTray.h>
 #include <Swift/Controllers/SystemTrayController.h>
 #include <Swift/Controllers/XMLConsoleController.h>
 #include <Swift/Controllers/HistoryController.h>
@@ -102,7 +102,7 @@ MainController::MainController(
 		UIFactory* uiFactories,
 		LoginWindow* loginWindow,
 		SettingsProvider* settings,
-		SystemTray* systemTray,
+		SystemTrayController* systemTrayController,
 		SoundPlayer* soundPlayer,
 		StoragesFactory* storagesFactory,
 		CertificateStorageFactory* certificateStorageFactory,
@@ -124,7 +124,8 @@ MainController::MainController(
 				uriHandler_(uriHandler),
 				idleDetector_(idleDetector),
 				togglableNotifier_(togglableNotifier),
-				loginWindow_(loginWindow) ,
+				loginWindow_(loginWindow),
+				systemTrayController_(systemTrayController),
 				useDelayForLatency_(useDelayForLatency),
 				ftOverview_(NULL),
 				emoticons_(emoticons) {
@@ -165,7 +166,7 @@ MainController::MainController(
 	//eventController_ = new EventController();
 	eventController_->onEventQueueLengthChange.connect(boost::bind(&MainController::handleEventQueueLengthChange, this, _1));
 
-	systemTrayController_ = new SystemTrayController(eventController_, systemTray);
+	//systemTrayController_ = new SystemTrayController(eventController_, systemTray);
 	//loginWindow_ = uiFactory_->createLoginWindow(uiEventStream_);
 	loginWindow_->setShowNotificationToggle(!notifier->isExternallyConfigured());
 
@@ -238,7 +239,7 @@ MainController::~MainController() {
 	delete xmlConsoleController_;
 	delete xmppURIController_;
 	delete soundEventController_;
-	delete systemTrayController_;
+	//delete systemTrayController_;
 	//delete eventController_;
 	//delete togglableNotifier_;
 	//delete uiEventStream_;

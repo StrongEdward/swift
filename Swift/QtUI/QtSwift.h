@@ -44,6 +44,7 @@ namespace Swift {
 	class CapsStorage;
 	class MainController;
 	class QtSystemTray;
+	class SystemTrayController;
 	class QtChatTabsBase;
 	class QtChatWindowFactory;
 	class QtSoundPlayer;
@@ -78,6 +79,7 @@ namespace Swift {
 			QtChatWindowFactory* chatWindowFactory_;
 			std::vector<MainController*> mainControllers_;
 			std::vector<QtSystemTray*> systemTrays_;
+			SystemTrayController* systemTrayController_;
 			std::vector<QtUIFactory*> uiFactories_;
 			QtSettingsProvider* qtSettings_;
 			XMLSettingsProvider* xmlSettings_;
