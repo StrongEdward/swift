@@ -26,10 +26,10 @@
 #include <Swiften/Elements/Presence.h>
 #include <Swiften/Client/Client.h>
 
-
 #include <SwifTools/Application/PlatformApplicationPathProvider.h>
 #include <SwifTools/AutoUpdater/AutoUpdater.h>
 #include <SwifTools/AutoUpdater/PlatformAutoUpdaterFactory.h>
+#include <SwifTools/Notifier/TogglableNotifier.h>
 
 #include <Swift/Controllers/Storages/CertificateFileStorageFactory.h>
 #include <Swift/Controllers/Storages/FileStoragesFactory.h>
@@ -236,6 +236,9 @@ QtSwift::QtSwift(const po::variables_map& options) : networkFactories_(&clientMa
 				enableAdHocCommandOnJID);
 	LoginWindow* loginWindow = uiFactory->createLoginWindow(uiEventStream_);
 
+	togglableNotifier_ = new TogglableNotifier(notifier_);
+	togglableNotifier_->setPersistentEnabled(settingsHierachy_->getSetting(SettingConstants::SHOW_NOTIFICATIONS));
+
 	uiFactories_.push_back(uiFactory);
 	MainController* mainController = new MainController(
 				&clientMainThreadCaller_,
@@ -250,6 +253,7 @@ QtSwift::QtSwift(const po::variables_map& options) : networkFactories_(&clientMa
 				certificateStorageFactory_,
 				dock_,
 				notifier_,
+				togglableNotifier_,
 				uriHandler_,
 				&idleDetector_,
 				emoticons,
@@ -332,6 +336,7 @@ QtSwift::~QtSwift() {
 		delete controller;
 	}
 	delete notifier_;
+	delete togglableNotifier_;
 	foreach (QtSystemTray* tray, systemTrays_) {
 		delete tray;
 	}

@@ -36,6 +36,7 @@ namespace Swift {
 	class CertificateStorageFactory;
 	class Dock;
 	class Notifier;
+	class TogglableNotifier;
 	class StoragesFactory;
 	class AutoUpdater;
 	class ApplicationPathProvider;
@@ -90,6 +91,7 @@ namespace Swift {
 			CertificateStorageFactory* certificateStorageFactory_;
 			AutoUpdater* autoUpdater_;
 			Notifier* notifier_;
+			TogglableNotifier* togglableNotifier_;
 			StatusCache* statusCache_;
 			PlatformIdleQuerier idleQuerier_;
 			ActualIdleDetector idleDetector_;
