@@ -164,13 +164,13 @@ QtSwift::QtSwift(const po::variables_map& options) : networkFactories_(&clientMa
 		splitter_ = NULL;
 	}
 
-	int numberOfAccounts = 1;
+	/*int numberOfAccounts = 1;
 	try {
 		numberOfAccounts = options["multi-account"].as<int>();
 	} catch (...) {
-		/* This seems to fail on a Mac when the .app is launched directly (the usual path).*/
+		// This seems to fail on a Mac when the .app is launched directly (the usual path).
 		numberOfAccounts = 1;
-	}
+	}*/
 
 	if (options.count("debug")) {
 		Log::setLogLevel(Swift::Log::debug);
@@ -191,15 +191,13 @@ QtSwift::QtSwift(const po::variables_map& options) : networkFactories_(&clientMa
 	chatWindowFactory_ = new QtChatWindowFactory(splitter_, settingsHierachy_, qtSettings_, tabs_, "", emoticons);
 	soundPlayer_ = new QtSoundPlayer(applicationPathProvider_);
 
-	// Ugly, because the dock depends on the tray, but the temporary
-	// multi-account hack creates one tray per account.
-	QtSystemTray* systemTray = new QtSystemTray();
-	systemTrays_.push_back(systemTray);
+	// Ugly, because the dock depends on the tray
+	systemTray_ = new QtSystemTray();
 
 #if defined(HAVE_GROWL)
 	notifier_ = new GrowlNotifier(SWIFT_APPLICATION_NAME);
 #elif defined(SWIFTEN_PLATFORM_WINDOWS)
-	notifier_ = new WindowsNotifier(SWIFT_APPLICATION_NAME, applicationPathProvider_->getResourcePath("/images/logo-icon-32.png"), systemTray->getQSystemTrayIcon());
+	notifier_ = new WindowsNotifier(SWIFT_APPLICATION_NAME, applicationPathProvider_->getResourcePath("/images/logo-icon-32.png"), systemTray_->getQSystemTrayIcon());
 #elif defined(SWIFTEN_PLATFORM_LINUX)
 	notifier_ = new FreeDesktopNotifier(SWIFT_APPLICATION_NAME);
 #else
@@ -234,13 +232,15 @@ QtSwift::QtSwift(const po::variables_map& options) : networkFactories_(&clientMa
 				qtSettings_,
 				tabs_,
 				splitter_,
-				systemTrays_[0], // replacing i
+				systemTray_,
 				chatWindowFactory_,
 				networkFactories_.getTimerFactory(),
 				statusCache_,
 				startMinimized,
 				!emoticons.empty(),
 				enableAdHocCommandOnJID);
+	uiFactories_.push_back(uiFactory);
+
 	LoginWindow* loginWindow = uiFactory->createLoginWindow(uiEventStream_);
 
 	togglableNotifier_ = new TogglableNotifier(notifier_);
@@ -248,9 +248,9 @@ QtSwift::QtSwift(const po::variables_map& options) : networkFactories_(&clientMa
 
 	eventController_ = new EventController();
 
-	systemTrayController_ = new SystemTrayController(eventController_, systemTrays_[0]);
+	systemTrayController_ = new SystemTrayController(eventController_, systemTray_);
 
-	uiFactories_.push_back(uiFactory);
+
 	MainController* mainController = new MainController(
 				&clientMainThreadCaller_,
 				uiEventStream_,
@@ -349,9 +349,7 @@ QtSwift::~QtSwift() {
 	}
 	delete notifier_;
 	delete togglableNotifier_;
-	foreach (QtSystemTray* tray, systemTrays_) {
-		delete tray;
-	}
+
 	delete tabs_;
 	delete splitter_;
 	delete settingsHierachy_;
@@ -370,6 +368,7 @@ QtSwift::~QtSwift() {
 	eventController_->disconnectAll();
 	delete eventController_;
 	delete systemTrayController_;
+	delete systemTray_;
 }
 
 #define CHECK_PARSE_LENGTH if (i >= segments.size()) {return result;}
