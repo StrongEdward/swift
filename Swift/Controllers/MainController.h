@@ -97,6 +97,7 @@ namespace Swift {
 			CertificateStorageFactory* certificateStorageFactory,
 			Dock* dock,
 			Notifier* notifier,
+			TogglableNotifier* togglableNotifier,
 			URIHandler* uriHandler,
 			IdleDetector* idleDetector,
 			const std::map<std::string, std::string>& emoticons,
@@ -153,7 +154,7 @@ namespace Swift {
 			Dock* dock_;
 			URIHandler* uriHandler_;
 			IdleDetector* idleDetector_;
-			TogglableNotifier* notifier_;
+			TogglableNotifier* togglableNotifier_;
 			PresenceNotifier* presenceNotifier_;
 			EventNotifier* eventNotifier_;
 			RosterController* rosterController_;
