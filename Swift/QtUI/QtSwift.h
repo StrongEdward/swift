@@ -78,7 +78,7 @@ namespace Swift {
 			BoostNetworkFactories networkFactories_;
 			QtChatWindowFactory* chatWindowFactory_;
 			std::vector<MainController*> mainControllers_;
-			std::vector<QtSystemTray*> systemTrays_;
+			QtSystemTray* systemTray_;
 			SystemTrayController* systemTrayController_;
 			std::vector<QtUIFactory*> uiFactories_;
 			QtSettingsProvider* qtSettings_;
