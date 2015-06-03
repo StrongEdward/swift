@@ -150,7 +150,7 @@ namespace Swift {
 			CertificateStorage* certificateStorage_;
 			CertificateStorageTrustChecker* certificateTrustChecker_;
 			bool clientInitialized_;
-			boost::shared_ptr<Client> client_;
+			boost::shared_ptr<Client> client_; //?
 			SettingsProvider *settings_;
 
 			Dock* dock_;
@@ -200,6 +200,6 @@ namespace Swift {
 			WhiteboardManager* whiteboardManager_;
 			HighlightManager* highlightManager_;
 			HighlightEditorController* highlightEditorController_;
-			std::map<std::string, std::string> emoticons_;
+			std::map<std::string, std::string> emoticons_; // have to move them from here
 	};
 }

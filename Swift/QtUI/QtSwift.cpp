@@ -21,8 +21,8 @@
 #include <Swiften/Base/Path.h>
 #include <Swiften/Base/Paths.h>
 #include <Swiften/Base/Platform.h>
-#include <Swiften/Base/String.h>
-#include <Swiften/StringCodecs/Base64.h>
+//#include <Swiften/Base/String.h>
+//#include <Swiften/StringCodecs/Base64.h>
 #include <Swiften/Elements/Presence.h>
 #include <Swiften/Client/Client.h>
 #include <Swiften/Base/Paths.h>
@@ -38,6 +38,7 @@
 #include <Swift/Controllers/Settings/XMLSettingsProvider.h>
 #include <Swift/Controllers/Settings/SettingsProviderHierachy.h>
 #include <Swift/Controllers/XMPPEvents/EventController.h>
+#include <Swift/Controllers/AccountsManager.h>
 #include <Swift/Controllers/SystemTrayController.h>
 #include <Swift/Controllers/SettingConstants.h>
 #include <Swift/Controllers/MainController.h>
@@ -241,7 +242,10 @@ QtSwift::QtSwift(const po::variables_map& options) : networkFactories_(&clientMa
 				enableAdHocCommandOnJID);
 	uiFactories_.push_back(uiFactory);
 
+
 	LoginWindow* loginWindow = uiFactory->createLoginWindow(uiEventStream_);
+
+	accountsManager_ = new AccountsManager(settingsHierachy_, loginWindow);
 
 	togglableNotifier_ = new TogglableNotifier(notifier_);
 	togglableNotifier_->setPersistentEnabled(settingsHierachy_->getSetting(SettingConstants::SHOW_NOTIFICATIONS));
@@ -273,34 +277,19 @@ QtSwift::QtSwift(const po::variables_map& options) : networkFactories_(&clientMa
 	mainControllers_.push_back(mainController);
 
 
-	std::string selectedLoginJID = settingsHierachy_->getSetting(SettingConstants::LAST_LOGIN_JID);
 	bool loginAutomatically = settingsHierachy_->getSetting(SettingConstants::LOGIN_AUTOMATICALLY);
-	std::string cachedPassword;
-	std::string cachedCertificate;
-	ClientOptions cachedOptions;
 	bool eagle = settingsHierachy_->getSetting(SettingConstants::FORGET_PASSWORDS);
 	if (!eagle) {
-		foreach (std::string profile, settingsHierachy_->getAvailableProfiles()) {
-			ProfileSettingsProvider profileSettings(profile, settingsHierachy_);
-			std::string password = profileSettings.getStringSetting("pass");
-			std::string certificate = profileSettings.getStringSetting("certificate");
-			std::string jid = profileSettings.getStringSetting("jid");
-			ClientOptions clientOptions = parseClientOptions(profileSettings.getStringSetting("options"));
-			loginWindow->addAvailableAccount(jid, password, certificate, clientOptions);
-			if (jid == selectedLoginJID) {
-				cachedPassword = password;
-				cachedCertificate = certificate;
-				cachedOptions = clientOptions;
-			}
-		}
-		loginWindow->selectUser(selectedLoginJID);
+		loginWindow->selectUser(accountsManager_->getDefaultJid());
 		loginWindow->setLoginAutomatically(loginAutomatically);
 	}
 
 	if (loginAutomatically) {
-		mainController->profileSettings_ = new ProfileSettingsProvider(selectedLoginJID, settingsHierachy_);
+		mainController->profileSettings_ = new ProfileSettingsProvider(accountsManager_->getDefaultJid(), settingsHierachy_);
+		// Below code will be changed soon
+		Account account = accountsManager_->getAccountByJid(accountsManager_->getDefaultJid());
 		/* FIXME: deal with autologin with a cert*/
-		mainController->handleLoginRequest(selectedLoginJID, cachedPassword, cachedCertificate, CertificateWithKey::ref(), cachedOptions, true, true);
+		mainController->handleLoginRequest(accountsManager_->getDefaultJid(), account.password_, account.certificatePath_, CertificateWithKey::ref(), account.options_, true, true);
 	} else {
 		mainController->profileSettings_ = NULL;
 	}
@@ -369,54 +358,6 @@ QtSwift::~QtSwift() {
 	delete eventController_;
 	delete systemTrayController_;
 	delete systemTray_;
-}
-
-#define CHECK_PARSE_LENGTH if (i >= segments.size()) {return result;}
-#define PARSE_INT_RAW(defaultValue) CHECK_PARSE_LENGTH intVal = defaultValue; try {intVal = boost::lexical_cast<int>(segments[i]);} catch(const boost::bad_lexical_cast&) {};i++;
-#define PARSE_STRING_RAW CHECK_PARSE_LENGTH stringVal = byteArrayToString(Base64::decode(segments[i]));i++;
-
-#define PARSE_BOOL(option, defaultValue) PARSE_INT_RAW(defaultValue); result.option = (intVal == 1);
-#define PARSE_INT(option, defaultValue) PARSE_INT_RAW(defaultValue); result.option = intVal;
-#define PARSE_STRING(option) PARSE_STRING_RAW; result.option = stringVal;
-#define PARSE_SAFE_STRING(option) PARSE_STRING_RAW; result.option = SafeString(createSafeByteArray(stringVal));
-#define PARSE_URL(option) {PARSE_STRING_RAW; result.option = URL::fromString(stringVal);}
-
-
-ClientOptions QtSwift::parseClientOptions(const std::string& optionString) {
-	ClientOptions result;
-	size_t i = 0;
-	int intVal = 0;
-	std::string stringVal;
-	std::vector<std::string> segments = String::split(optionString, ',');
-
-	PARSE_BOOL(useStreamCompression, 1);
-	PARSE_INT_RAW(-1);
-	switch (intVal) {
-		case 1: result.useTLS = ClientOptions::NeverUseTLS;break;
-		case 2: result.useTLS = ClientOptions::UseTLSWhenAvailable;break;
-		case 3: result.useTLS = ClientOptions::RequireTLS;break;
-		default:;
-	}
-	PARSE_BOOL(allowPLAINWithoutTLS, 0);
-	PARSE_BOOL(useStreamResumption, 0);
-	PARSE_BOOL(useAcks, 1);
-	PARSE_STRING(manualHostname);
-	PARSE_INT(manualPort, -1);
-	PARSE_INT_RAW(-1);
-	switch (intVal) {
-		case 1: result.proxyType = ClientOptions::NoProxy;break;
-		case 2: result.proxyType = ClientOptions::SystemConfiguredProxy;break;
-		case 3: result.proxyType = ClientOptions::SOCKS5Proxy;break;
-		case 4: result.proxyType = ClientOptions::HTTPConnectProxy;break;
-	}
-	PARSE_STRING(manualProxyHostname);
-	PARSE_INT(manualProxyPort, -1);
-	PARSE_URL(boshURL);
-	PARSE_URL(boshHTTPConnectProxyURL);
-	PARSE_SAFE_STRING(boshHTTPConnectProxyAuthID);
-	PARSE_SAFE_STRING(boshHTTPConnectProxyAuthPassword);
-
-	return result;
 }
 
 }
