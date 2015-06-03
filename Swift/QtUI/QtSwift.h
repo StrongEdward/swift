@@ -58,6 +58,7 @@ namespace Swift {
 	class StatusCache;
 	class QtSingleWindow;
 	class UIEventStream;
+	class AccountsManager;
 		
 	class QtSwift : public QObject {
 		Q_OBJECT
@@ -69,11 +70,10 @@ namespace Swift {
 			XMLSettingsProvider* loadSettingsFile(const QString& fileName);
 			void loadEmoticonsFile(const QString& fileName, std::map<std::string, std::string>& emoticons);
 
-			ClientOptions parseClientOptions(const std::string& optionString); // to be moved to AccountsManager
-
 		private:
 			QtEventLoop clientMainThreadCaller_;
 			UIEventStream* uiEventStream_;
+			AccountsManager* accountsManager_;
 			PlatformTLSFactories tlsFactories_;
 			BoostNetworkFactories networkFactories_;
 			QtChatWindowFactory* chatWindowFactory_;
