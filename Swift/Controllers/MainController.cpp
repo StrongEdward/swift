@@ -52,7 +52,7 @@
 #include <Swift/Controllers/XMPPEvents/EventController.h>
 #include <Swift/Controllers/EventWindowController.h>
 #include <Swift/Controllers/UIInterfaces/LoginWindow.h>
-#include <Swift/Controllers/UIInterfaces/LoginWindowFactory.h>
+//#include <Swift/Controllers/UIInterfaces/LoginWindowFactory.h>
 #include <Swift/Controllers/UIInterfaces/MainWindow.h>
 #include <Swift/Controllers/Chat/MUCController.h>
 #include <Swift/Controllers/Roster/RosterController.h>

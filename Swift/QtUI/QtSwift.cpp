@@ -41,7 +41,7 @@
 #include <Swift/Controllers/AccountsManager.h>
 #include <Swift/Controllers/SystemTrayController.h>
 #include <Swift/Controllers/SettingConstants.h>
-#include <Swift/Controllers/MainController.h>
+//#include <Swift/Controllers/MainController.h>
 #include <Swift/Controllers/ApplicationInfo.h>
 #include <Swift/Controllers/BuildVersion.h>
 #include <Swift/Controllers/StatusCache.h>
@@ -225,100 +225,44 @@ QtSwift::QtSwift(const po::variables_map& options) : networkFactories_(&clientMa
 		splitter_->show();
 	}
 
-	// Putting extracted things from MainController here:
-
 	uiEventStream_ = new UIEventStream();
-	QtUIFactory* uiFactory = new QtUIFactory(
-				settingsHierachy_,
-				qtSettings_,
-				tabs_,
-				splitter_,
-				systemTray_,
-				chatWindowFactory_,
-				networkFactories_.getTimerFactory(),
-				statusCache_,
-				startMinimized,
-				!emoticons.empty(),
-				enableAdHocCommandOnJID);
+	eventController_ = new EventController();
+
+	QtUIFactory* uiFactory = new QtUIFactory(settingsHierachy_,
+											 qtSettings_,
+											 tabs_,
+											 splitter_,
+											 systemTray_,
+											 chatWindowFactory_,
+											 networkFactories_.getTimerFactory(),
+											 statusCache_,
+											 startMinimized,
+											 !emoticons.empty(),
+											 enableAdHocCommandOnJID);
 	uiFactories_.push_back(uiFactory);
-
-
-	LoginWindow* loginWindow = uiFactory->createLoginWindow(uiEventStream_);
-
-	accountsManager_ = new AccountsManager(settingsHierachy_, loginWindow);
 
 	togglableNotifier_ = new TogglableNotifier(notifier_);
 	togglableNotifier_->setPersistentEnabled(settingsHierachy_->getSetting(SettingConstants::SHOW_NOTIFICATIONS));
 
-	eventController_ = new EventController();
-
 	systemTrayController_ = new SystemTrayController(eventController_, systemTray_);
 
-
-	MainController* mainController = new MainController(
-				&clientMainThreadCaller_,
-				uiEventStream_,
-				eventController_,
-				&networkFactories_,
-				uiFactory,
-				loginWindow,
-				settingsHierachy_,
-				systemTrayController_,
-				soundPlayer_,
-				storagesFactory_,
-				certificateStorageFactory_,
-				dock_,
-				notifier_,
-				togglableNotifier_,
-				uriHandler_,
-				&idleDetector_,
-				emoticons,
-				options.count("latency-debug") > 0);
-	mainControllers_.push_back(mainController);
-
-
-	bool loginAutomatically = settingsHierachy_->getSetting(SettingConstants::LOGIN_AUTOMATICALLY);
-	bool eagle = settingsHierachy_->getSetting(SettingConstants::FORGET_PASSWORDS);
-	if (!eagle) {
-		loginWindow->selectUser(accountsManager_->getDefaultJid());
-		loginWindow->setLoginAutomatically(loginAutomatically);
-	}
-
-	if (loginAutomatically) {
-		mainController->profileSettings_ = new ProfileSettingsProvider(accountsManager_->getDefaultJid(), settingsHierachy_);
-		// Below code will be changed soon
-		Account account = accountsManager_->getAccountByJid(accountsManager_->getDefaultJid());
-		/* FIXME: deal with autologin with a cert*/
-		mainController->handleLoginRequest(accountsManager_->getDefaultJid(), account.password_, account.certificatePath_, CertificateWithKey::ref(), account.options_, true, true);
-	} else {
-		mainController->profileSettings_ = NULL;
-	}
-
-
-	/*for (int i = 0; i < numberOfAccounts; i++) {
-		if (i > 0) {
-			// Don't add the first tray (see note above)
-			systemTrays_.push_back(new QtSystemTray());
-		}
-		QtUIFactory* uiFactory = new QtUIFactory(settingsHierachy_, qtSettings_, tabs_, splitter_, systemTrays_[i], chatWindowFactory_, networkFactories_.getTimerFactory(), statusCache_, startMinimized, !emoticons.empty(), enableAdHocCommandOnJID);
-		uiFactories_.push_back(uiFactory);
-		MainController* mainController = new MainController(
-				&clientMainThreadCaller_,
-				&networkFactories_,
-				uiFactory,
-				settingsHierachy_,
-				systemTrays_[i],
-				soundPlayer_,
-				storagesFactory_,
-				certificateStorageFactory_,
-				dock_,
-				notifier_,
-				uriHandler_,
-				&idleDetector_,
-				emoticons,
-				options.count("latency-debug") > 0);
-		mainControllers_.push_back(mainController);
-	}*/
+	accountsManager_ = new AccountsManager(&clientMainThreadCaller_,
+										   uiEventStream_,
+										   eventController_,
+										   &networkFactories_,
+										   uiFactory,
+										   settingsHierachy_,
+										   systemTrayController_,
+										   soundPlayer_,
+										   storagesFactory_,
+										   certificateStorageFactory_,
+										   dock_,
+										   notifier_,
+										   togglableNotifier_,
+										   uriHandler_,
+										   &idleDetector_,
+										   emoticons,
+										   options.count("latency-debug") > 0);
 
 
 	// PlatformAutoUpdaterFactory autoUpdaterFactory;
@@ -333,9 +277,7 @@ QtSwift::~QtSwift() {
 	foreach (QtUIFactory* factory, uiFactories_) {
 		delete factory;
 	}
-	foreach (MainController* controller, mainControllers_) {
-		delete controller;
-	}
+
 	delete notifier_;
 	delete togglableNotifier_;
 

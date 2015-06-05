@@ -42,7 +42,7 @@ namespace Swift {
 	class ApplicationPathProvider;
 	class AvatarStorage;
 	class CapsStorage;
-	class MainController;
+	//class MainController;
 	class QtSystemTray;
 	class SystemTrayController;
 	class QtChatTabsBase;
@@ -77,7 +77,6 @@ namespace Swift {
 			PlatformTLSFactories tlsFactories_;
 			BoostNetworkFactories networkFactories_;
 			QtChatWindowFactory* chatWindowFactory_;
-			std::vector<MainController*> mainControllers_;
 			QtSystemTray* systemTray_;
 			SystemTrayController* systemTrayController_;
 			std::vector<QtUIFactory*> uiFactories_;

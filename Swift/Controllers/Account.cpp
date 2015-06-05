@@ -4,7 +4,7 @@
  * See Documentation/Licenses/BSD-simplified.txt for more information.
  */
 
-#include "Account.h"
+#include <Swift/Controllers/Account.h>
 
 namespace Swift {
 
@@ -16,7 +16,7 @@ namespace Swift {
 					 bool rememberPassword,
 					 bool enabledAutoLogin)
 		: accountName_(accountName),
-		  jid_(jid),
+		  jid_(JID(jid)),
 		  password_(password),
 		  certificatePath_(certificatePath),
 		  options_(options),
