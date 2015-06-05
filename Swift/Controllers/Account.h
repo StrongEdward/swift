@@ -9,8 +9,10 @@
 #include <string>
 
 #include <Swiften/Client/ClientOptions.h>
+#include <Swiften/JID/JID.h>
 
 namespace Swift {
+	class JID;
 
 	class Account {
 		public:
@@ -23,9 +25,9 @@ namespace Swift {
 					bool rememberPassword,
 					bool enabledAutoLogin);
 
-		public: // maybe struct?
+		public: // public temporarily
 			std::string accountName_;
-			std::string jid_;
+			JID jid_;
 			std::string password_;
 			std::string certificatePath_;
 			ClientOptions options_;
