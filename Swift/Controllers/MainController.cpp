@@ -44,6 +44,8 @@
 #include <SwifTools/Notifier/TogglableNotifier.h>
 #include <SwifTools/Idle/IdleDetector.h>
 
+#include <Swift/Controllers/Account.h>
+#include <Swift/Controllers/AccountsManager.h>
 #include <Swift/Controllers/Intl.h>
 #include <Swift/Controllers/UIInterfaces/UIFactory.h>
 #include <Swift/Controllers/BuildVersion.h>
@@ -94,41 +96,44 @@ static const std::string CLIENT_NAME = "Swift";
 static const std::string CLIENT_NODE = "http://swift.im";
 
 
-MainController::MainController(
-		EventLoop* eventLoop,
-		UIEventStream *uiEventStream,
-		EventController* eventController,
-		NetworkFactories* networkFactories,
-		UIFactory* uiFactories,
-		LoginWindow* loginWindow,
-		SettingsProvider* settings,
-		SystemTrayController* systemTrayController,
-		SoundPlayer* soundPlayer,
-		StoragesFactory* storagesFactory,
-		CertificateStorageFactory* certificateStorageFactory,
-		Dock* dock,
-		Notifier* notifier,
-		TogglableNotifier* togglableNotifier,
-		URIHandler* uriHandler,
-		IdleDetector* idleDetector,
-		const std::map<std::string, std::string>& emoticons,
-		bool useDelayForLatency) :
-				eventLoop_(eventLoop),
-				uiEventStream_(uiEventStream),
-				eventController_(eventController),
-				networkFactories_(networkFactories),
-				uiFactory_(uiFactories),
-				storagesFactory_(storagesFactory),
-				certificateStorageFactory_(certificateStorageFactory),
-				settings_(settings),
-				uriHandler_(uriHandler),
-				idleDetector_(idleDetector),
-				togglableNotifier_(togglableNotifier),
-				loginWindow_(loginWindow),
-				systemTrayController_(systemTrayController),
-				useDelayForLatency_(useDelayForLatency),
-				ftOverview_(NULL),
-				emoticons_(emoticons) {
+MainController::MainController(boost::shared_ptr<Account> account,
+							   AccountsManager* accountsManager,
+							   EventLoop* eventLoop,
+							   UIEventStream *uiEventStream,
+							   EventController* eventController,
+							   NetworkFactories* networkFactories,
+							   UIFactory* uiFactories,
+							   LoginWindow* loginWindow,
+							   SettingsProvider* settings,
+							   SystemTrayController* systemTrayController,
+							   SoundPlayer* soundPlayer,
+							   StoragesFactory* storagesFactory,
+							   CertificateStorageFactory* certificateStorageFactory,
+							   Dock* dock,
+							   Notifier* notifier,
+							   TogglableNotifier* togglableNotifier,
+							   URIHandler* uriHandler,
+							   IdleDetector* idleDetector,
+							   const std::map<std::string, std::string>& emoticons,
+							   bool useDelayForLatency) :
+	account_(account),
+	accountsManager_(accountsManager),
+	eventLoop_(eventLoop),
+	uiEventStream_(uiEventStream),
+	eventController_(eventController),
+	networkFactories_(networkFactories),
+	uiFactory_(uiFactories),
+	storagesFactory_(storagesFactory),
+	certificateStorageFactory_(certificateStorageFactory),
+	settings_(settings),
+	uriHandler_(uriHandler),
+	idleDetector_(idleDetector),
+	togglableNotifier_(togglableNotifier),
+	loginWindow_(loginWindow),
+	systemTrayController_(systemTrayController),
+	useDelayForLatency_(useDelayForLatency),
+	ftOverview_(NULL),
+	emoticons_(emoticons) {
 	storages_ = NULL;
 	certificateStorage_ = NULL;
 	certificateTrustChecker_ = NULL;
@@ -201,8 +206,9 @@ MainController::MainController(
 		loginWindow_->setLoginAutomatically(loginAutomatically);
 	}*/
 
+	accountsManager_->onLoginRequest.connect(boost::bind(&MainController::handleLoginRequest, this, _1, _2, _3, _4, _5));
 
-	loginWindow_->onLoginRequest.connect(boost::bind(&MainController::handleLoginRequest, this, _1, _2, _3, _4, _5, _6, _7));
+	//loginWindow_->onLoginRequest.connect(boost::bind(&MainController::handleLoginRequest, this, _1, _2, _3, _4, _5, _6, _7));
 	loginWindow_->onPurgeSavedLoginRequest.connect(boost::bind(&MainController::handlePurgeSavedLoginRequest, this, _1));
 	loginWindow_->onCancelLoginRequest.connect(boost::bind(&MainController::handleCancelLoginRequest, this));
 	loginWindow_->onQuitRequest.connect(boost::bind(&MainController::handleQuitRequest, this));
@@ -245,8 +251,17 @@ MainController::~MainController() {
 	//delete uiEventStream_;
 }
 
+const std::string MainController::getJIDString() {
+	return account_->getJID();
+}
+
+boost::shared_ptr<Account> MainController::getAccount() {
+	return account_;
+}
+
 void MainController::purgeCachedCredentials() {
-	safeClear(password_);
+	//safeClear(password_);
+	account_->clearPassword();
 }
 
 void MainController::resetClient() {
@@ -365,13 +380,13 @@ void MainController::handleConnected() {
 		contactSuggesterWithoutRoster_ = new ContactSuggester();
 		contactSuggesterWithRoster_ = new ContactSuggester();
 
-		userSearchControllerInvite_ = new UserSearchController(UserSearchController::InviteToChat, jid_, uiEventStream_, client_->getVCardManager(), uiFactory_, client_->getIQRouter(), rosterController_, contactSuggesterWithRoster_, client_->getAvatarManager(), client_->getPresenceOracle());
+		userSearchControllerInvite_ = new UserSearchController(UserSearchController::InviteToChat, account_->getJID(), uiEventStream_, client_->getVCardManager(), uiFactory_, client_->getIQRouter(), rosterController_, contactSuggesterWithRoster_, client_->getAvatarManager(), client_->getPresenceOracle());
 #ifdef SWIFT_EXPERIMENTAL_HISTORY
 		historyController_ = new HistoryController(storages_->getHistoryStorage());
-		historyViewController_ = new HistoryViewController(jid_, uiEventStream_, historyController_, client_->getNickResolver(), client_->getAvatarManager(), client_->getPresenceOracle(), uiFactory_);
-		chatsManager_ = new ChatsManager(jid_, client_->getStanzaChannel(), client_->getIQRouter(), eventController_, uiFactory_, uiFactory_, client_->getNickResolver(), client_->getPresenceOracle(), client_->getPresenceSender(), uiEventStream_, uiFactory_, useDelayForLatency_, networkFactories_->getTimerFactory(), client_->getMUCRegistry(), client_->getEntityCapsProvider(), client_->getMUCManager(), uiFactory_, profileSettings_, ftOverview_, client_->getRoster(), !settings_->getSetting(SettingConstants::REMEMBER_RECENT_CHATS), settings_, historyController_, whiteboardManager_, highlightManager_, client_->getClientBlockListManager(), emoticons_, userSearchControllerInvite_, client_->getVCardManager());
+		historyViewController_ = new HistoryViewController(account_->getJID(), uiEventStream_, historyController_, client_->getNickResolver(), client_->getAvatarManager(), client_->getPresenceOracle(), uiFactory_);
+		chatsManager_ = new ChatsManager(account_->getJID(), client_->getStanzaChannel(), client_->getIQRouter(), eventController_, uiFactory_, uiFactory_, client_->getNickResolver(), client_->getPresenceOracle(), client_->getPresenceSender(), uiEventStream_, uiFactory_, useDelayForLatency_, networkFactories_->getTimerFactory(), client_->getMUCRegistry(), client_->getEntityCapsProvider(), client_->getMUCManager(), uiFactory_, profileSettings_, ftOverview_, client_->getRoster(), !settings_->getSetting(SettingConstants::REMEMBER_RECENT_CHATS), settings_, historyController_, whiteboardManager_, highlightManager_, client_->getClientBlockListManager(), emoticons_, userSearchControllerInvite_, client_->getVCardManager());
 #else
-		chatsManager_ = new ChatsManager(jid_, client_->getStanzaChannel(), client_->getIQRouter(), eventController_, uiFactory_, uiFactory_, client_->getNickResolver(), client_->getPresenceOracle(), client_->getPresenceSender(), uiEventStream_, uiFactory_, useDelayForLatency_, networkFactories_->getTimerFactory(), client_->getMUCRegistry(), client_->getEntityCapsProvider(), client_->getMUCManager(), uiFactory_, profileSettings_, ftOverview_, client_->getRoster(), !settings_->getSetting(SettingConstants::REMEMBER_RECENT_CHATS), settings_, NULL, whiteboardManager_, highlightManager_, client_->getClientBlockListManager(), emoticons_, userSearchControllerInvite_, client_->getVCardManager());
+		chatsManager_ = new ChatsManager(account_->getJID(), client_->getStanzaChannel(), client_->getIQRouter(), eventController_, uiFactory_, uiFactory_, client_->getNickResolver(), client_->getPresenceOracle(), client_->getPresenceSender(), uiEventStream_, uiFactory_, useDelayForLatency_, networkFactories_->getTimerFactory(), client_->getMUCRegistry(), client_->getEntityCapsProvider(), client_->getMUCManager(), uiFactory_, profileSettings_, ftOverview_, client_->getRoster(), !settings_->getSetting(SettingConstants::REMEMBER_RECENT_CHATS), settings_, NULL, whiteboardManager_, highlightManager_, client_->getClientBlockListManager(), emoticons_, userSearchControllerInvite_, client_->getVCardManager());
 #endif
 		contactsFromRosterProvider_ = new ContactsFromXMPPRoster(client_->getRoster(), client_->getAvatarManager(), client_->getPresenceOracle());
 		contactSuggesterWithoutRoster_->addContactProvider(chatsManager_);
@@ -404,8 +419,8 @@ void MainController::handleConnected() {
 		client_->getDiscoManager()->setCapsNode(CLIENT_NODE);
 		client_->getDiscoManager()->setDiscoInfo(discoInfo);
 
-		userSearchControllerChat_ = new UserSearchController(UserSearchController::StartChat, jid_, uiEventStream_, client_->getVCardManager(), uiFactory_, client_->getIQRouter(), rosterController_, contactSuggesterWithRoster_, client_->getAvatarManager(), client_->getPresenceOracle());
-		userSearchControllerAdd_ = new UserSearchController(UserSearchController::AddContact, jid_, uiEventStream_, client_->getVCardManager(), uiFactory_, client_->getIQRouter(), rosterController_, contactSuggesterWithoutRoster_, client_->getAvatarManager(), client_->getPresenceOracle());
+		userSearchControllerChat_ = new UserSearchController(UserSearchController::StartChat, account_->getJID(), uiEventStream_, client_->getVCardManager(), uiFactory_, client_->getIQRouter(), rosterController_, contactSuggesterWithRoster_, client_->getAvatarManager(), client_->getPresenceOracle());
+		userSearchControllerAdd_ = new UserSearchController(UserSearchController::AddContact, account_->getJID(), uiEventStream_, client_->getVCardManager(), uiFactory_, client_->getIQRouter(), rosterController_, contactSuggesterWithoutRoster_, client_->getAvatarManager(), client_->getPresenceOracle());
 		adHocManager_ = new AdHocManager(JID(boundJID_.getDomain()), uiFactory_, client_->getIQRouter(), uiEventStream_, rosterController_->getWindow());
 
 		chatsManager_->onImpromptuMUCServiceDiscovered.connect(boost::bind(&UserSearchController::setCanInitiateImpromptuMUC, userSearchControllerChat_, _1));
@@ -518,29 +533,12 @@ void MainController::handleShowCertificateRequest() {
 	rosterController_->getWindow()->openCertificateDialog(chain);
 }
 
-void MainController::handleLoginRequest(const std::string &username, const std::string &password, const std::string& certificatePath, CertificateWithKey::ref certificate, const ClientOptions& options, bool remember, bool loginAutomatically) {
-	jid_ = JID(username);
-	if (!jid_.isValid() || jid_.getNode().empty()) {
-		loginWindow_->setMessage(QT_TRANSLATE_NOOP("", "User address invalid. User address should be of the form 'alice@wonderland.lit'"));
-		loginWindow_->setIsLoggingIn(false);
-	} else {
-		loginWindow_->setMessage("");
-		loginWindow_->setIsLoggingIn(true);
-		profileSettings_ = new ProfileSettingsProvider(username, settings_);
-		if (!settings_->getSetting(SettingConstants::FORGET_PASSWORDS)) {
-			profileSettings_->storeString("jid", username);
-			profileSettings_->storeString("certificate", certificatePath);
-			profileSettings_->storeString("pass", (remember || loginAutomatically) ? password : "");
-			std::string optionString = serializeClientOptions(options);
-			profileSettings_->storeString("options", optionString);
-			settings_->storeSetting(SettingConstants::LAST_LOGIN_JID, username);
-			settings_->storeSetting(SettingConstants::LOGIN_AUTOMATICALLY, loginAutomatically);
-			loginWindow_->addAvailableAccount(profileSettings_->getStringSetting("jid"), profileSettings_->getStringSetting("pass"), profileSettings_->getStringSetting("certificate"), options);
-		}
-
+void MainController::handleLoginRequest(const MainController* controller, const std::string& password, CertificateWithKey::ref certificate, const ClientOptions& options, ProfileSettingsProvider* profileSettings) {
+	if (controller == this) {
 		password_ = password;
 		certificate_ = certificate;
 		clientOptions_ = options;
+		profileSettings_ = profileSettings;
 		performLoginFromCachedCredentials();
 	}
 }
@@ -550,6 +548,12 @@ void MainController::handlePurgeSavedLoginRequest(const std::string& username) {
 	loginWindow_->removeAvailableAccount(username);
 }
 
+/*void MainController::handleCacheCredentials(const std::string& password, CertificateWithKey::ref certificate, const ClientOptions& options) {
+	password_ = password;
+	certificate_ = certificate;
+	clientOptions_ = options;
+}*/
+
 void MainController::performLoginFromCachedCredentials() {
 	if (settings_->getSetting(SettingConstants::FORGET_PASSWORDS) && password_.empty()) {
 		/* Then we can't try to login again. */
@@ -557,8 +561,8 @@ void MainController::performLoginFromCachedCredentials() {
 	}
 	/* If we logged in with a bare JID, and we have a full bound JID, re-login with the
 	 * bound JID to try and keep dynamically assigned resources */
-	JID clientJID = jid_;
-	if (boundJID_.isValid() && jid_.isBare() && boundJID_.toBare() == jid_) {
+	JID clientJID = account_->getJID();
+	if (boundJID_.isValid() && clientJID.isBare() && boundJID_.toBare() == clientJID) {
 		clientJID = boundJID_;
 	}
 
@@ -566,8 +570,8 @@ void MainController::performLoginFromCachedCredentials() {
 		statusTracker_  = new StatusTracker();
 	}
 	if (!clientInitialized_) {
-		storages_ = storagesFactory_->createStorages(jid_.toBare());
-		certificateStorage_ = certificateStorageFactory_->createCertificateStorage(jid_.toBare());
+		storages_ = storagesFactory_->createStorages(clientJID.toBare());
+		certificateStorage_ = certificateStorageFactory_->createCertificateStorage(clientJID.toBare());
 		certificateTrustChecker_ = new CertificateStorageTrustChecker(certificateStorage_);
 
 		client_ = boost::make_shared<Swift::Client>(clientJID, createSafeByteArray(password_.c_str()), networkFactories_, storages_);
@@ -691,18 +695,18 @@ void MainController::handleDisconnected(const boost::optional<ClientError>& erro
 		} else {
 			logout();
 			if (settings_->getSetting(SettingConstants::FORGET_PASSWORDS)) {
-				message = str(format(QT_TRANSLATE_NOOP("", "Disconnected from %1%: %2%. To reconnect, Sign Out and provide your password again.")) % jid_.getDomain() % message);
+				message = str(format(QT_TRANSLATE_NOOP("", "Disconnected from %1%: %2%. To reconnect, Sign Out and provide your password again.")) % account_->getJID().getDomain() % message);
 			} else {
 				if (!offlineRequested_) {
 					setReconnectTimer();
 				}
 				if (lastDisconnectError_) {
-					message = str(format(QT_TRANSLATE_NOOP("", "Reconnect to %1% failed: %2%. Will retry in %3% seconds.")) % jid_.getDomain() % message % boost::lexical_cast<std::string>(timeBeforeNextReconnect_));
+					message = str(format(QT_TRANSLATE_NOOP("", "Reconnect to %1% failed: %2%. Will retry in %3% seconds.")) % account_->getJID().getDomain() % message % boost::lexical_cast<std::string>(timeBeforeNextReconnect_));
 					lastDisconnectError_->conclude();
 				} else {
-					message = str(format(QT_TRANSLATE_NOOP("", "Disconnected from %1%: %2%.")) % jid_.getDomain() % message);
+					message = str(format(QT_TRANSLATE_NOOP("", "Disconnected from %1%: %2%.")) % account_->getJID().getDomain() % message);
 				}
-				lastDisconnectError_ = boost::make_shared<ErrorEvent>(JID(jid_.getDomain()), message);
+				lastDisconnectError_ = boost::make_shared<ErrorEvent>(JID(account_->getJID().getDomain()), message);
 				eventController_->handleIncomingEvent(lastDisconnectError_);
 			}
 		}
@@ -783,7 +787,7 @@ void MainController::handleServerDiscoInfoResponse(boost::shared_ptr<DiscoInfo> 
 }
 
 void MainController::handleVCardReceived(const JID& jid, VCard::ref vCard) {
-	if (!jid.equals(jid_, JID::WithoutResource) || !vCard) {
+	if (!jid.equals(account_->getJID(), JID::WithoutResource) || !vCard) {
 		return;
 	}
 	std::string hash;
@@ -819,43 +823,6 @@ void MainController::handleQuitRequest() {
 		resetClient();
 		loginWindow_->quit();
 	}
-}
-
-#define SERIALIZE_BOOL(option) result += options.option ? "1" : "0"; result += ",";
-#define SERIALIZE_INT(option) result += boost::lexical_cast<std::string>(options.option); result += ",";
-#define SERIALIZE_STRING(option) result += Base64::encode(createByteArray(options.option)); result += ",";
-#define SERIALIZE_SAFE_STRING(option) result += safeByteArrayToString(Base64::encode(options.option)); result += ",";
-#define SERIALIZE_URL(option) SERIALIZE_STRING(option.toString())
-
-std::string MainController::serializeClientOptions(const ClientOptions& options) {
-	std::string result;
-	SERIALIZE_BOOL(useStreamCompression);
-	switch (options.useTLS) {
-		case ClientOptions::NeverUseTLS: result += "1";break;
-		case ClientOptions::UseTLSWhenAvailable: result += "2";break;
-		case ClientOptions::RequireTLS: result += "3";break;
-	}
-	result += ",";
-	SERIALIZE_BOOL(allowPLAINWithoutTLS);
-	SERIALIZE_BOOL(useStreamResumption);
-	SERIALIZE_BOOL(useAcks);
-	SERIALIZE_STRING(manualHostname);
-	SERIALIZE_INT(manualPort);
-	switch (options.proxyType) {
-		case ClientOptions::NoProxy: result += "1";break;
-		case ClientOptions::SystemConfiguredProxy: result += "2";break;
-		case ClientOptions::SOCKS5Proxy: result += "3";break;
-		case ClientOptions::HTTPConnectProxy: result += "4";break;
-	}
-	result += ",";
-	SERIALIZE_STRING(manualProxyHostname);
-	SERIALIZE_INT(manualProxyPort);
-	SERIALIZE_URL(boshURL);
-	SERIALIZE_URL(boshHTTPConnectProxyURL);
-	SERIALIZE_SAFE_STRING(boshHTTPConnectProxyAuthID);
-	SERIALIZE_SAFE_STRING(boshHTTPConnectProxyAuthPassword);
-	SERIALIZE_BOOL(tlsOptions.schannelTLS1_0Workaround);
-	return result;
 }
 
 }
