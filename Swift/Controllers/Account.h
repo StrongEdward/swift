@@ -17,15 +17,18 @@ namespace Swift {
 	class Account {
 		public:
 			Account() {}
-			Account(const std::string& accountName,
-					const std::string& jid,
-					const std::string& password,
-					const std::string& certificatePath,
-					const ClientOptions& options,
+			Account(const std::string accountName,
+					const std::string jid,
+					const std::string password,
+					const std::string certificatePath,
+					const ClientOptions options,
 					bool rememberPassword,
 					bool enabledAutoLogin);
+			void clearPassword();
+			std::string getAccountName();
+			const JID& getJID();
 
-		public: // public temporarily
+		public: // public temporairly
 			std::string accountName_;
 			JID jid_;
 			std::string password_;
@@ -33,5 +36,6 @@ namespace Swift {
 			ClientOptions options_;
 			bool rememberPassword_;
 			bool enabledAutoLogin_;
+
 	};
 }

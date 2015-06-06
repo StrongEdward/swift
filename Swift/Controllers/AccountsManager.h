@@ -15,12 +15,22 @@
 #include <vector>
 #include <map>
 
+#include <3rdParty/Boost/src/boost/shared_ptr.hpp>
+#include <3rdParty/Boost/src/boost/enable_shared_from_this.hpp>
+
+#include <Swiften/Base/boost_bsignals.h>
+#include <Swiften/TLS/CertificateWithKey.h>
+
 #include <Swift/Controllers/Account.h>
+//#include <Swift/Controllers/Storages/CertificateStorageFactory.h>
+//#include <Swift/Controllers/Storages/CertificateStorage.h>
+
 
 namespace Swift {
 	class Account;
 	class SettingsProviderHierachy;
 	class SettingsProvider;
+	class ProfileSettingsProvider;
 	class LoginWindow;
 
 	class MainController;
@@ -34,6 +44,8 @@ namespace Swift {
 	class SoundPlayer;
 	class StoragesFactory;
 	class CertificateStorageFactory;
+	//class CertificateStorage;
+	//class CertificateWithKey;
 	class Dock;
 	class Notifier;
 	class TogglableNotifier;
@@ -41,7 +53,7 @@ namespace Swift {
 	class IdleDetector;
 
 
-	class AccountsManager {
+	class AccountsManager : public boost::enable_shared_from_this<AccountsManager> {
 		public:
 			AccountsManager(EventLoop* eventLoop,
 							UIEventStream *uiEventStream,
@@ -62,18 +74,26 @@ namespace Swift {
 							bool useDelayForLatency);
 			~AccountsManager();
 
-			JID getDefaultJid();
-			Account getAccountByJid(std::string jid); // assumption: jid is unique
-			ClientOptions parseClientOptions(const std::string& optionString);
+			JID getDefaultJID();
+			boost::shared_ptr<Account> getAccountByJID(std::string jid); // assumption: jid is unique
+			MainController* getMainControllerByJIDString(const std::string& jid);
+
+			void handleLoginRequest(const std::string &username, const std::string &password, const std::string& certificatePath, CertificateWithKey::ref certificate, const ClientOptions& options, bool remember, bool loginAutomatically);
+
+			boost::signal<void (const MainController*, const std::string&, CertificateWithKey::ref, const ClientOptions&, ProfileSettingsProvider*) > onLoginRequest;
+
 
 		private:
-			std::vector<Account> accounts_;
+			std::vector< boost::shared_ptr<Account> > accounts_;
 			std::string defaultAccountJid_;
 			std::vector<MainController*> mainControllers_;
 			LoginWindow* loginWindow_;
 
 			UIEventStream* uiEventStream_;
 			SettingsProvider* settings_;
+
+			std::string serializeClientOptions(const ClientOptions& options);
+			ClientOptions parseClientOptions(const std::string& optionString);
 
 	};
 }

@@ -30,6 +30,8 @@
 
 
 namespace Swift {
+	class Account;
+	class AccountsManager;
 	class IdleDetector;
 	class UIFactory;
 	class EventLoop;
@@ -83,30 +85,37 @@ namespace Swift {
 	class ContactsFromXMPPRoster;
 
 	class MainController {
-		public:
-		MainController(
-			EventLoop* eventLoop,
-			UIEventStream* uiEventStream,
-			EventController* eventController,
-			NetworkFactories* networkFactories,
-			UIFactory* uiFactories,
-			LoginWindow *loginWindow,
-			SettingsProvider *settings,
-			SystemTrayController* systemTrayController,
-			SoundPlayer* soundPlayer,
-			StoragesFactory* storagesFactory,
-			CertificateStorageFactory* certificateStorageFactory,
-			Dock* dock,
-			Notifier* notifier,
-			TogglableNotifier* togglableNotifier,
-			URIHandler* uriHandler,
-			IdleDetector* idleDetector,
-			const std::map<std::string, std::string>& emoticons,
-			bool useDelayForLatency);
-		~MainController();
 
-		ProfileSettingsProvider* profileSettings_; // temporarily public to use it from QtSwift
-		void handleLoginRequest(const std::string& username, const std::string& password, const std::string& certificatePath, CertificateWithKey::ref certificate, const ClientOptions& options, bool remember, bool loginAutomatically);
+			friend class AccountsManager;
+
+		public:
+			MainController(boost::shared_ptr<Account> account,
+						   AccountsManager* accountsManageer,
+						   EventLoop* eventLoop,
+						   UIEventStream* uiEventStream,
+						   EventController* eventController,
+						   NetworkFactories* networkFactories,
+						   UIFactory* uiFactories,
+						   LoginWindow *loginWindow,
+						   SettingsProvider *settings,
+						   SystemTrayController* systemTrayController,
+						   SoundPlayer* soundPlayer,
+						   StoragesFactory* storagesFactory,
+						   CertificateStorageFactory* certificateStorageFactory,
+						   Dock* dock,
+						   Notifier* notifier,
+						   TogglableNotifier* togglableNotifier,
+						   URIHandler* uriHandler,
+						   IdleDetector* idleDetector,
+						   const std::map<std::string, std::string>& emoticons,
+						   bool useDelayForLatency);
+			~MainController();
+
+			const std::string getJIDString();
+			boost::shared_ptr<Account> getAccount();
+
+
+		void handleLoginRequest(const MainController* controller, const std::string& password, CertificateWithKey::ref certificate, const ClientOptions& options, ProfileSettingsProvider* profileSettings);
 
 		private:
 			void resetClient();
@@ -129,8 +138,8 @@ namespace Swift {
 			void setReconnectTimer();
 			void resetPendingReconnects();
 			void resetCurrentError();
-			std::string serializeClientOptions(const ClientOptions& options); // to be moved to AccountsManager
-	
+			//std::string serializeClientOptions(const ClientOptions& options); // to be moved to AccountsManager
+			//void handleCacheCredentials(const std::string& password, CertificateWithKey::ref certificate, const ClientOptions& options);
 			void performLoginFromCachedCredentials();
 			void reconnectAfterError();
 			void setManagersOffline();
@@ -139,6 +148,20 @@ namespace Swift {
 			void purgeCachedCredentials();
 
 		private:
+			boost::shared_ptr<Account> account_;
+			boost::shared_ptr<AccountsManager> accountsManager_;
+
+			// Probably have to remove them then
+			//JID jid_;
+			JID boundJID_;
+
+			// Cached credentials
+			std::string password_;
+			CertificateWithKey::ref certificate_;
+			ClientOptions clientOptions_;
+
+			ProfileSettingsProvider* profileSettings_;
+
 			EventLoop* eventLoop_;
 			UIEventStream* uiEventStream_;
 			EventController* eventController_;
@@ -150,7 +173,7 @@ namespace Swift {
 			CertificateStorage* certificateStorage_;
 			CertificateStorageTrustChecker* certificateTrustChecker_;
 			bool clientInitialized_;
-			boost::shared_ptr<Client> client_; //?
+			boost::shared_ptr<Client> client_;
 			SettingsProvider *settings_;
 
 			Dock* dock_;
@@ -175,15 +198,11 @@ namespace Swift {
 			ContactsFromXMPPRoster* contactsFromRosterProvider_;
 			ContactSuggester* contactSuggesterWithoutRoster_;
 			ContactSuggester* contactSuggesterWithRoster_;
-			JID jid_;
-			JID boundJID_;
 			SystemTrayController* systemTrayController_;
 			SoundEventController* soundEventController_;
 			XMPPURIController* xmppURIController_;
 			std::string vCardPhotoHash_;
-			std::string password_;
-			CertificateWithKey::ref certificate_;
-			ClientOptions clientOptions_; // remove?
+
 			boost::shared_ptr<ErrorEvent> lastDisconnectError_;
 			bool useDelayForLatency_;
 			UserSearchController* userSearchControllerChat_;
