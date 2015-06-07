@@ -90,14 +90,13 @@ namespace Swift {
 
 		public:
 			MainController(boost::shared_ptr<Account> account,
-						   AccountsManager* accountsManageer,
 						   EventLoop* eventLoop,
 						   UIEventStream* uiEventStream,
 						   EventController* eventController,
 						   NetworkFactories* networkFactories,
 						   UIFactory* uiFactories,
-						   LoginWindow *loginWindow,
-						   SettingsProvider *settings,
+						   LoginWindow* loginWindow,
+						   SettingsProvider* settings,
 						   SystemTrayController* systemTrayController,
 						   SoundPlayer* soundPlayer,
 						   StoragesFactory* storagesFactory,
@@ -115,12 +114,12 @@ namespace Swift {
 			boost::shared_ptr<Account> getAccount();
 
 
-		void handleLoginRequest(const MainController* controller, const std::string& password, CertificateWithKey::ref certificate, const ClientOptions& options, ProfileSettingsProvider* profileSettings);
+
 
 		private:
 			void resetClient();
 			void handleConnected();
-
+			void handleLoginRequest();
 			void handleCancelLoginRequest();
 			void handleQuitRequest();
 			void handleChangeStatusRequest(StatusShow::Type show, const std::string &statusText);
@@ -156,7 +155,7 @@ namespace Swift {
 			JID boundJID_;
 
 			// Cached credentials
-			std::string password_;
+			std::string cachedPassword_;
 			CertificateWithKey::ref certificate_;
 			ClientOptions clientOptions_;
 
