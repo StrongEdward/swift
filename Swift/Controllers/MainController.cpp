@@ -40,6 +40,12 @@
 #include <Swiften/Client/ClientBlockListManager.h>
 #include <Swiften/Crypto/CryptoProvider.h>
 
+#ifdef HAVE_SCHANNEL
+#include "CAPICertificateSelector.h"
+#include <Swiften/TLS/CAPICertificate.h>
+#endif
+#include <Swiften/TLS/PKCS12Certificate.h>
+
 #include <SwifTools/Dock/Dock.h>
 #include <SwifTools/Notifier/TogglableNotifier.h>
 #include <SwifTools/Idle/IdleDetector.h>
@@ -97,7 +103,6 @@ static const std::string CLIENT_NODE = "http://swift.im";
 
 
 MainController::MainController(boost::shared_ptr<Account> account,
-							   AccountsManager* accountsManager,
 							   EventLoop* eventLoop,
 							   UIEventStream *uiEventStream,
 							   EventController* eventController,
@@ -117,7 +122,6 @@ MainController::MainController(boost::shared_ptr<Account> account,
 							   const std::map<std::string, std::string>& emoticons,
 							   bool useDelayForLatency) :
 	account_(account),
-	accountsManager_(accountsManager),
 	eventLoop_(eventLoop),
 	uiEventStream_(uiEventStream),
 	eventController_(eventController),
@@ -206,7 +210,8 @@ MainController::MainController(boost::shared_ptr<Account> account,
 		loginWindow_->setLoginAutomatically(loginAutomatically);
 	}*/
 
-	accountsManager_->onLoginRequest.connect(boost::bind(&MainController::handleLoginRequest, this, _1, _2, _3, _4, _5));
+	profileSettings_ = account_->getProfileSettings();
+	account_->onEnabled.connect(boost::bind(&MainController::handleLoginRequest, this));
 
 	//loginWindow_->onLoginRequest.connect(boost::bind(&MainController::handleLoginRequest, this, _1, _2, _3, _4, _5, _6, _7));
 	loginWindow_->onPurgeSavedLoginRequest.connect(boost::bind(&MainController::handlePurgeSavedLoginRequest, this, _1));
@@ -260,11 +265,12 @@ boost::shared_ptr<Account> MainController::getAccount() {
 }
 
 void MainController::purgeCachedCredentials() {
-	//safeClear(password_);
+	//safeClear(cachedPassword_);
 	account_->clearPassword();
 }
 
 void MainController::resetClient() {
+	account_->setEnabled(false);
 	purgeCachedCredentials();
 	resetCurrentError();
 	resetPendingReconnects();
@@ -303,8 +309,8 @@ void MainController::resetClient() {
 	storages_ = NULL;
 	delete statusTracker_;
 	statusTracker_ = NULL;
-	delete profileSettings_;
-	profileSettings_ = NULL;
+	//delete profileSettings_;
+	//profileSettings_ = NULL;
 	delete userSearchControllerChat_;
 	userSearchControllerChat_ = NULL;
 	delete userSearchControllerAdd_;
@@ -533,14 +539,21 @@ void MainController::handleShowCertificateRequest() {
 	rosterController_->getWindow()->openCertificateDialog(chain);
 }
 
-void MainController::handleLoginRequest(const MainController* controller, const std::string& password, CertificateWithKey::ref certificate, const ClientOptions& options, ProfileSettingsProvider* profileSettings) {
-	if (controller == this) {
-		password_ = password;
-		certificate_ = certificate;
-		clientOptions_ = options;
-		profileSettings_ = profileSettings;
+void MainController::handleLoginRequest() {
+
+		std::string certificatePath = account_->getCertificatePath();
+#if defined(HAVE_SCHANNEL)
+		if (isCAPIURI(certificatePath)) {
+			certificate_ = boost::make_shared<CAPICertificate>(certificatePath, networkFactories_->getTimerFactory());
+		} else {
+			certificate_ = boost::make_shared<PKCS12Certificate>(certificatePath, createSafeByteArray(Q2PSTRING(account_->getPassword()));
+		}
+#else
+		certificate_ = boost::make_shared<PKCS12Certificate>(certificatePath, createSafeByteArray(account_->getPassword()));
+#endif
+
+		clientOptions_ = account_->getClientOptions();
 		performLoginFromCachedCredentials();
-	}
 }
 
 void MainController::handlePurgeSavedLoginRequest(const std::string& username) {
@@ -555,7 +568,7 @@ void MainController::handlePurgeSavedLoginRequest(const std::string& username) {
 }*/
 
 void MainController::performLoginFromCachedCredentials() {
-	if (settings_->getSetting(SettingConstants::FORGET_PASSWORDS) && password_.empty()) {
+	if (settings_->getSetting(SettingConstants::FORGET_PASSWORDS) && account_->getPassword().empty()) {
 		/* Then we can't try to login again. */
 		return;
 	}
@@ -574,7 +587,7 @@ void MainController::performLoginFromCachedCredentials() {
 		certificateStorage_ = certificateStorageFactory_->createCertificateStorage(clientJID.toBare());
 		certificateTrustChecker_ = new CertificateStorageTrustChecker(certificateStorage_);
 
-		client_ = boost::make_shared<Swift::Client>(clientJID, createSafeByteArray(password_.c_str()), networkFactories_, storages_);
+		client_ = boost::make_shared<Swift::Client>(clientJID, createSafeByteArray(account_->getPassword().c_str()), networkFactories_, storages_);
 		clientInitialized_ = true;
 		client_->setCertificateTrustChecker(certificateTrustChecker_);
 		client_->onDataRead.connect(boost::bind(&XMLConsoleController::handleDataRead, xmlConsoleController_, _1));

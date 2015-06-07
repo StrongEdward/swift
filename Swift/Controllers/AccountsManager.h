@@ -18,7 +18,6 @@
 #include <3rdParty/Boost/src/boost/shared_ptr.hpp>
 #include <3rdParty/Boost/src/boost/enable_shared_from_this.hpp>
 
-#include <Swiften/Base/boost_bsignals.h>
 #include <Swiften/TLS/CertificateWithKey.h>
 
 #include <Swift/Controllers/Account.h>
@@ -74,18 +73,19 @@ namespace Swift {
 							bool useDelayForLatency);
 			~AccountsManager();
 
+			void createMainController(boost::shared_ptr<Account> account);
 			JID getDefaultJID();
 			boost::shared_ptr<Account> getAccountByJID(std::string jid); // assumption: jid is unique
 			MainController* getMainControllerByJIDString(const std::string& jid);
 
-			void handleLoginRequest(const std::string &username, const std::string &password, const std::string& certificatePath, CertificateWithKey::ref certificate, const ClientOptions& options, bool remember, bool loginAutomatically);
+			void handleLoginRequest(const std::string &username, const std::string &password, const std::string& certificatePath, const ClientOptions& options, bool remember, bool loginAutomatically);
 
-			boost::signal<void (const MainController*, const std::string&, CertificateWithKey::ref, const ClientOptions&, ProfileSettingsProvider*) > onLoginRequest;
+			//boost::signal<void (const MainController*, const std::string&, CertificateWithKey::ref, const ClientOptions&) > onLoginRequest;
 
 
 		private:
-			std::vector< boost::shared_ptr<Account> > accounts_;
-			std::string defaultAccountJid_;
+			//std::vector< boost::shared_ptr<Account> > accounts_;
+			boost::shared_ptr<Account> defaultAccount_;
 			std::vector<MainController*> mainControllers_;
 			LoginWindow* loginWindow_;
 
@@ -94,6 +94,25 @@ namespace Swift {
 
 			std::string serializeClientOptions(const ClientOptions& options);
 			ClientOptions parseClientOptions(const std::string& optionString);
+
+			// MainController parameters
+			EventLoop* eventLoop_;
+			//UIEventStream* uiEventStream_;
+			EventController* eventController_;
+			NetworkFactories* networkFactories_;
+			UIFactory* uiFactory_;
+			//SettingsProvider* settings_;
+			SystemTrayController* systemTrayController_;
+			SoundPlayer* soundPlayer_;
+			StoragesFactory* storagesFactory_;
+			CertificateStorageFactory* certificateStorageFactory_;
+			Dock* dock_;
+			Notifier* notifier_;
+			TogglableNotifier* togglableNotifier_;
+			URIHandler* uriHandler_;
+			IdleDetector* idleDetector_;
+			const std::map<std::string, std::string>& emoticons_;
+			bool useDelayForLatency_;
 
 	};
 }
