@@ -91,7 +91,7 @@ bool Account::forgetPassword() {
 	return !rememberPassword_;
 }
 
-bool Account::loginAutomatically() {
+bool Account::getLoginAutomatically() {
 	return autoLogin_;
 }
 
@@ -140,10 +140,12 @@ void Account::setRememberPassword(bool remember) {
 		profileSettings_->storeString("pass", password_);
 	}
 	rememberPassword_ = remember;
+	profileSettings_->storeInt("remember", rememberPassword_);
 }
 
 void Account::setLoginAutomatically(bool autoLogin) {
 	autoLogin_ = autoLogin;
+	profileSettings_->storeInt("autologin", autoLogin_);
 	if (autoLogin) {
 		rememberPassword_ = true;
 	}
@@ -152,7 +154,7 @@ void Account::setLoginAutomatically(bool autoLogin) {
 void Account::setEnabled(bool enabled) {
 
 
-	if (!enabled_ && enabled) {
+	if (enabled) {
 		onEnabled();
 	}
 	if (enabled_ && !enabled) {
