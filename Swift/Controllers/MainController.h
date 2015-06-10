@@ -102,7 +102,6 @@ namespace Swift {
 						   StoragesFactory* storagesFactory,
 						   CertificateStorageFactory* certificateStorageFactory,
 						   Dock* dock,
-						   Notifier* notifier,
 						   TogglableNotifier* togglableNotifier,
 						   URIHandler* uriHandler,
 						   IdleDetector* idleDetector,

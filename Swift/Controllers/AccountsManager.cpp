@@ -69,7 +69,7 @@ AccountsManager::AccountsManager(EventLoop* eventLoop,
 	storagesFactory_(storagesFactory),
 	certificateStorageFactory_(certificateStorageFactory),
 	dock_(dock),
-	notifier_(notifier),
+	//notifier_(notifier),
 	togglableNotifier_(togglableNotifier),
 	uriHandler_(uriHandler),
 	idleDetector_(idleDetector),
@@ -77,19 +77,15 @@ AccountsManager::AccountsManager(EventLoop* eventLoop,
 	useDelayForLatency_(useDelayForLatency)
 {
 	loginWindow_ = uiFactory->createLoginWindow(uiEventStream_);
+	loginWindow_->setShowNotificationToggle(!notifier->isExternallyConfigured());
 	loginWindow_->onLoginRequest.connect(boost::bind(&AccountsManager::handleLoginRequest, this, _1, _2, _3, _4, _5, _6));
 
 	std::string lastLoginJID = settings_->getSetting(SettingConstants::LAST_LOGIN_JID);
 
 	std::vector<std::string> profiles = settings_->getAvailableProfiles();
 	foreach (std::string profile, profiles) {
+
 		boost::shared_ptr<Account> account = boost::make_shared<Account>(new ProfileSettingsProvider(profile, settings_));
-
-		/*std::string jid = profileSettings->getStringSetting("jid");
-		std::string password = profileSettings->getStringSetting("pass");
-		std::string certificate = profileSettings->getStringSetting("certificate");
-		ClientOptions clientOptions = parseClientOptions(profileSettings->getStringSetting("options"));*/
-
 		loginWindow_->addAvailableAccount(account->getJID(), account->getPassword(), account->getCertificatePath(), account->getClientOptions());
 		createMainController(account);
 
@@ -106,14 +102,20 @@ AccountsManager::AccountsManager(EventLoop* eventLoop,
 			mainController->profileSettings_ = NULL;
 		}*/
 	}
-	// For now: if LOGIN_AUTOMATICALLY is true then exactly one account is set to enabled
-	bool loginAutomatically = settings_->getSetting(SettingConstants::LOGIN_AUTOMATICALLY);
+
+	//bool loginAutomatically = settings_->getSetting(SettingConstants::LOGIN_AUTOMATICALLY);
 	bool eagle = settings_->getSetting(SettingConstants::FORGET_PASSWORDS);
 	if (!eagle) {
 		loginWindow_->selectUser(getDefaultJID());
-		loginWindow_->setLoginAutomatically(loginAutomatically);
+		loginWindow_->setLoginAutomatically(getAccountByJID(getDefaultJID())->getLoginAutomatically());
 	}
 
+	foreach (MainController* c, mainControllers_) {
+		if (c->getAccount()->getLoginAutomatically()) {
+			loginWindow_->setIsLoggingIn(true);
+			c->getAccount()->setEnabled(true);
+		}
+	}
 }
 
 AccountsManager::~AccountsManager() {
@@ -136,7 +138,6 @@ void AccountsManager::createMainController(boost::shared_ptr<Account> account) {
 														 storagesFactory_,
 														 certificateStorageFactory_,
 														 dock_,
-														 notifier_,
 														 togglableNotifier_,
 														 uriHandler_,
 														 idleDetector_,
@@ -174,6 +175,12 @@ MainController* AccountsManager::getMainControllerByJIDString(const std::string&
 	return NULL;
 }
 
+void AccountsManager::clearAutoLogins() {
+	foreach (MainController * controller, mainControllers_) {
+		controller->getAccount()->setLoginAutomatically(false);
+	}
+}
+
 // Handlers
 void AccountsManager::handleLoginRequest(const std::string &username, const std::string &password, const std::string& certificatePath, const ClientOptions& options, bool remember, bool loginAutomatically) {
 
@@ -191,6 +198,7 @@ void AccountsManager::handleLoginRequest(const std::string &username, const std:
 		boost::shared_ptr<Account> account = getAccountByJID(username);
 
 		if (!account) { // Login to new account
+			// First parameter will not be 'username' after implementing new GUI with account name input
 			account = boost::make_shared<Account>(username,
 												  username,
 												  password,
@@ -218,10 +226,11 @@ void AccountsManager::handleLoginRequest(const std::string &username, const std:
 				account->setCertificatePath(certificatePath);
 				account->setPassword(password);
 				account->setRememberPassword(remember);
+				if (loginAutomatically) { // We want only one account (for now) to log in automatically
+					clearAutoLogins();
+				}
 				account->setLoginAutomatically(loginAutomatically);
 				account->setClientOptions(options);
-
-
 
 				settings_->storeSetting(SettingConstants::LAST_LOGIN_JID, username);
 				//settings_->storeSetting(SettingConstants::LOGIN_AUTOMATICALLY, loginAutomatically);
@@ -230,8 +239,6 @@ void AccountsManager::handleLoginRequest(const std::string &username, const std:
 				account->setEnabled(true);
 			//}
 		}
-
-		//onLoginRequest(controller, password, certificate, options);
 	}
 
 }

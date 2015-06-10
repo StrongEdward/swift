@@ -46,7 +46,7 @@ namespace Swift {
 			const std::string& getCertificatePath();
 			const ClientOptions& getClientOptions();
 			bool forgetPassword();
-			bool loginAutomatically();
+			bool getLoginAutomatically();
 			bool isEnabled();
 			ProfileSettingsProvider* getProfileSettings();
 

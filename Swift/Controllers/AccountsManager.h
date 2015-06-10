@@ -94,6 +94,7 @@ namespace Swift {
 
 			std::string serializeClientOptions(const ClientOptions& options);
 			ClientOptions parseClientOptions(const std::string& optionString);
+			void clearAutoLogins();
 
 			// MainController parameters
 			EventLoop* eventLoop_;
@@ -107,7 +108,7 @@ namespace Swift {
 			StoragesFactory* storagesFactory_;
 			CertificateStorageFactory* certificateStorageFactory_;
 			Dock* dock_;
-			Notifier* notifier_;
+			//Notifier* notifier_;
 			TogglableNotifier* togglableNotifier_;
 			URIHandler* uriHandler_;
 			IdleDetector* idleDetector_;

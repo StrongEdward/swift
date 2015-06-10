@@ -14,9 +14,6 @@
 #include <boost/smart_ptr/make_shared.hpp>
 
 #include <Swiften/Base/format.h>
-#include <Swiften/Base/Algorithm.h>
-#include <Swiften/Base/String.h> // need here?
-#include <Swiften/StringCodecs/Base64.h>
 #include <Swiften/Network/TimerFactory.h>
 #include <Swiften/Client/Storages.h>
 #include <Swiften/VCards/VCardManager.h>
@@ -115,7 +112,6 @@ MainController::MainController(boost::shared_ptr<Account> account,
 							   StoragesFactory* storagesFactory,
 							   CertificateStorageFactory* certificateStorageFactory,
 							   Dock* dock,
-							   Notifier* notifier,
 							   TogglableNotifier* togglableNotifier,
 							   URIHandler* uriHandler,
 							   IdleDetector* idleDetector,
@@ -177,7 +173,7 @@ MainController::MainController(boost::shared_ptr<Account> account,
 
 	//systemTrayController_ = new SystemTrayController(eventController_, systemTray);
 	//loginWindow_ = uiFactory_->createLoginWindow(uiEventStream_);
-	loginWindow_->setShowNotificationToggle(!notifier->isExternallyConfigured());
+	//loginWindow_->setShowNotificationToggle(!notifier->isExternallyConfigured());
 
 	highlightManager_ = new HighlightManager(settings_);
 	highlightEditorController_ = new HighlightEditorController(uiEventStream_, uiFactory_, highlightManager_);
@@ -212,6 +208,9 @@ MainController::MainController(boost::shared_ptr<Account> account,
 
 	profileSettings_ = account_->getProfileSettings();
 	account_->onEnabled.connect(boost::bind(&MainController::handleLoginRequest, this));
+	/*if (account_->getLoginAutomatically()) {
+		handleLoginRequest();
+	}*/
 
 	//loginWindow_->onLoginRequest.connect(boost::bind(&MainController::handleLoginRequest, this, _1, _2, _3, _4, _5, _6, _7));
 	loginWindow_->onPurgeSavedLoginRequest.connect(boost::bind(&MainController::handlePurgeSavedLoginRequest, this, _1));
