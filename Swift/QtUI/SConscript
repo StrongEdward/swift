@@ -197,6 +197,7 @@ sources = [
 	"QtMUCConfigurationWindow.cpp",
 	"QtAffiliationEditor.cpp",
 	"QtAccountDetailsWidget.cpp",
+	"QtTreeviewTriangle.cpp",
 	"QtUISettingConstants.cpp",
 	"QtURLValidator.cpp",
 	"QtResourceHelper.cpp",

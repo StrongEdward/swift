@@ -6,18 +6,37 @@
 
 #include <Swift/QtUI/QtAccountDetailsWidget.h>
 
+#include <QPixmap>
+
 namespace Swift {
 
 QtAccountDetailsWidget::QtAccountDetailsWidget(QWidget *parent) :
 	QWidget(parent),
-	ui(new Ui::QtAccountDetailsWidget)
+	ui_(new Ui::QtAccountDetailsWidget),
+	triangle_(new QtTreeviewTriangle)
 {
-	ui->setupUi(this);
+	ui_->setupUi(this);
+	ui_->extendingWidget_->hide();
+
+	ui_->connectionOptions_->setIcon(QIcon(":/icons/actions.png"));
+	ui_->certificateButton_->setIcon(QIcon(":/icons/certificate.png"));
+	ui_->accountLayout_->insertWidget(0, triangle_);
+
+	connect(triangle_, &QtTreeviewTriangle::clicked, this, &QtAccountDetailsWidget::triangleClicked);
 }
 
 QtAccountDetailsWidget::~QtAccountDetailsWidget()
 {
-	delete ui;
+	delete triangle_;
+	delete ui_;
+}
+
+void QtAccountDetailsWidget::triangleClicked() {
+	if (triangle_->isExpanded()) {
+		ui_->extendingWidget_->show();
+	} else {
+		ui_->extendingWidget_->hide();
+	}
 }
 
 }

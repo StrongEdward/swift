@@ -34,6 +34,7 @@
 #include <Swift/Controllers/Settings/SettingsProvider.h>
 #include <Swift/Controllers/SettingConstants.h>
 #include <Swift/QtUI/QtUISettingConstants.h>
+#include <Swift/QtUI/QtAccountDetailsWidget.h>
 #include <Swiften/Base/Platform.h>
 #include <Swiften/Base/Paths.h>
 
@@ -82,6 +83,12 @@ QtLoginWindow::QtLoginWindow(UIEventStream* uiEventStream, SettingsProvider* set
 	logoLayout->addStretch(0);
 	logoWidget->setLayout(logoLayout);
 	layout->addWidget(logoWidget);
+
+	//QPushButton* connectionEdit = new QPushButton(QIcon(":/icons/actions.png"), "");
+	//connectionEdit->setFixedSize(QSize(24,24));
+	//layout->addWidget(connectionEdit);
+	QtAccountDetailsWidget* details = new QtAccountDetailsWidget(this);
+	layout->addWidget(details);
 
 	layout->addStretch(2);
 
