@@ -11,8 +11,8 @@ namespace Swift {
 QtTreeviewTriangle::QtTreeviewTriangle(QWidget* parent) :
 	QLabel(parent),
 	expanded_(false),
-	expandedPixmap_(QPixmap(":/icons/triangleDown.png").scaled(13,13)), // provide 13x13 png file
-	collapsedPixmap_(QPixmap(":/icons/triangle.png").scaled(13,13)) {
+	expandedPixmap_(QPixmap(":/icons/triangleDown.png")),
+	collapsedPixmap_(QPixmap(":/icons/triangle.png")) {
 
 	setMinimumSize(QSize(14,13));
 	setPixmap(collapsedPixmap_);

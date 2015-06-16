@@ -6,9 +6,15 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>196</width>
+    <width>220</width>
     <height>105</height>
    </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>220</width>
+    <height>0</height>
+   </size>
   </property>
   <property name="font">
    <font>
@@ -40,6 +46,28 @@
       <number>2</number>
      </property>
      <item>
+      <widget class="QLabel" name="colourLabel_">
+       <property name="minimumSize">
+        <size>
+         <width>16</width>
+         <height>16</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>16</width>
+         <height>16</height>
+        </size>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">background-color: rgb(225, 0, 0);</string>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QLineEdit" name="accountName_">
        <property name="maximumSize">
         <size>
@@ -67,21 +95,26 @@
       </widget>
      </item>
      <item>
-      <widget class="QLabel" name="colourLabel_">
-       <property name="minimumSize">
-        <size>
-         <width>16</width>
-         <height>16</height>
-        </size>
+      <widget class="QLabel" name="accountNameLabel_">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
        </property>
        <property name="maximumSize">
         <size>
-         <width>16</width>
-         <height>16</height>
+         <width>16777215</width>
+         <height>22</height>
         </size>
        </property>
-       <property name="styleSheet">
-        <string notr="true">background-color: rgb(225, 0, 0);</string>
+       <property name="font">
+        <font>
+         <pointsize>10</pointsize>
+        </font>
        </property>
        <property name="text">
         <string/>
@@ -95,6 +128,11 @@
          <width>18</width>
          <height>22</height>
         </size>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>10</pointsize>
+        </font>
        </property>
        <property name="toolTip">
         <string>Set as default account</string>
@@ -118,17 +156,47 @@
          <height>22</height>
         </size>
        </property>
+       <property name="font">
+        <font>
+         <pointsize>10</pointsize>
+        </font>
+       </property>
        <property name="toolTip">
-        <string>Login automatically</string>
+        <string>Enable/Connect</string>
        </property>
        <property name="whatsThis">
-        <string>Login automatically</string>
+        <string>Enable/Connect</string>
        </property>
        <property name="accessibleName">
-        <string>Login automatically</string>
+        <string>Enable/Connect</string>
+       </property>
+       <property name="accessibleDescription">
+        <string>Enable this account to be connected and login automatically on startup</string>
        </property>
        <property name="text">
         <string/>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="statusIcon_">
+       <property name="minimumSize">
+        <size>
+         <width>16</width>
+         <height>16</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>16</width>
+         <height>16</height>
+        </size>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+       <property name="pixmap">
+        <pixmap>../resources/icons/offline.png</pixmap>
        </property>
       </widget>
      </item>
@@ -348,20 +416,7 @@
            <string notr="true"/>
           </property>
           <property name="text">
-           <string>Remember</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="connectButton_">
-          <property name="maximumSize">
-           <size>
-            <width>16777215</width>
-            <height>22</height>
-           </size>
-          </property>
-          <property name="text">
-           <string>Connect</string>
+           <string>Remember password</string>
           </property>
          </widget>
         </item>
