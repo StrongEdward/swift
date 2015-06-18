@@ -11,11 +11,12 @@
 namespace Swift {
 
 QtAccountDetailsWidget::QtAccountDetailsWidget(QWidget *parent) :
-	QWidget(parent),
+	QFrame(parent),
 	ui_(new Ui::QtAccountDetailsWidget),
 	triangle_(new QtTreeviewTriangle)
 {
 	ui_->setupUi(this);
+	ui_->accountLayout_->setAlignment(Qt::AlignVCenter);
 	ui_->accountNameLabel_->show();
 	ui_->accountName_->hide();
 	ui_->extendingWidget_->hide();
@@ -34,17 +35,37 @@ QtAccountDetailsWidget::~QtAccountDetailsWidget()
 	delete ui_;
 }
 
-void QtAccountDetailsWidget::triangleClicked() {
+QSize QtAccountDetailsWidget::sizeHint() const {
+	return minimumSizeHint();
+}
+
+QSize QtAccountDetailsWidget::minimumSizeHint() const {
 	if (triangle_->isExpanded()) {
-		ui_->extendingWidget_->show();
-		ui_->accountNameLabel_->hide();
-		ui_->accountName_->show();
+		return QSize(220, 28 + 3*22 + 2*2);
 	} else {
+		return QSize(220, 28);
+	}
+}
+
+void QtAccountDetailsWidget::triangleClicked() {
+	if (triangle_->isExpanded()) { // show expanded
+		ui_->extendingWidget_->show();
+
+		ui_->accountName_->show();
+		ui_->accountNameLabel_->hide();
+
+		//QWidget* par = parentWidget();
+		//par->updateGeometry();
+	} else { // show collapsed
+
+		ui_->accountNameLabel_->show();
 		ui_->extendingWidget_->hide();
 		ui_->accountNameLabel_->setText(ui_->accountName_->text());
 		ui_->accountName_->hide();
-		ui_->accountNameLabel_->show();
+
+		//parentWidget()->updateGeometry();
 	}
+
 }
 
 }

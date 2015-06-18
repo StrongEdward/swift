@@ -1,20 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
  <class>QtAccountDetailsWidget</class>
- <widget class="QWidget" name="QtAccountDetailsWidget">
+ <widget class="QFrame" name="QtAccountDetailsWidget">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>220</width>
-    <height>105</height>
+    <width>223</width>
+    <height>104</height>
    </rect>
   </property>
-  <property name="minimumSize">
-   <size>
-    <width>220</width>
-    <height>0</height>
-   </size>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
   </property>
   <property name="font">
    <font>
@@ -24,9 +24,12 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout">
+  <property name="frameShape">
+   <enum>QFrame::Box</enum>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0">
    <property name="spacing">
-    <number>1</number>
+    <number>2</number>
    </property>
    <property name="leftMargin">
     <number>2</number>
@@ -38,12 +41,15 @@
     <number>2</number>
    </property>
    <property name="bottomMargin">
-    <number>2</number>
+    <number>0</number>
    </property>
    <item>
     <layout class="QHBoxLayout" name="accountLayout_">
      <property name="spacing">
       <number>2</number>
+     </property>
+     <property name="leftMargin">
+      <number>0</number>
      </property>
      <item>
       <widget class="QLabel" name="colourLabel_">
@@ -69,10 +75,22 @@
      </item>
      <item>
       <widget class="QLineEdit" name="accountName_">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>24</height>
+        </size>
+       </property>
        <property name="maximumSize">
         <size>
          <width>16777215</width>
-         <height>22</height>
+         <height>24</height>
         </size>
        </property>
        <property name="font">
@@ -100,15 +118,21 @@
         <bool>true</bool>
        </property>
        <property name="sizePolicy">
-        <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+        <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
          <horstretch>0</horstretch>
          <verstretch>0</verstretch>
         </sizepolicy>
        </property>
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>24</height>
+        </size>
+       </property>
        <property name="maximumSize">
         <size>
          <width>16777215</width>
-         <height>22</height>
+         <height>24</height>
         </size>
        </property>
        <property name="font">
@@ -116,8 +140,23 @@
          <pointsize>10</pointsize>
         </font>
        </property>
+       <property name="frameShape">
+        <enum>QFrame::NoFrame</enum>
+       </property>
+       <property name="midLineWidth">
+        <number>0</number>
+       </property>
        <property name="text">
-        <string/>
+        <string>Danp</string>
+       </property>
+       <property name="textFormat">
+        <enum>Qt::PlainText</enum>
+       </property>
+       <property name="scaledContents">
+        <bool>true</bool>
+       </property>
+       <property name="indent">
+        <number>4</number>
        </property>
       </widget>
      </item>
@@ -207,7 +246,7 @@
      <property name="enabled">
       <bool>true</bool>
      </property>
-     <layout class="QVBoxLayout" name="verticalLayout_2">
+     <layout class="QVBoxLayout" name="verticalLayout_2" stretch="0,0,1">
       <property name="spacing">
        <number>2</number>
       </property>
@@ -230,6 +269,12 @@
         </property>
         <item>
          <widget class="QLineEdit" name="userAddress_">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>22</height>
+           </size>
+          </property>
           <property name="maximumSize">
            <size>
             <width>16777215</width>
@@ -320,6 +365,12 @@
         </property>
         <item>
          <widget class="QLineEdit" name="password_">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>22</height>
+           </size>
+          </property>
           <property name="maximumSize">
            <size>
             <width>16777215</width>
@@ -390,6 +441,9 @@
       </item>
       <item>
        <layout class="QHBoxLayout" name="connectLayout_">
+        <property name="spacing">
+         <number>2</number>
+        </property>
         <item>
          <widget class="QCheckBox" name="rememberCheck_">
           <property name="sizePolicy">
@@ -397,6 +451,12 @@
             <horstretch>0</horstretch>
             <verstretch>0</verstretch>
            </sizepolicy>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>22</height>
+           </size>
           </property>
           <property name="maximumSize">
            <size>
@@ -427,6 +487,16 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>accountName_</tabstop>
+  <tabstop>userAddress_</tabstop>
+  <tabstop>password_</tabstop>
+  <tabstop>rememberCheck_</tabstop>
+  <tabstop>defaultRadio_</tabstop>
+  <tabstop>enabledCheck_</tabstop>
+  <tabstop>certificateButton_</tabstop>
+  <tabstop>connectionOptions_</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

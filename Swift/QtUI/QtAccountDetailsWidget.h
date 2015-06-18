@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include <QWidget>
+#include <QFrame>
 #include <QPixmap>
 #include <QLabel>
 
@@ -19,12 +19,15 @@ class QtAccountDetailsWidget;
 
 namespace Swift {
 
-class QtAccountDetailsWidget : public QWidget {
+class QtAccountDetailsWidget : public QFrame {
 		Q_OBJECT
 
 	public:
 		explicit QtAccountDetailsWidget(QWidget* parent = 0);
 		~QtAccountDetailsWidget();
+
+		virtual QSize sizeHint() const;
+		virtual QSize minimumSizeHint() const;
 
 	private:
 		void triangleClicked();

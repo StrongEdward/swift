@@ -26,7 +26,9 @@
 #include <QCursor>
 #include <QMessageBox>
 #include <QKeyEvent>
+#include <QScrollArea>
  
+#include <Swift/QtUI/QtAccountsListWidget.h>
 #include <Swift/Controllers/UIEvents/UIEventStream.h>
 #include <Swift/Controllers/UIEvents/RequestXMLConsoleUIEvent.h>
 #include <Swift/Controllers/UIEvents/RequestFileTransferListUIEvent.h>
@@ -87,9 +89,26 @@ QtLoginWindow::QtLoginWindow(UIEventStream* uiEventStream, SettingsProvider* set
 	//QPushButton* connectionEdit = new QPushButton(QIcon(":/icons/actions.png"), "");
 	//connectionEdit->setFixedSize(QSize(24,24));
 	//layout->addWidget(connectionEdit);
-	QtAccountDetailsWidget* details = new QtAccountDetailsWidget(this);
-	layout->addWidget(details);
 
+	/*QtAccountDetailsWidget* details = new QtAccountDetailsWidget(this);
+	QtAccountDetailsWidget* details2 = new QtAccountDetailsWidget(this);
+
+	QWidget* accounts = new QWidget(this);
+	QVBoxLayout* accountsLayout = new QVBoxLayout();
+
+	accountsLayout->addWidget(details);
+	accountsLayout->addWidget(details2);
+	accounts->setLayout(accountsLayout);
+
+	QScrollArea* accountsArea = new QScrollArea;
+	accountsArea->setFixedSize(QSize(240, 200));
+	accountsArea->setWidget(accounts);
+
+	layout->addWidget(accountsArea);*/
+
+	layout->addWidget(new QtAccountsListWidget);
+
+	//
 	layout->addStretch(2);
 
 	QLabel* jidLabel = new QLabel(this);
