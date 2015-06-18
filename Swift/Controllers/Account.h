@@ -25,8 +25,9 @@ namespace Swift {
 	class Account {
 		public:
 			Account() {}
-			Account(ProfileSettingsProvider* profileSettings);
-			Account(const std::string accountName,
+			Account(ProfileSettingsProvider* profileSettings, int index = -1);
+			Account(int index,
+					const std::string accountName,
 					const std::string jid,
 					const std::string password,
 					const std::string certificatePath,
@@ -40,6 +41,7 @@ namespace Swift {
 			void clearPassword();
 
 			// Getters
+			int getIndex();
 			std::string getAccountName();
 			const JID& getJID();
 			const std::string& getPassword();
@@ -51,6 +53,7 @@ namespace Swift {
 			ProfileSettingsProvider* getProfileSettings();
 
 			// Setters
+			void setIndex(int newIndex);
 			void setAccountName(const std::string& newName);
 			void setJID(const std::string& newJID);
 			void setPassword(const std::string& newPassword);
@@ -68,6 +71,7 @@ namespace Swift {
 			ClientOptions parseClientOptions(const std::string& optionString);
 
 		private:
+			int index_;
 			std::string accountName_;
 			JID jid_;
 			std::string password_;
@@ -78,6 +82,7 @@ namespace Swift {
 			bool enabled_;
 
 			ProfileSettingsProvider* profileSettings_;
+			//static int maxIndex_;
 
 	};
 }

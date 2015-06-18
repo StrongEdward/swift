@@ -10,6 +10,8 @@
  * See the COPYING file for more information.
  */
 
+#include <set>
+
 #include <Swift/Controllers/AccountsManager.h>
 
 #include <3rdParty/Boost/src/boost/make_shared.hpp>
@@ -83,10 +85,36 @@ AccountsManager::AccountsManager(EventLoop* eventLoop,
 	std::string lastLoginJID = settings_->getSetting(SettingConstants::LAST_LOGIN_JID);
 
 	std::vector<std::string> profiles = settings_->getAvailableProfiles();
+
+	// Search for bad or lacking indexes in profiles
+	bool indicesOK = true;
+	std::set<int> indices;
+	foreach (std::string profile, profiles) {
+		ProfileSettingsProvider provider(profile, settings_);
+		int index = provider.getIntSetting("index", -1);
+		if (index < 0) { // if there was no index or index was not correct
+			indicesOK = false;
+		} else {
+			indices.insert(index); // putting into set to check if every index is unique
+		}
+	}
+	if (indices.size() < profiles.size() ) {
+		indicesOK = false;
+	}
+
+	// Creating Main Controllers
+	int maxAccountIndex_ = 0;
 	foreach (std::string profile, profiles) {
 
-		boost::shared_ptr<Account> account = boost::make_shared<Account>(new ProfileSettingsProvider(profile, settings_));
-		loginWindow_->addAvailableAccount(account->getJID(), account->getPassword(), account->getCertificatePath(), account->getClientOptions());
+		boost::shared_ptr<Account> account;
+		if (indicesOK) {
+			account = boost::make_shared<Account>(new ProfileSettingsProvider(profile, settings_));
+		} else {
+			account = boost::make_shared<Account>(new ProfileSettingsProvider(profile, settings_), maxAccountIndex_);
+			maxAccountIndex_++;
+		}
+
+		loginWindow_->addAvailableAccount(account->getJID(), account->getPassword(), account->getCertificatePath(), account->getClientOptions());  // to be deleted after accounts list works
 		createMainController(account);
 
 		// For now: default account = last login account
@@ -103,12 +131,17 @@ AccountsManager::AccountsManager(EventLoop* eventLoop,
 		}*/
 	}
 
+	// Ensure that accounts are sorted by index
+	std::sort(mainControllers_.begin(), mainControllers_.end(), AccountsManager::compareAccounts);
+
 	//bool loginAutomatically = settings_->getSetting(SettingConstants::LOGIN_AUTOMATICALLY);
 	bool eagle = settings_->getSetting(SettingConstants::FORGET_PASSWORDS);
 	if (!eagle) {
 		loginWindow_->selectUser(getDefaultJID());
 		loginWindow_->setLoginAutomatically(getAccountByJID(getDefaultJID())->getLoginAutomatically());
 	}
+
+	loginWindow_->setManagerForAccountsList(this);
 
 	foreach (MainController* c, mainControllers_) {
 		if (c->getAccount()->getLoginAutomatically()) {
@@ -122,6 +155,10 @@ AccountsManager::~AccountsManager() {
 	foreach (MainController* controller, mainControllers_) {
 		delete controller;
 	}
+}
+
+bool AccountsManager::compareAccounts (MainController* a, MainController* b) {
+	return a->getAccount()->getIndex() < b->getAccount()->getIndex();
 }
 
 void AccountsManager::createMainController(boost::shared_ptr<Account> account) {
@@ -175,6 +212,17 @@ MainController* AccountsManager::getMainControllerByJIDString(const std::string&
 	return NULL;
 }
 
+boost::shared_ptr<Account> AccountsManager::getAccountAt(unsigned int index) {
+	if (index < mainControllers_.size()) {
+		return mainControllers_.at(index)->getAccount();
+	}
+	return boost::shared_ptr<Account>();
+}
+
+int AccountsManager::accountsCount() {
+	return mainControllers_.size();
+}
+
 void AccountsManager::clearAutoLogins() {
 	foreach (MainController * controller, mainControllers_) {
 		controller->getAccount()->setLoginAutomatically(false);
@@ -199,16 +247,18 @@ void AccountsManager::handleLoginRequest(const std::string &username, const std:
 
 		if (!account) { // Login to new account
 			// First parameter will not be 'username' after implementing new GUI with account name input
-			account = boost::make_shared<Account>(username,
-												  username,
-												  password,
-												  certificatePath,
-												  options,
-												  remember,
-												  loginAutomatically,
-												  true,
-												  new ProfileSettingsProvider(username, settings_));
+			account = boost::shared_ptr<Account>(new Account(maxAccountIndex_,
+															 username,
+															 username,
+															 password,
+															 certificatePath,
+															 options,
+															 remember,
+															 loginAutomatically,
+															 true,
+															 new ProfileSettingsProvider(username, settings_)));
 			createMainController(account);
+			maxAccountIndex_++;
 		} else { // Login to existing account
 
 

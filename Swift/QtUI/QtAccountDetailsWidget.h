@@ -10,6 +10,7 @@
 #include <QPixmap>
 #include <QLabel>
 
+#include <Swift/Controllers/Account.h>
 #include <Swift/QtUI/ui_QtAccountDetailsWidget.h>
 #include <Swift/QtUI/QtTreeviewTriangle.h>
 
@@ -23,7 +24,7 @@ class QtAccountDetailsWidget : public QFrame {
 		Q_OBJECT
 
 	public:
-		explicit QtAccountDetailsWidget(QWidget* parent = 0);
+		explicit QtAccountDetailsWidget(boost::shared_ptr<Account> account, QWidget* parent = 0);
 		~QtAccountDetailsWidget();
 
 		virtual QSize sizeHint() const;
@@ -33,10 +34,10 @@ class QtAccountDetailsWidget : public QFrame {
 		void triangleClicked();
 
 	private:
-		Ui::QtAccountDetailsWidget *ui_;
+		Ui::QtAccountDetailsWidget *ui;
 		QtTreeviewTriangle* triangle_;
 
-
+		boost::shared_ptr<Account> account_;
 
 };
 

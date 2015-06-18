@@ -23,7 +23,16 @@
 
 namespace Swift {
 
-Account::Account(ProfileSettingsProvider* profileSettings) : profileSettings_(profileSettings) {
+//int Account::maxIndex_ = 0;
+
+Account::Account(ProfileSettingsProvider* profileSettings, int index) : index_(index), profileSettings_(profileSettings) {
+
+	if (index_ >= 0) {
+		profileSettings->storeInt("index", index_);
+	} else {
+		index_ = profileSettings_->getIntSetting("index", 0);
+	}
+
 	jid_ = profileSettings_->getStringSetting("jid");
 	accountName_ = profileSettings->getStringSetting("accountname");
 	if (accountName_.empty()) {
@@ -37,7 +46,8 @@ Account::Account(ProfileSettingsProvider* profileSettings) : profileSettings_(pr
 	enabled_ = autoLogin_;
 }
 
-Account::Account(const std::string accountName,
+Account::Account(int index,
+				 const std::string accountName,
 				 const std::string jid,
 				 const std::string password,
 				 const std::string certificatePath,
@@ -46,7 +56,8 @@ Account::Account(const std::string accountName,
 				 bool autoLogin,
 				 bool enabled,
 				 ProfileSettingsProvider* profileSettings)
-	: accountName_(accountName),
+	: index_(index),
+	  accountName_(accountName),
 	  jid_(JID(jid)),
 	  password_(password),
 	  certificatePath_(certificatePath),
@@ -55,6 +66,10 @@ Account::Account(const std::string accountName,
 	  autoLogin_(autoLogin),
 	  enabled_(enabled),
 	  profileSettings_(profileSettings) {
+
+	/*if (index_ == maxIndex_) {
+		maxIndex_++;
+	}*/
 }
 
 Account::~Account() {
@@ -66,6 +81,10 @@ void Account::clearPassword() {
 }
 
 // Getters
+
+int Account::getIndex() {
+	return index_;
+}
 
 std::string Account::getAccountName() {
 	return accountName_;
@@ -104,6 +123,12 @@ ProfileSettingsProvider* Account::getProfileSettings() {
 }
 
 // Setters
+
+void Account::setIndex(int newIndex) {
+	if (newIndex >= 0) {
+		index_ = newIndex;
+	}
+}
 
 void Account::setAccountName(const std::string& newName) {
 	accountName_ = newName;

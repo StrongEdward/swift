@@ -26,6 +26,7 @@ class QComboBox;
 namespace Swift {
 	class SettingsProvider;
 	class TimerFactory;
+	class QtAccountsListWidget;
 
 	class QtLoginWindow : public QMainWindow, public LoginWindow {
 		Q_OBJECT
@@ -52,6 +53,7 @@ namespace Swift {
 			void hide();
 			QtMenus getMenus() const;
 			virtual void quit();
+			virtual void setManagerForAccountsList(AccountsManager* manager);
 
 		signals:
 			void geometryChanged();
@@ -108,5 +110,6 @@ namespace Swift {
 			QAction* highlightEditorAction_;
 			TimerFactory* timerFactory_;
 			ClientOptions currentOptions_;
+			QtAccountsListWidget* accountsList_;
 	};
 }

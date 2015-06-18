@@ -74,14 +74,20 @@ namespace Swift {
 			~AccountsManager();
 
 			void createMainController(boost::shared_ptr<Account> account);
+
 			JID getDefaultJID();
 			boost::shared_ptr<Account> getAccountByJID(std::string jid); // assumption: jid is unique
 			MainController* getMainControllerByJIDString(const std::string& jid);
+			boost::shared_ptr<Account> getAccountAt(unsigned int index);
+			int accountsCount();
+
 
 			void handleLoginRequest(const std::string &username, const std::string &password, const std::string& certificatePath, const ClientOptions& options, bool remember, bool loginAutomatically);
 
 			//boost::signal<void (const MainController*, const std::string&, CertificateWithKey::ref, const ClientOptions&) > onLoginRequest;
 
+		private:
+			static bool compareAccounts (MainController* a, MainController* b);
 
 		private:
 			//std::vector< boost::shared_ptr<Account> > accounts_;
@@ -114,6 +120,8 @@ namespace Swift {
 			IdleDetector* idleDetector_;
 			const std::map<std::string, std::string>& emoticons_;
 			bool useDelayForLatency_;
+
+			int maxAccountIndex_;
 
 	};
 }

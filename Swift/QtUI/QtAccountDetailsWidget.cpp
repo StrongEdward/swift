@@ -4,35 +4,51 @@
  * See Documentation/Licenses/BSD-simplified.txt for more information.
  */
 
+#include <QtSwiftUtil.h>
+
 #include <Swift/QtUI/QtAccountDetailsWidget.h>
 
 #include <QPixmap>
 
 namespace Swift {
 
-QtAccountDetailsWidget::QtAccountDetailsWidget(QWidget *parent) :
+QtAccountDetailsWidget::QtAccountDetailsWidget(boost::shared_ptr<Account> account, QWidget *parent) :
 	QFrame(parent),
-	ui_(new Ui::QtAccountDetailsWidget),
-	triangle_(new QtTreeviewTriangle)
+	ui(new Ui::QtAccountDetailsWidget),
+	triangle_(new QtTreeviewTriangle),
+	account_(account)
 {
-	ui_->setupUi(this);
-	ui_->accountLayout_->setAlignment(Qt::AlignVCenter);
-	ui_->accountNameLabel_->show();
-	ui_->accountName_->hide();
-	ui_->extendingWidget_->hide();
+	ui->setupUi(this);
+	ui->accountLayout_->setAlignment(Qt::AlignVCenter);
+	ui->accountNameLabel_->show();
+	ui->accountName_->hide();
+	ui->extendingWidget_->hide();
 
-	ui_->connectionOptions_->setIcon(QIcon(":/icons/actions.png"));
-	ui_->certificateButton_->setIcon(QIcon(":/icons/certificate.png"));
-	ui_->statusIcon_->setPixmap(QPixmap(":/icons/offline.png"));
-	ui_->accountLayout_->insertWidget(0, triangle_);
+	ui->connectionOptions_->setIcon(QIcon(":/icons/actions.png"));
+	ui->certificateButton_->setIcon(QIcon(":/icons/certificate.png"));
+	ui->statusIcon_->setPixmap(QPixmap(":/icons/offline.png"));
+	ui->accountLayout_->insertWidget(0, triangle_);
 
 	connect(triangle_, &QtTreeviewTriangle::clicked, this, &QtAccountDetailsWidget::triangleClicked);
+
+	// Setting editor
+	ui->accountNameLabel_->setText(P2QSTRING(account_->getAccountName()));
+	ui->accountName_->setText(P2QSTRING(account->getAccountName()));
+	ui->userAddress_->setText(P2QSTRING(account_->getJID().toString()));
+	ui->password_->setText(P2QSTRING(account_->getPassword()));
+	ui->rememberCheck_->setChecked(!account_->forgetPassword());
+	ui->enabledCheck_->setChecked(account_->getLoginAutomatically());
+	//ui->defaultRadio_->setChecked(account_->);
+	//Connection options
+	//certificate
+	//colour
+
 }
 
 QtAccountDetailsWidget::~QtAccountDetailsWidget()
 {
 	delete triangle_;
-	delete ui_;
+	delete ui;
 }
 
 QSize QtAccountDetailsWidget::sizeHint() const {
@@ -49,19 +65,19 @@ QSize QtAccountDetailsWidget::minimumSizeHint() const {
 
 void QtAccountDetailsWidget::triangleClicked() {
 	if (triangle_->isExpanded()) { // show expanded
-		ui_->extendingWidget_->show();
+		ui->extendingWidget_->show();
 
-		ui_->accountName_->show();
-		ui_->accountNameLabel_->hide();
+		ui->accountName_->show();
+		ui->accountNameLabel_->hide();
 
 		//QWidget* par = parentWidget();
 		//par->updateGeometry();
 	} else { // show collapsed
 
-		ui_->accountNameLabel_->show();
-		ui_->extendingWidget_->hide();
-		ui_->accountNameLabel_->setText(ui_->accountName_->text());
-		ui_->accountName_->hide();
+		ui->accountNameLabel_->show();
+		ui->extendingWidget_->hide();
+		ui->accountNameLabel_->setText(ui->accountName_->text());
+		ui->accountName_->hide();
 
 		//parentWidget()->updateGeometry();
 	}

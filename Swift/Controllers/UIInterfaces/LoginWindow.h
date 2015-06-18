@@ -13,6 +13,7 @@
 #include <Swiften/TLS/Certificate.h>
 #include <Swiften/TLS/CertificateWithKey.h>
 #include <Swiften/Client/ClientOptions.h>
+#include <Swift/Controllers/AccountsManager.h>
 
 namespace Swift {
 	class MainWindow;
@@ -33,6 +34,7 @@ namespace Swift {
 			virtual void quit() = 0;
 			/** Blocking request whether a cert should be permanently trusted.*/
 			virtual bool askUserToTrustCertificatePermanently(const std::string& message, const std::vector<Certificate::ref>& certificateChain) = 0;
+			virtual void setManagerForAccountsList(AccountsManager* manager) = 0;
 
 			boost::signal<void ()> onCancelLoginRequest;
 			boost::signal<void ()> onQuitRequest;

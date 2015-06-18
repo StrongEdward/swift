@@ -28,7 +28,6 @@
 #include <QKeyEvent>
 #include <QScrollArea>
  
-#include <Swift/QtUI/QtAccountsListWidget.h>
 #include <Swift/Controllers/UIEvents/UIEventStream.h>
 #include <Swift/Controllers/UIEvents/RequestXMLConsoleUIEvent.h>
 #include <Swift/Controllers/UIEvents/RequestFileTransferListUIEvent.h>
@@ -36,7 +35,8 @@
 #include <Swift/Controllers/Settings/SettingsProvider.h>
 #include <Swift/Controllers/SettingConstants.h>
 #include <Swift/QtUI/QtUISettingConstants.h>
-#include <Swift/QtUI/QtAccountDetailsWidget.h>
+#include <Swift/QtUI/QtAccountDetailsWidget.h> //needed after below include?
+#include <Swift/QtUI/QtAccountsListWidget.h>
 #include <Swiften/Base/Platform.h>
 #include <Swiften/Base/Paths.h>
 
@@ -105,8 +105,8 @@ QtLoginWindow::QtLoginWindow(UIEventStream* uiEventStream, SettingsProvider* set
 	accountsArea->setWidget(accounts);
 
 	layout->addWidget(accountsArea);*/
-
-	layout->addWidget(new QtAccountsListWidget);
+	accountsList_ = new QtAccountsListWidget;
+	layout->addWidget(accountsList_);
 
 	//
 	layout->addStretch(2);
@@ -480,6 +480,10 @@ void QtLoginWindow::handleQuit() {
 
 void QtLoginWindow::quit() {
 	QApplication::quit();
+}
+
+void QtLoginWindow::setManagerForAccountsList(AccountsManager* manager) {
+	accountsList_->setManager(manager);
 }
 
 void QtLoginWindow::setInitialMenus() {
