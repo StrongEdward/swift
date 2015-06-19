@@ -72,7 +72,7 @@ namespace Swift {
 							TogglableNotifier* togglableNotifier,
 							URIHandler* uriHandler,
 							IdleDetector* idleDetector,
-							const std::map<std::string, std::string>& emoticons,
+							const std::map<std::string, std::string> emoticons,
 							bool useDelayForLatency);
 			~AccountsManager();
 
@@ -123,7 +123,7 @@ namespace Swift {
 			TogglableNotifier* togglableNotifier_;
 			URIHandler* uriHandler_;
 			IdleDetector* idleDetector_;
-			const std::map<std::string, std::string>& emoticons_;
+			const std::map<std::string, std::string> emoticons_;
 			bool useDelayForLatency_;
 
 			int maxAccountIndex_;

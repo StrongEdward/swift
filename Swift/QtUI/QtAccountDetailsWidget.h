@@ -31,6 +31,8 @@ class QtAccountDetailsWidget : public QFrame {
 		virtual QSize sizeHint() const;
 		virtual QSize minimumSizeHint() const;
 
+		void setDefault();
+
 
 	private:
 		void triangleClicked();

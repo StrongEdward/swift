@@ -87,6 +87,10 @@ QSize QtAccountDetailsWidget::minimumSizeHint() const {
 	}
 }
 
+void QtAccountDetailsWidget::setDefault() {
+	ui->defaultRadio_->setChecked(true);
+}
+
 void QtAccountDetailsWidget::triangleClicked() {
 	if (triangle_->isExpanded()) { // show expanded
 		ui->extendingWidget_->show();

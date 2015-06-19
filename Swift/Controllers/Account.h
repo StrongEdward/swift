@@ -34,10 +34,11 @@ namespace Swift {
 					const ClientOptions options,
 					bool rememberPassword,
 					bool autoLogin,
-					bool enabled,
+					bool enabled, bool isDefault,
 					ProfileSettingsProvider* profileSettings);
 			~Account();
 
+			void storeAllSettings();
 			void clearPassword();
 
 			// Getters
@@ -47,6 +48,7 @@ namespace Swift {
 			const std::string& getPassword();
 			const std::string& getCertificatePath();
 			const ClientOptions& getClientOptions();
+			bool isDefault();
 			bool forgetPassword();
 			bool getLoginAutomatically();
 			bool isEnabled();
@@ -59,6 +61,7 @@ namespace Swift {
 			void setPassword(const std::string& newPassword);
 			void setCertificatePath(const std::string& newPath);
 			void setClientOptions(const ClientOptions& newOptions);
+			void setDefault(bool isDefault);
 			void setRememberPassword(bool remember);
 			void setLoginAutomatically(bool autoLogin);
 			void setEnabled(bool enabled);
@@ -80,6 +83,7 @@ namespace Swift {
 			bool rememberPassword_;
 			bool autoLogin_;
 			bool enabled_;
+			bool isDefault_;
 
 			ProfileSettingsProvider* profileSettings_;
 			//static int maxIndex_;

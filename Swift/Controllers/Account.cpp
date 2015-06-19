@@ -28,7 +28,7 @@ namespace Swift {
 Account::Account(ProfileSettingsProvider* profileSettings, int index) : index_(index), profileSettings_(profileSettings) {
 
 	if (index_ >= 0) {
-		profileSettings->storeInt("index", index_);
+		profileSettings_->storeInt("index", index_);
 	} else {
 		index_ = profileSettings_->getIntSetting("index", 0);
 	}
@@ -55,6 +55,7 @@ Account::Account(int index,
 				 bool rememberPassword,
 				 bool autoLogin,
 				 bool enabled,
+				 bool isDefault,
 				 ProfileSettingsProvider* profileSettings)
 	: index_(index),
 	  accountName_(accountName),
@@ -65,11 +66,22 @@ Account::Account(int index,
 	  rememberPassword_(rememberPassword),
 	  autoLogin_(autoLogin),
 	  enabled_(enabled),
+	  isDefault_(isDefault),
 	  profileSettings_(profileSettings) {
 
-	/*if (index_ == maxIndex_) {
-		maxIndex_++;
-	}*/
+	storeAllSettings();
+}
+
+void Account::storeAllSettings() {
+	profileSettings_->storeInt("index", index_);
+	profileSettings_->storeString("accountname", accountName_);
+	profileSettings_->storeString("jid", jid_);
+	profileSettings_->storeString("pass", password_);
+	profileSettings_->storeString("certificate", certificatePath_);
+	profileSettings_->storeString("options", serializeClientOptions(clientOptions_));
+	profileSettings_->storeInt("remember", rememberPassword_);
+	profileSettings_->storeInt("autologin", autoLogin_);
+	profileSettings_->storeInt("default", isDefault_);
 }
 
 Account::~Account() {
@@ -104,6 +116,10 @@ const std::string& Account::getCertificatePath() {
 
 const ClientOptions& Account::getClientOptions() {
 	return clientOptions_;
+}
+
+bool Account::isDefault() {
+	return isDefault_;
 }
 
 bool Account::forgetPassword() {
@@ -155,6 +171,14 @@ void Account::setCertificatePath(const std::string& newPath) {
 void Account::setClientOptions(const ClientOptions& newOptions) {
 	clientOptions_ = newOptions;
 	profileSettings_->storeString("options", serializeClientOptions(newOptions));
+}
+
+void Account::setDefault(bool isDefault) {
+	if (isDefault != isDefault_) {
+		isDefault_ = isDefault;
+		profileSettings_->storeInt("default", isDefault_);
+	}
+
 }
 
 void Account::setRememberPassword(bool remember) {

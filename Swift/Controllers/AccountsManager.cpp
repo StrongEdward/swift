@@ -58,8 +58,9 @@ AccountsManager::AccountsManager(EventLoop* eventLoop,
 								 TogglableNotifier* togglableNotifier,
 								 URIHandler* uriHandler,
 								 IdleDetector* idleDetector,
-								 const std::map<std::string, std::string>& emoticons,
+								 const std::map<std::string, std::string> emoticons,
 								 bool useDelayForLatency) :
+	defaultAccount_(boost::shared_ptr<Account>()),
 	uiEventStream_(uiEventStream),
 	settings_(settings),
 	eventLoop_(eventLoop),
@@ -103,12 +104,15 @@ AccountsManager::AccountsManager(EventLoop* eventLoop,
 	}
 
 	// Creating Main Controllers
-	int maxAccountIndex_ = 0;
+	maxAccountIndex_ = 0;
 	foreach (std::string profile, profiles) {
 
 		boost::shared_ptr<Account> account;
 		if (indicesOK) {
 			account = boost::make_shared<Account>(new ProfileSettingsProvider(profile, settings_));
+			if (account->getIndex() >= maxAccountIndex_) {
+				maxAccountIndex_ = account->getIndex() + 1;
+			}
 		} else {
 			account = boost::make_shared<Account>(new ProfileSettingsProvider(profile, settings_), maxAccountIndex_);
 			maxAccountIndex_++;
@@ -141,8 +145,12 @@ AccountsManager::AccountsManager(EventLoop* eventLoop,
 		loginWindow_->setLoginAutomatically(getAccountByJID(getDefaultJID())->getLoginAutomatically());
 	}
 
+	if (!defaultAccount_ && mainControllers_.size() > 0) {
+		defaultAccount_ = mainControllers_.at(0)->getAccount();
+	}
 	accountsList_ = loginWindow_->getAccountsList();
 	accountsList_->setManager(this);
+	accountsList_->setDefaultAccount(defaultAccount_->getIndex());
 	accountsList_->onDefaultButtonClicked.connect(boost::bind(&AccountsManager::handleDefaultButtonClicked, this, _1));
 
 	foreach (MainController* c, mainControllers_) {
@@ -257,9 +265,11 @@ void AccountsManager::handleLoginRequest(const std::string &username, const std:
 															 options,
 															 remember,
 															 loginAutomatically,
-															 true,
+															 false,
+															 (mainControllers_.size() > 0 ? false : true), // Set as default if there's no other accounts
 															 new ProfileSettingsProvider(username, settings_)));
 			createMainController(account);
+			account->setEnabled(true);
 			maxAccountIndex_++;
 		} else { // Login to existing account
 
@@ -296,7 +306,9 @@ void AccountsManager::handleLoginRequest(const std::string &username, const std:
 }
 
 void AccountsManager::handleDefaultButtonClicked(int id) {
+	defaultAccount_->setDefault(false);
 	defaultAccount_ = this->getAccountAt(id);
+	defaultAccount_->setDefault(true);
 }
 
 

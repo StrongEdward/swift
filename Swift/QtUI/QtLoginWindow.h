@@ -110,7 +110,7 @@ namespace Swift {
 			QAction* fileTransferOverviewAction_;
 			QAction* highlightEditorAction_;
 			TimerFactory* timerFactory_;
-			ClientOptions currentOptions_;
+			ClientOptions currentOptions_; // to be removed
 			AccountsList* accountsList_;
 	};
 }

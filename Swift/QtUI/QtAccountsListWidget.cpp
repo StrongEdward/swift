@@ -58,6 +58,10 @@ void QtAccountsListWidget::setManager(AccountsManager* manager) {
 
 }
 
+void QtAccountsListWidget::setDefaultAccount(int index) {
+	accounts_.at(index)->setDefault();
+}
+
 void QtAccountsListWidget::handleDefaultButtonClicked(int id) {
 	onDefaultButtonClicked(id);
 }

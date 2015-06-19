@@ -18,6 +18,7 @@ namespace Swift {
 			virtual ~AccountsList() {}
 
 			virtual void setManager(AccountsManager* manager) = 0;
+			virtual void setDefaultAccount(int index) = 0;
 
 			boost::signal<void (int)> onDefaultButtonClicked;
 	};

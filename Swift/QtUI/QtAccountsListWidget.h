@@ -32,7 +32,8 @@ class QtAccountsListWidget : public QScrollArea, public AccountsList
 		explicit QtAccountsListWidget(QWidget *parent = 0);
 		~QtAccountsListWidget();
 
-		void setManager(AccountsManager* manager);
+		virtual void setManager(AccountsManager* manager);
+		virtual void setDefaultAccount(int index);
 
 	private slots:
 		void handleDefaultButtonClicked(int id);
