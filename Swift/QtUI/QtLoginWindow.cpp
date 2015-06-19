@@ -106,7 +106,7 @@ QtLoginWindow::QtLoginWindow(UIEventStream* uiEventStream, SettingsProvider* set
 
 	layout->addWidget(accountsArea);*/
 	accountsList_ = new QtAccountsListWidget;
-	layout->addWidget(accountsList_);
+	layout->addWidget(static_cast<QtAccountsListWidget*>(accountsList_));
 
 	//
 	layout->addStretch(2);
@@ -482,8 +482,8 @@ void QtLoginWindow::quit() {
 	QApplication::quit();
 }
 
-void QtLoginWindow::setManagerForAccountsList(AccountsManager* manager) {
-	accountsList_->setManager(manager);
+AccountsList* QtLoginWindow::getAccountsList() {
+	return accountsList_;
 }
 
 void QtLoginWindow::setInitialMenus() {

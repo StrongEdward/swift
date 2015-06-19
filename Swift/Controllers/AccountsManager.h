@@ -20,7 +20,9 @@
 
 #include <Swiften/TLS/CertificateWithKey.h>
 
+#include <Swift/Controllers/UIInterfaces/AccountsList.h>
 #include <Swift/Controllers/Account.h>
+
 //#include <Swift/Controllers/Storages/CertificateStorageFactory.h>
 //#include <Swift/Controllers/Storages/CertificateStorage.h>
 
@@ -31,6 +33,7 @@ namespace Swift {
 	class SettingsProvider;
 	class ProfileSettingsProvider;
 	class LoginWindow;
+	class AccountsList;
 
 	class MainController;
 	class EventLoop;
@@ -88,12 +91,14 @@ namespace Swift {
 
 		private:
 			static bool compareAccounts (MainController* a, MainController* b);
+			void handleDefaultButtonClicked(int id);
 
 		private:
 			//std::vector< boost::shared_ptr<Account> > accounts_;
 			boost::shared_ptr<Account> defaultAccount_;
 			std::vector<MainController*> mainControllers_;
 			LoginWindow* loginWindow_;
+			AccountsList* accountsList_;
 
 			UIEventStream* uiEventStream_;
 			SettingsProvider* settings_;

@@ -22,7 +22,7 @@
 
 namespace Swift {
 
-QtAccountDetailsWidget::QtAccountDetailsWidget(boost::shared_ptr<Account> account, QWidget *parent) :
+QtAccountDetailsWidget::QtAccountDetailsWidget(boost::shared_ptr<Account> account, QButtonGroup* buttonGroup, QWidget *parent) :
 	QFrame(parent),
 	ui(new Ui::QtAccountDetailsWidget),
 	triangle_(new QtTreeviewTriangle),
@@ -54,7 +54,9 @@ QtAccountDetailsWidget::QtAccountDetailsWidget(boost::shared_ptr<Account> accoun
 	ui->password_->setText(P2QSTRING(account_->getPassword()));
 	ui->rememberCheck_->setChecked(!account_->forgetPassword());
 	ui->enabledCheck_->setChecked(account_->getLoginAutomatically());
-	//ui->defaultRadio_->setChecked(account_->);
+
+	buttonGroup->addButton(ui->defaultRadio_);
+	buttonGroup->setId(ui->defaultRadio_, account_->getIndex());
 
 	connect(ui->connectionOptions_, &QPushButton::clicked, this, &QtAccountDetailsWidget::handleCogwheelClicked);
 

@@ -21,16 +21,13 @@ QtAccountsListWidget::QtAccountsListWidget(QWidget *parent)
 	accountsLayout_ = ui->areaWidget_->layout();
 	accountsLayout_->setAlignment(Qt::AlignTop);
 
-	/*(QtAccountDetailsWidget* details = new QtAccountDetailsWidget(this);
-	QtAccountDetailsWidget* details2 = new QtAccountDetailsWidget(this);
-
-	accountsLayout_->addWidget(details);
-	accountsLayout_->addWidget(details2);*/
+	defaultGroup_ = NULL;
 }
 
 QtAccountsListWidget::~QtAccountsListWidget()
 {
 	delete ui;
+	delete defaultGroup_;
 }
 
 void QtAccountsListWidget::setManager(AccountsManager* manager) {
@@ -41,17 +38,29 @@ void QtAccountsListWidget::setManager(AccountsManager* manager) {
 	while ( (item = accountsLayout_->takeAt(0)) ) {
 		delete item;
 	}
+	if (defaultGroup_) {
+		delete defaultGroup_;
+	}
+	defaultGroup_ = new QButtonGroup();
 
+	// Fill list with accounts
 	int size = manager_->accountsCount();
 	for (int i = 0; i < size; i++) {
 		boost::shared_ptr<Account> account = manager_->getAccountAt(i);
+		account->setIndex(i); // This ensures that all indices will be from 0 to n, not just sorted
 
-		accounts_.push_back(new QtAccountDetailsWidget(account, this));
+		accounts_.push_back(new QtAccountDetailsWidget(account, defaultGroup_, this));
 		accountsLayout_->addWidget(accounts_.back());
 
 	}
+
+	connect(defaultGroup_, SIGNAL(buttonClicked(int)), this, SLOT(handleDefaultButtonClicked(int)));
+
 }
 
+void QtAccountsListWidget::handleDefaultButtonClicked(int id) {
+	onDefaultButtonClicked(id);
+}
 
 
 }

@@ -141,7 +141,9 @@ AccountsManager::AccountsManager(EventLoop* eventLoop,
 		loginWindow_->setLoginAutomatically(getAccountByJID(getDefaultJID())->getLoginAutomatically());
 	}
 
-	loginWindow_->setManagerForAccountsList(this);
+	accountsList_ = loginWindow_->getAccountsList();
+	accountsList_->setManager(this);
+	accountsList_->onDefaultButtonClicked.connect(boost::bind(&AccountsManager::handleDefaultButtonClicked, this, _1));
 
 	foreach (MainController* c, mainControllers_) {
 		if (c->getAccount()->getLoginAutomatically()) {
@@ -291,6 +293,10 @@ void AccountsManager::handleLoginRequest(const std::string &username, const std:
 		}
 	}
 
+}
+
+void AccountsManager::handleDefaultButtonClicked(int id) {
+	defaultAccount_ = this->getAccountAt(id);
 }
 
 

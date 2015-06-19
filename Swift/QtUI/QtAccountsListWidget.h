@@ -9,9 +9,11 @@
 #include <vector>
 
 #include <QScrollArea>
+#include <QButtonGroup>
 
 //#include <3rdParty/Boost/src/boost/shared_ptr.hpp>
 
+#include <Swift/Controllers/UIInterfaces/AccountsList.h>
 #include <Swift/QtUI/QtAccountDetailsWidget.h>
 
 namespace Ui {
@@ -22,7 +24,7 @@ namespace Swift {
 
 class AccountsManager;
 
-class QtAccountsListWidget : public QScrollArea
+class QtAccountsListWidget : public QScrollArea, public AccountsList
 {
 		Q_OBJECT
 
@@ -32,12 +34,18 @@ class QtAccountsListWidget : public QScrollArea
 
 		void setManager(AccountsManager* manager);
 
+	private slots:
+		void handleDefaultButtonClicked(int id);
+
 	private:
 		Ui::QtAccountsListWidget *ui;
 		QLayout* accountsLayout_;
+		QButtonGroup* defaultGroup_;
 
 		std::vector<QtAccountDetailsWidget*> accounts_;
 		AccountsManager* manager_;
+
+
 };
 
 }

@@ -9,6 +9,7 @@
 #include <QFrame>
 #include <QPixmap>
 #include <QLabel>
+#include <QButtonGroup>
 
 #include <Swift/Controllers/Account.h>
 #include <Swift/QtUI/ui_QtAccountDetailsWidget.h>
@@ -24,11 +25,12 @@ class QtAccountDetailsWidget : public QFrame {
 		Q_OBJECT
 
 	public:
-		explicit QtAccountDetailsWidget(boost::shared_ptr<Account> account, QWidget* parent = 0);
+		explicit QtAccountDetailsWidget(boost::shared_ptr<Account> account, QButtonGroup* buttonGroup, QWidget* parent = 0);
 		~QtAccountDetailsWidget();
 
 		virtual QSize sizeHint() const;
 		virtual QSize minimumSizeHint() const;
+
 
 	private:
 		void triangleClicked();
