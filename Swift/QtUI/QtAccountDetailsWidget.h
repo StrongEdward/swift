@@ -33,6 +33,10 @@ class QtAccountDetailsWidget : public QFrame {
 	private:
 		void triangleClicked();
 
+	private slots:
+		void handleCogwheelClicked();
+		void handleCertificateChecked(bool checked);
+
 	private:
 		Ui::QtAccountDetailsWidget *ui;
 		QtTreeviewTriangle* triangle_;

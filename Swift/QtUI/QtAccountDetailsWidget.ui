@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>223</width>
-    <height>104</height>
+    <width>252</width>
+    <height>108</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -434,6 +434,9 @@
           <property name="icon">
            <iconset>
             <normaloff>../resources/icons/certificate.png</normaloff>../resources/icons/certificate.png</iconset>
+          </property>
+          <property name="checkable">
+           <bool>true</bool>
           </property>
          </widget>
         </item>
