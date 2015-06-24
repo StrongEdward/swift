@@ -22,6 +22,18 @@ namespace Swift {
 	class JID;
 	class ProfileSettingsProvider;
 
+	struct RGBColor {
+			RGBColor() : red(200), green(50), blue(100){} // TODO: random color
+			RGBColor(short int r, short int g, short int b) : red(r), green(g), blue(b) {}
+			bool isValid() {
+				return red >= 0 && red <= 255 && green >= 0 && green <= 255 && blue >= 0 && blue <= 255;
+			}
+
+			short int red;
+			short int green;
+			short int blue;
+	};
+
 	class Account {
 		public:
 			Account() {}
@@ -52,6 +64,7 @@ namespace Swift {
 			bool forgetPassword();
 			bool getLoginAutomatically();
 			bool isEnabled();
+			RGBColor getColor();
 			ProfileSettingsProvider* getProfileSettings();
 
 			// Setters
@@ -65,6 +78,7 @@ namespace Swift {
 			void setRememberPassword(bool remember);
 			void setLoginAutomatically(bool autoLogin);
 			void setEnabled(bool enabled);
+			void setColor(RGBColor color);
 
 			// Signals
 			boost::signal<void ()> onEnabled;
@@ -84,6 +98,7 @@ namespace Swift {
 			bool autoLogin_;
 			bool enabled_;
 			bool isDefault_;
+			RGBColor color_;
 
 			ProfileSettingsProvider* profileSettings_;
 			//static int maxIndex_;

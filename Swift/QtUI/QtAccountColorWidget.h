@@ -8,19 +8,30 @@
 
 #include <QLabel>
 
+#include <Swift/Controllers/Account.h>
+
 namespace Swift {
 
-class QtAccountColourWidget : public QLabel
+class QtAccountColorWidget : public QLabel
 {
+		Q_OBJECT
+
 	public:
-		QtAccountColourWidget(QWidget* parent = 0);
+		QtAccountColorWidget(QWidget* parent = 0);
+
+		QColor getColor();
+
+		void setColor(RGBColor newColor);
+
+	signals:
+		void colorChanged();
 
 	protected:
 		void mousePressEvent(QMouseEvent*);
 
 	private:
-		void updateBackgroundColour();
+		void updateBackgroundColor();
 
-		QColor colour;
+		QColor color_;
 };
 }

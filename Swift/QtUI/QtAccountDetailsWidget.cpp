@@ -26,7 +26,7 @@ QtAccountDetailsWidget::QtAccountDetailsWidget(boost::shared_ptr<Account> accoun
 	QFrame(parent),
 	ui(new Ui::QtAccountDetailsWidget),
 	triangle_(new QtTreeviewTriangle),
-	colour_(new QtAccountColourWidget),
+	color_(new QtAccountColorWidget),
 	account_(account)
 {
 	ui->setupUi(this);
@@ -67,8 +67,10 @@ QtAccountDetailsWidget::QtAccountDetailsWidget(boost::shared_ptr<Account> accoun
 	}
 	connect(ui->certificateButton_, &QPushButton::clicked, this, &QtAccountDetailsWidget::handleCertificateChecked);
 
-	//colour
-	ui->accountLayout_->insertWidget(1, colour_);
+	//color
+	ui->accountLayout_->insertWidget(1, color_);
+	color_->setColor(account_->getColor());
+	connect(color_, &QtAccountColorWidget::colorChanged, this, &QtAccountDetailsWidget::handleColorChanged);
 }
 
 QtAccountDetailsWidget::~QtAccountDetailsWidget()
@@ -146,8 +148,10 @@ void QtAccountDetailsWidget::handleCertificateChecked(bool checked) {
 	account_->setCertificatePath(Q2PSTRING(certificateFile));
 }
 
-void QtAccountDetailsWidget::handleColourClicked() {
-
+void QtAccountDetailsWidget::handleColorChanged() {
+	QColor qtColor = color_->getColor();
+	RGBColor newColor(qtColor.red(), qtColor.green(), qtColor.blue());
+	account_->setColor(newColor);
 }
 
 }

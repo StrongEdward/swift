@@ -44,6 +44,13 @@ Account::Account(ProfileSettingsProvider* profileSettings, int index) : index_(i
 	rememberPassword_ = profileSettings_->getIntSetting("remember", 0);
 	autoLogin_ = profileSettings_->getIntSetting("autologin", 0);
 	enabled_ = autoLogin_;
+
+	color_.red = profileSettings_->getIntSetting("red", -1);
+	color_.green = profileSettings_->getIntSetting("green", -1);
+	color_.blue = profileSettings_->getIntSetting("blue", -1);
+	if (!color_.isValid()) {
+		color_ = RGBColor();
+	}
 }
 
 Account::Account(int index,
@@ -134,6 +141,10 @@ bool Account::isEnabled() {
 	return enabled_;
 }
 
+RGBColor Account::getColor() {
+	return color_;
+}
+
 ProfileSettingsProvider* Account::getProfileSettings() {
 	return profileSettings_;
 }
@@ -210,6 +221,13 @@ void Account::setEnabled(bool enabled) {
 		// send disabled signal
 	}
 
+}
+
+void Account::setColor(RGBColor color) {
+	color_ = color;
+	profileSettings_->storeInt("red", color_.red);
+	profileSettings_->storeInt("green", color_.green);
+	profileSettings_->storeInt("blue", color_.blue);
 }
 
 
