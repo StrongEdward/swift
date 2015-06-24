@@ -33,6 +33,9 @@ class QtAccountsListWidget : public QScrollArea, public AccountsList
 		~QtAccountsListWidget();
 
 		virtual void setManager(AccountsManager* manager);
+		virtual void reloadAccounts();
+		virtual void addAccount(boost::shared_ptr<Account> account);
+		virtual void removeAccount(int index);
 		virtual void setDefaultAccount(int index);
 
 	private slots:
@@ -43,7 +46,7 @@ class QtAccountsListWidget : public QScrollArea, public AccountsList
 		QLayout* accountsLayout_;
 		QButtonGroup* defaultGroup_;
 
-		std::vector<QtAccountDetailsWidget*> accounts_;
+		std::vector<QtAccountDetailsWidget*> accounts_; // Can it be removed so we will use accountsLayout_->itemAt() to get account widgets?
 		AccountsManager* manager_;
 
 

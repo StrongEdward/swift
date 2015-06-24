@@ -43,5 +43,7 @@
         <file alias="icons/stop.png">../resources/icons/stop.png</file>
 	<file alias="icons/triangle.png">../resources/icons/triangle.png</file>
 	<file alias="icons/triangleDown.png">../resources/icons/triangleDown.png</file>
+	<file alias="icons/add.ico">../resources/icons/add.ico</file>
+	<file alias="icons/delete.ico">../resources/icons/delete.ico</file>
     </qresource>
 </RCC>

@@ -116,8 +116,12 @@ MainController::MainController(boost::shared_ptr<Account> account,
 							   URIHandler* uriHandler,
 							   IdleDetector* idleDetector,
 							   const std::map<std::string, std::string>& emoticons,
-							   bool useDelayForLatency) :
+							   bool useDelayForLatency,
+							   bool createdInCombobox) :
 	account_(account),
+	createdInCombobox_(createdInCombobox),
+	beforeFirstLogin_(true),
+	firstLoginFailed_(false),
 	eventLoop_(eventLoop),
 	uiEventStream_(uiEventStream),
 	eventController_(eventController),
@@ -134,6 +138,7 @@ MainController::MainController(boost::shared_ptr<Account> account,
 	useDelayForLatency_(useDelayForLatency),
 	ftOverview_(NULL),
 	emoticons_(emoticons) {
+
 	storages_ = NULL;
 	certificateStorage_ = NULL;
 	certificateTrustChecker_ = NULL;
@@ -213,7 +218,7 @@ MainController::MainController(boost::shared_ptr<Account> account,
 	}*/
 
 	//loginWindow_->onLoginRequest.connect(boost::bind(&MainController::handleLoginRequest, this, _1, _2, _3, _4, _5, _6, _7));
-	loginWindow_->onPurgeSavedLoginRequest.connect(boost::bind(&MainController::handlePurgeSavedLoginRequest, this, _1));
+	//loginWindow_->onPurgeSavedLoginRequest.connect(boost::bind(&MainController::handlePurgeSavedLoginRequest, this, _1));
 	loginWindow_->onCancelLoginRequest.connect(boost::bind(&MainController::handleCancelLoginRequest, this));
 	loginWindow_->onQuitRequest.connect(boost::bind(&MainController::handleQuitRequest, this));
 
@@ -236,7 +241,12 @@ MainController::MainController(boost::shared_ptr<Account> account,
 }
 
 MainController::~MainController() {
+	eventController_->onEventQueueLengthChange.disconnect(boost::bind(&MainController::handleEventQueueLengthChange, this, _1));
+	account_->onEnabled.disconnect(boost::bind(&MainController::handleLoginRequest, this));
+	loginWindow_->onCancelLoginRequest.disconnect(boost::bind(&MainController::handleCancelLoginRequest, this));
+	loginWindow_->onQuitRequest.disconnect(boost::bind(&MainController::handleQuitRequest, this));
 	idleDetector_->onIdleChanged.disconnect(boost::bind(&MainController::handleInputIdleChanged, this, _1));
+	settings_->onSettingChanged.disconnect(boost::bind(&MainController::handleSettingChanged, this, _1));
 
 	purgeCachedCredentials();
 	//setManagersOffline();
@@ -261,6 +271,10 @@ const std::string MainController::getJIDString() {
 
 boost::shared_ptr<Account> MainController::getAccount() {
 	return account_;
+}
+
+bool MainController::shouldBeDeleted() {
+	return (!beforeFirstLogin_ && createdInCombobox_ && firstLoginFailed_);
 }
 
 void MainController::purgeCachedCredentials() {
@@ -452,6 +466,8 @@ void MainController::handleConnected() {
 	assert(chatsManager_);
 	chatsManager_->setOnline(true);
 	adHocManager_->setOnline(true);
+
+	beforeFirstLogin_ = false;
 }
 
 void MainController::handleEventQueueLengthChange(int count) {
@@ -555,10 +571,10 @@ void MainController::handleLoginRequest() {
 		performLoginFromCachedCredentials();
 }
 
-void MainController::handlePurgeSavedLoginRequest(const std::string& username) {
+/*void MainController::handlePurgeSavedLoginRequest(const std::string& username) {
 	settings_->removeProfile(username);
 	loginWindow_->removeAvailableAccount(username);
-}
+}*/
 
 /*void MainController::handleCacheCredentials(const std::string& password, CertificateWithKey::ref certificate, const ClientOptions& options) {
 	password_ = password;
@@ -618,6 +634,7 @@ void MainController::performLoginFromCachedCredentials() {
 	}
 	ClientOptions clientOptions = account_->getClientOptions();
 	bool eagle = settings_->getSetting(SettingConstants::FORGET_PASSWORDS);
+	//bool eagle = account_->forgetPassword(); ???
 	clientOptions.forgetPassword = eagle;
 	clientOptions.useTLS = eagle ? ClientOptions::RequireTLS : clientOptions.useTLS;
 	client_->connect(clientOptions);
@@ -704,6 +721,10 @@ void MainController::handleDisconnected(const boost::optional<ClientError>& erro
 			signOut();
 			loginWindow_->setMessage(message);
 			loginWindow_->setIsLoggingIn(false);
+			if (beforeFirstLogin_) {
+				firstLoginFailed_ = true;
+				beforeFirstLogin_ = false;
+			}
 		} else {
 			logout();
 			if (settings_->getSetting(SettingConstants::FORGET_PASSWORDS)) {
@@ -725,6 +746,11 @@ void MainController::handleDisconnected(const boost::optional<ClientError>& erro
 	}
 	else if (!rosterController_) { //hasn't been logged in yet
 		loginWindow_->setIsLoggingIn(false);
+	}
+
+	if (shouldBeDeleted()) {
+		//handleQuitRequest();
+		onShouldBeDeleted(account_->getJID());
 	}
 }
 

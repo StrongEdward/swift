@@ -14,6 +14,7 @@
 #include <Swift/Controllers/Account.h>
 #include <Swift/QtUI/ui_QtAccountDetailsWidget.h>
 #include <Swift/QtUI/QtTreeviewTriangle.h>
+#include <Swift/QtUI/QtAccountColourWidget.h>
 
 namespace Ui {
 class QtAccountDetailsWidget;
@@ -32,7 +33,7 @@ class QtAccountDetailsWidget : public QFrame {
 		virtual QSize minimumSizeHint() const;
 
 		void setDefault();
-
+		std::string getUserAddress();
 
 	private:
 		void triangleClicked();
@@ -40,10 +41,12 @@ class QtAccountDetailsWidget : public QFrame {
 	private slots:
 		void handleCogwheelClicked();
 		void handleCertificateChecked(bool checked);
+		void handleColourClicked();
 
 	private:
 		Ui::QtAccountDetailsWidget *ui;
 		QtTreeviewTriangle* triangle_;
+		QtAccountColourWidget* colour_;
 
 		boost::shared_ptr<Account> account_;
 

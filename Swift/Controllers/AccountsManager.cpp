@@ -82,6 +82,7 @@ AccountsManager::AccountsManager(EventLoop* eventLoop,
 	loginWindow_ = uiFactory->createLoginWindow(uiEventStream_);
 	loginWindow_->setShowNotificationToggle(!notifier->isExternallyConfigured());
 	loginWindow_->onLoginRequest.connect(boost::bind(&AccountsManager::handleLoginRequest, this, _1, _2, _3, _4, _5, _6));
+	loginWindow_->onPurgeSavedLoginRequest.connect(boost::bind(&AccountsManager::handlePurgeSavedLoginRequest, this, _1));
 
 	std::string lastLoginJID = settings_->getSetting(SettingConstants::LAST_LOGIN_JID);
 
@@ -117,9 +118,7 @@ AccountsManager::AccountsManager(EventLoop* eventLoop,
 			account = boost::make_shared<Account>(new ProfileSettingsProvider(profile, settings_), maxAccountIndex_);
 			maxAccountIndex_++;
 		}
-
-		loginWindow_->addAvailableAccount(account->getJID(), account->getPassword(), account->getCertificatePath(), account->getClientOptions());  // to be deleted after accounts list works
-		createMainController(account);
+		createMainController(account, false);
 
 		// For now: default account = last login account
 		if (account->getJID() == lastLoginJID) defaultAccount_ = account;
@@ -138,20 +137,24 @@ AccountsManager::AccountsManager(EventLoop* eventLoop,
 	// Ensure that accounts are sorted by index
 	std::sort(mainControllers_.begin(), mainControllers_.end(), AccountsManager::compareAccounts);
 
+	// Ensure that all indices will be from 0 to n
+	for (unsigned int i = 0; i < mainControllers_.size(); i++) {
+		mainControllers_[i]->getAccount()->setIndex(i);
+	}
+
+	if (!defaultAccount_ && mainControllers_.size() > 0) {
+		defaultAccount_ = mainControllers_.at(0)->getAccount();
+	}
+
+	loginWindow_->setAccountsManager(this);
+	//loginWindow_->addAvailableAccount(account->getJID(), account->getPassword(), account->getCertificatePath(), account->getClientOptions());
+
 	//bool loginAutomatically = settings_->getSetting(SettingConstants::LOGIN_AUTOMATICALLY);
 	bool eagle = settings_->getSetting(SettingConstants::FORGET_PASSWORDS);
 	if (!eagle) {
 		loginWindow_->selectUser(getDefaultJID());
 		loginWindow_->setLoginAutomatically(getAccountByJID(getDefaultJID())->getLoginAutomatically());
 	}
-
-	if (!defaultAccount_ && mainControllers_.size() > 0) {
-		defaultAccount_ = mainControllers_.at(0)->getAccount();
-	}
-	accountsList_ = loginWindow_->getAccountsList();
-	accountsList_->setManager(this);
-	accountsList_->setDefaultAccount(defaultAccount_->getIndex());
-	accountsList_->onDefaultButtonClicked.connect(boost::bind(&AccountsManager::handleDefaultButtonClicked, this, _1));
 
 	foreach (MainController* c, mainControllers_) {
 		if (c->getAccount()->getLoginAutomatically()) {
@@ -171,7 +174,11 @@ bool AccountsManager::compareAccounts (MainController* a, MainController* b) {
 	return a->getAccount()->getIndex() < b->getAccount()->getIndex();
 }
 
-void AccountsManager::createMainController(boost::shared_ptr<Account> account) {
+int AccountsManager::maxAccountIndex() {
+	return (mainControllers_.size() > 0 ? mainControllers_.back()->getAccount()->getIndex() : 0);
+}
+
+void AccountsManager::createMainController(boost::shared_ptr<Account> account, bool inCombobox) {
 	MainController* mainController = new MainController (account,
 														 eventLoop_,
 														 uiEventStream_,
@@ -189,12 +196,18 @@ void AccountsManager::createMainController(boost::shared_ptr<Account> account) {
 														 uriHandler_,
 														 idleDetector_,
 														 emoticons_,
-														 useDelayForLatency_);
+														 useDelayForLatency_,
+														 inCombobox);
 	mainControllers_.push_back(mainController);
+	mainController->onShouldBeDeleted.connect(boost::bind(&AccountsManager::removeAccount, this, _1));
 }
 
 JID AccountsManager::getDefaultJID() {
 	return defaultAccount_->getJID();
+}
+
+boost::shared_ptr<Account> AccountsManager::getDefaultAccount() {
+	return defaultAccount_;
 }
 
 boost::shared_ptr<Account> AccountsManager::getAccountByJID(std::string jid) {
@@ -233,6 +246,32 @@ int AccountsManager::accountsCount() {
 	return mainControllers_.size();
 }
 
+void AccountsManager::addAccount(boost::shared_ptr<Account> newAccount) {
+	//to be implemented
+}
+
+void AccountsManager::removeAccount(const std::string username) {
+	boost::shared_ptr<Account> account = getAccountByJID(username);
+	if (account) {
+		// Disconnect
+		account->setEnabled(false);
+
+		// Erase from vector and repair indices
+		MainController* controllerToDelete = mainControllers_[account->getIndex()];
+		mainControllers_.erase(mainControllers_.begin() + account->getIndex());
+		for (unsigned int i = 0; i < mainControllers_.size(); i++) {
+			mainControllers_[i]->getAccount()->setIndex(i);
+		}
+		maxAccountIndex_ = mainControllers_.back()->getAccount()->getIndex();
+
+		settings_->removeProfile(username);
+		loginWindow_->removeAvailableAccount(account->getIndex());
+		//loginWindow_->removeAvailableAccount(username);
+
+		delete controllerToDelete;
+	}
+}
+
 void AccountsManager::clearAutoLogins() {
 	foreach (MainController * controller, mainControllers_) {
 		controller->getAccount()->setLoginAutomatically(false);
@@ -257,7 +296,7 @@ void AccountsManager::handleLoginRequest(const std::string &username, const std:
 
 		if (!account) { // Login to new account
 			// First parameter will not be 'username' after implementing new GUI with account name input
-			account = boost::shared_ptr<Account>(new Account(maxAccountIndex_,
+			account = boost::shared_ptr<Account>(new Account(maxAccountIndex_ + 1,
 															 username,
 															 username,
 															 password,
@@ -268,9 +307,11 @@ void AccountsManager::handleLoginRequest(const std::string &username, const std:
 															 false,
 															 (mainControllers_.size() > 0 ? false : true), // Set as default if there's no other accounts
 															 new ProfileSettingsProvider(username, settings_)));
-			createMainController(account);
+			createMainController(account, true);
 			account->setEnabled(true);
 			maxAccountIndex_++;
+			loginWindow_->addAvailableAccount(account);
+
 		} else { // Login to existing account
 
 
@@ -296,7 +337,7 @@ void AccountsManager::handleLoginRequest(const std::string &username, const std:
 
 				settings_->storeSetting(SettingConstants::LAST_LOGIN_JID, username);
 				//settings_->storeSetting(SettingConstants::LOGIN_AUTOMATICALLY, loginAutomatically);
-				loginWindow_->addAvailableAccount(account->getJID(), account->getPassword(), account->getCertificatePath(), account->getClientOptions());
+
 
 				account->setEnabled(true);
 			//}
@@ -305,10 +346,14 @@ void AccountsManager::handleLoginRequest(const std::string &username, const std:
 
 }
 
-void AccountsManager::handleDefaultButtonClicked(int id) {
+void AccountsManager::handleDefaultAccountChanged(int index) {
 	defaultAccount_->setDefault(false);
-	defaultAccount_ = this->getAccountAt(id);
+	defaultAccount_ = this->getAccountAt(index);
 	defaultAccount_->setDefault(true);
+}
+
+void AccountsManager::handlePurgeSavedLoginRequest(const std::string& username) {
+	removeAccount(username);
 }
 
 

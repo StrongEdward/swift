@@ -86,8 +86,6 @@ namespace Swift {
 
 	class MainController {
 
-			friend class AccountsManager;
-
 		public:
 			MainController(boost::shared_ptr<Account> account,
 						   EventLoop* eventLoop,
@@ -106,14 +104,14 @@ namespace Swift {
 						   URIHandler* uriHandler,
 						   IdleDetector* idleDetector,
 						   const std::map<std::string, std::string>& emoticons,
-						   bool useDelayForLatency);
+						   bool useDelayForLatency,
+						   bool createdInCombobox);
 			~MainController();
 
 			const std::string getJIDString();
 			boost::shared_ptr<Account> getAccount();
-
-
-
+			bool shouldBeDeleted();
+			boost::signal<void(const std::string) > onShouldBeDeleted;
 
 		private:
 			void resetClient();
@@ -127,7 +125,7 @@ namespace Swift {
 			void handleEventQueueLengthChange(int count);
 			void handleVCardReceived(const JID& j, VCard::ref vCard);
 			void handleSettingChanged(const std::string& settingPath);
-			void handlePurgeSavedLoginRequest(const std::string& username);
+			//void handlePurgeSavedLoginRequest(const std::string& username);
 			void sendPresence(boost::shared_ptr<Presence> presence);
 			void handleInputIdleChanged(bool);
 			void handleShowCertificateRequest();
@@ -148,6 +146,9 @@ namespace Swift {
 		private:
 			boost::shared_ptr<Account> account_;
 			boost::shared_ptr<AccountsManager> accountsManager_;
+			bool createdInCombobox_;
+			bool beforeFirstLogin_;
+			bool firstLoginFailed_;
 
 			// Probably have to remove them then
 			//JID jid_;
@@ -217,6 +218,6 @@ namespace Swift {
 			WhiteboardManager* whiteboardManager_;
 			HighlightManager* highlightManager_;
 			HighlightEditorController* highlightEditorController_;
-			std::map<std::string, std::string> emoticons_; // have to move them from here
+			std::map<std::string, std::string> emoticons_;
 	};
 }

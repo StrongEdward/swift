@@ -32,7 +32,10 @@ QtAccountsListWidget::~QtAccountsListWidget()
 
 void QtAccountsListWidget::setManager(AccountsManager* manager) {
 	manager_ = manager;
+	reloadAccounts();
+}
 
+void QtAccountsListWidget::reloadAccounts() {
 	// Clear layout
 	QLayoutItem* item;
 	while ( (item = accountsLayout_->takeAt(0)) ) {
@@ -47,15 +50,42 @@ void QtAccountsListWidget::setManager(AccountsManager* manager) {
 	int size = manager_->accountsCount();
 	for (int i = 0; i < size; i++) {
 		boost::shared_ptr<Account> account = manager_->getAccountAt(i);
-		account->setIndex(i); // This ensures that all indices will be from 0 to n, not just sorted
+		//account->setIndex(i);
 
 		accounts_.push_back(new QtAccountDetailsWidget(account, defaultGroup_, this));
 		accountsLayout_->addWidget(accounts_.back());
-
 	}
 
 	connect(defaultGroup_, SIGNAL(buttonClicked(int)), this, SLOT(handleDefaultButtonClicked(int)));
+}
 
+void QtAccountsListWidget::addAccount(boost::shared_ptr<Account> account) {
+	// need to check if account is on the list?
+	bool found = false;
+	for (int i = 0; i < accountsLayout_->count(); i++) {
+		if (static_cast<QtAccountDetailsWidget*>(accountsLayout_->itemAt(i)->widget())->getUserAddress() == account->getJID().toString() ) {
+			found = true;
+		}
+	}
+
+	if (!found) {
+		accounts_.push_back(new QtAccountDetailsWidget(account, defaultGroup_, this));
+		accountsLayout_->addWidget(accounts_.back());
+	}
+}
+
+void QtAccountsListWidget::removeAccount(int index) {
+	if (index > 0 && static_cast<unsigned int>(index) < accounts_.size()) {
+		QtAccountDetailsWidget* widget = accounts_[index];
+
+		accountsLayout_->removeWidget(widget);
+		delete accounts_[index];
+		accounts_.erase(accounts_.begin() + index);
+
+		/*accountsLayout_->update();
+		update();
+		updateGeometry();*/
+	}
 }
 
 void QtAccountsListWidget::setDefaultAccount(int index) {

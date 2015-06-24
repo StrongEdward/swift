@@ -76,14 +76,16 @@ namespace Swift {
 							bool useDelayForLatency);
 			~AccountsManager();
 
-			void createMainController(boost::shared_ptr<Account> account);
+			void createMainController(boost::shared_ptr<Account> account, bool inCombobox);
 
 			JID getDefaultJID();
+			boost::shared_ptr<Account> getDefaultAccount();
 			boost::shared_ptr<Account> getAccountByJID(std::string jid); // assumption: jid is unique
 			MainController* getMainControllerByJIDString(const std::string& jid);
 			boost::shared_ptr<Account> getAccountAt(unsigned int index);
 			int accountsCount();
-
+			void addAccount(boost::shared_ptr<Account> newAccount);
+			void removeAccount(const std::string username);
 
 			void handleLoginRequest(const std::string &username, const std::string &password, const std::string& certificatePath, const ClientOptions& options, bool remember, bool loginAutomatically);
 
@@ -91,14 +93,16 @@ namespace Swift {
 
 		private:
 			static bool compareAccounts (MainController* a, MainController* b);
-			void handleDefaultButtonClicked(int id);
+			int maxAccountIndex();
+			void handleDefaultAccountChanged(int index);
+			void handlePurgeSavedLoginRequest(const std::string& username); // to be removed, remove account directly
 
 		private:
 			//std::vector< boost::shared_ptr<Account> > accounts_;
 			boost::shared_ptr<Account> defaultAccount_;
 			std::vector<MainController*> mainControllers_;
 			LoginWindow* loginWindow_;
-			AccountsList* accountsList_;
+			//AccountsList* accountsList_; // avoid it
 
 			UIEventStream* uiEventStream_;
 			SettingsProvider* settings_;

@@ -26,6 +26,7 @@ QtAccountDetailsWidget::QtAccountDetailsWidget(boost::shared_ptr<Account> accoun
 	QFrame(parent),
 	ui(new Ui::QtAccountDetailsWidget),
 	triangle_(new QtTreeviewTriangle),
+	colour_(new QtAccountColourWidget),
 	account_(account)
 {
 	ui->setupUi(this);
@@ -43,6 +44,7 @@ QtAccountDetailsWidget::QtAccountDetailsWidget(boost::shared_ptr<Account> accoun
 	ui->certificateButton_->setAccessibleDescription(tr("Click if you have a personal certificate used for login to the service."));
 
 	ui->statusIcon_->setPixmap(QPixmap(":/icons/offline.png"));
+	ui->deleteButton_->setIcon(QIcon(":/icons/delete.ico"));
 	ui->accountLayout_->insertWidget(0, triangle_);
 
 	connect(triangle_, &QtTreeviewTriangle::clicked, this, &QtAccountDetailsWidget::triangleClicked);
@@ -66,7 +68,7 @@ QtAccountDetailsWidget::QtAccountDetailsWidget(boost::shared_ptr<Account> accoun
 	connect(ui->certificateButton_, &QPushButton::clicked, this, &QtAccountDetailsWidget::handleCertificateChecked);
 
 	//colour
-
+	ui->accountLayout_->insertWidget(1, colour_);
 }
 
 QtAccountDetailsWidget::~QtAccountDetailsWidget()
@@ -89,6 +91,10 @@ QSize QtAccountDetailsWidget::minimumSizeHint() const {
 
 void QtAccountDetailsWidget::setDefault() {
 	ui->defaultRadio_->setChecked(true);
+}
+
+std::string QtAccountDetailsWidget::getUserAddress() {
+	return account_->getJID();
 }
 
 void QtAccountDetailsWidget::triangleClicked() {
@@ -138,6 +144,10 @@ void QtAccountDetailsWidget::handleCertificateChecked(bool checked) {
 		certificateFile = "";
 	}
 	account_->setCertificatePath(Q2PSTRING(certificateFile));
+}
+
+void QtAccountDetailsWidget::handleColourClicked() {
+
 }
 
 }

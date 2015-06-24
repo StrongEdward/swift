@@ -201,15 +201,15 @@ void Account::setLoginAutomatically(bool autoLogin) {
 }
 
 void Account::setEnabled(bool enabled) {
-
-
+	bool oldValue = enabled_;
+	enabled_ = enabled;
 	if (enabled) {
 		onEnabled();
 	}
-	if (enabled_ && !enabled) {
+	if (oldValue && !enabled) {
 		// send disabled signal
 	}
-	enabled_ = enabled;
+
 }
 
 

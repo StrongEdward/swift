@@ -70,7 +70,7 @@ QtLoginWindow::QtLoginWindow(UIEventStream* uiEventStream, SettingsProvider* set
 	loginWidgetWrapper_ = new QWidget(this);
 	loginWidgetWrapper_->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
 	QBoxLayout *layout = new QBoxLayout(QBoxLayout::TopToBottom, loginWidgetWrapper_);
-	layout->addStretch(2);
+	//layout->addStretch(2);
 
 	QLabel* logo = new QLabel(this);
 	logo->setPixmap(QPixmap(":/logo-shaded-text.256.png"));
@@ -105,15 +105,56 @@ QtLoginWindow::QtLoginWindow(UIEventStream* uiEventStream, SettingsProvider* set
 	accountsArea->setWidget(accounts);
 
 	layout->addWidget(accountsArea);*/
+	QWidget* accountsListWrapper = new QWidget(this);
+	QLayout* wrapperLayout = new QVBoxLayout();
+	wrapperLayout->setContentsMargins(0,0,0,0);
+	wrapperLayout->setSpacing(0);
+
 	accountsList_ = new QtAccountsListWidget;
-	layout->addWidget(static_cast<QtAccountsListWidget*>(accountsList_));
+	wrapperLayout->addWidget(static_cast<QtAccountsListWidget*>(accountsList_));
+
+	QWidget* underList = new QWidget(this);
+	QLayout* underListLayout = new QHBoxLayout();
+	underListLayout->setContentsMargins(0,0,0,0);
+	underListLayout->setSpacing(2);
+
+	QWidget* description = new QWidget(this);
+	QLayout* descriptionLayout = new QVBoxLayout();
+	descriptionLayout->setContentsMargins(2,2,2,2);
+	descriptionLayout->setSpacing(2);
+	QCheckBox* enabledDesc = new QCheckBox("- connect/enable");
+	QFont f = enabledDesc->font();
+	f.setPointSize(10);
+	enabledDesc->setFont(f);
+	enabledDesc->setChecked(true);
+	//enabledDesc->setCheckable(false);
+	descriptionLayout->addWidget(enabledDesc);
+	QRadioButton* defaultDesc = new QRadioButton("- default account");
+	QFont f2 = defaultDesc->font();
+	f2.setPointSize(10);
+	defaultDesc->setFont(f2);
+	defaultDesc->setChecked(true);
+	//defaultDesc->setCheckable(false);
+	descriptionLayout->addWidget(defaultDesc);
+	description->setLayout(descriptionLayout);
+	underListLayout->addWidget(description);
+
+	QPushButton* addAccountButton = new QPushButton(QIcon(":/icons/add.ico"), "");
+	addAccountButton->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum);
+	underListLayout->addWidget(addAccountButton);
+
+	underList->setLayout(underListLayout);
+	wrapperLayout->addWidget(underList);
+
+	accountsListWrapper->setLayout(wrapperLayout);
+	layout->addWidget(accountsListWrapper);
 
 	//
 	layout->addStretch(2);
 
 	QLabel* jidLabel = new QLabel(this);
 	jidLabel->setText("<font size='-1'>" + tr("User address:") + "</font>");
-	layout->addWidget(jidLabel);
+	//layout->addWidget(jidLabel);
 
 
 	username_ = new QComboBox(this);
@@ -123,23 +164,23 @@ QtLoginWindow::QtLoginWindow(UIEventStream* uiEventStream, SettingsProvider* set
 	username_->view()->installEventFilter(this);
 	username_->setAccessibleName(tr("User address (of the form someuser@someserver.com)"));
 	username_->setAccessibleDescription(tr("This is the user address that you'll be using to log in with"));
-	layout->addWidget(username_);
+	//layout->addWidget(username_);
 	QLabel* jidHintLabel = new QLabel(this);
 	jidHintLabel->setText("<font size='-1' color='grey' >" + tr("Example: alice@wonderland.lit") + "</font>");
 	jidHintLabel->setAlignment(Qt::AlignRight);
-	layout->addWidget(jidHintLabel);
+	//layout->addWidget(jidHintLabel);
 
 
 	QLabel* passwordLabel = new QLabel();
 	passwordLabel->setText("<font size='-1'>" + tr("Password:") + "</font>");
 	passwordLabel->setAccessibleName(tr("User password"));
 	passwordLabel->setAccessibleDescription(tr("This is the password you'll use to log in to the XMPP service"));
-	layout->addWidget(passwordLabel);
+	//layout->addWidget(passwordLabel);
 
 
 	QWidget* w = new QWidget(this);
 	w->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
-	layout->addWidget(w);
+	//layout->addWidget(w);
 
 	QHBoxLayout* credentialsLayout = new QHBoxLayout(w);
 	credentialsLayout->setMargin(0);
@@ -163,29 +204,32 @@ QtLoginWindow::QtLoginWindow(UIEventStream* uiEventStream, SettingsProvider* set
 	connect(certificateButton_, SIGNAL(clicked(bool)), SLOT(handleCertficateChecked(bool)));
 
 	loginButton_ = new QPushButton(this);
-	loginButton_->setText(tr("Connect"));
+	loginButton_->setText(tr("OK"));
 	loginButton_->setAutoDefault(true);
 	loginButton_->setDefault(true);
 	loginButton_->setAccessibleName(tr("Connect now"));
-	layout->addWidget(loginButton_);
+
 
 	QLabel* connectionOptionsLabel = new QLabel(this);
 	connectionOptionsLabel->setText("<a href=\"#\"><font size='-1'>" + QObject::tr("Connection Options") + "</font></a>");
 	connectionOptionsLabel->setTextFormat(Qt::RichText);
 	connectionOptionsLabel->setAlignment(Qt::AlignRight|Qt::AlignVCenter);
-	layout->addWidget(connectionOptionsLabel);
+	//layout->addWidget(connectionOptionsLabel);
 	connect(connectionOptionsLabel, SIGNAL(linkActivated(const QString&)), SLOT(handleOpenConnectionOptions()));
 
 	message_ = new QLabel(this);
 	message_->setTextFormat(Qt::RichText);
 	message_->setWordWrap(true);
+	setMessage("Jabster: Error connecting to server");
 	layout->addWidget(message_);
-
 	layout->addStretch(2);
+	layout->addWidget(loginButton_);
+
+	//layout->addStretch(2);
 	remember_ = new QCheckBox(tr("Remember Password?"), this);
-	layout->addWidget(remember_);
+	//layout->addWidget(remember_);
 	loginAutomatically_ = new QCheckBox(tr("Login Automatically?"), this);
-	layout->addWidget(loginAutomatically_);
+	//layout->addWidget(loginAutomatically_);
 
 	connect(loginButton_, SIGNAL(clicked()), SLOT(loginClicked()));
 	stack_->addWidget(loginWidgetWrapper_);
@@ -287,7 +331,7 @@ bool QtLoginWindow::eventFilter(QObject *obj, QEvent *event) {
 			QString jid(username_->view()->currentIndex().data().toString());
 			int result = QMessageBox::question(this, tr("Remove profile"), tr("Remove the profile '%1'?").arg(jid), QMessageBox::Yes | QMessageBox::No);
 			if (result == QMessageBox::Yes) {
-				onPurgeSavedLoginRequest(Q2PSTRING(jid));
+				onPurgeSavedLoginRequest(Q2PSTRING(jid)); // accountsManager->removeAccount(jid); maybe?
 			}
 			return true;
 		}
@@ -313,17 +357,44 @@ void QtLoginWindow::handleSettingChanged(const std::string& settingPath) {
 	}
 }
 
+void QtLoginWindow::setAccountsManager(AccountsManager* manager) {
+	accountsManager_ = manager;
+
+	// Multi account
+	accountsList_->setManager(manager);
+	accountsList_->setDefaultAccount(accountsManager_->getDefaultAccount()->getIndex());
+	accountsList_->onDefaultButtonClicked.connect(boost::bind(&QtLoginWindow::handleDefaultButtonClicked, this, _1));
+
+	// Single account
+	for(int i = 0; i < manager->accountsCount(); i++) {
+		username_->addItem(P2QSTRING(manager->getAccountAt(i)->getJID().toString()));
+	}
+}
+
 void QtLoginWindow::selectUser(const std::string& username) {
-	for (int i = 0; i < usernames_.count(); i++) {
+	int index = username_->findText(P2QSTRING(username));
+	if (index != -1) {
+		username_->setCurrentIndex(index);
+		password_->setFocus();
+	}
+
+	/*for (int i = 0; i < usernames_.count(); i++) {
 		if (P2QSTRING(username) == usernames_[i]) {
 			username_->setCurrentIndex(i);
 			password_->setFocus();
 			break;
 		}
+	}*/
+}
+
+void QtLoginWindow::removeAvailableAccount(int index) {
+	if (index > 0 && index < username_->count()) {
+		username_->removeItem(index);
+		accountsList_->removeAccount(index);
 	}
 }
 
-void QtLoginWindow::removeAvailableAccount(const std::string& jid) {
+/*void QtLoginWindow::removeAvailableAccount(const std::string& jid) {
 	QString username = P2QSTRING(jid);
 	int index = -1;
 	for (int i = 0; i < usernames_.count(); i++) {
@@ -337,9 +408,17 @@ void QtLoginWindow::removeAvailableAccount(const std::string& jid) {
 		certificateFiles_.removeAt(index);
 		username_->removeItem(index);
 	}
+}*/
+
+void QtLoginWindow::addAvailableAccount(boost::shared_ptr<Account> account) {
+	QString username = P2QSTRING(account->getJID().toString());
+	if (username_->findText(username) == -1) {
+		username_->addItem(username);
+	}
+	accountsList_->addAccount(account);
 }
 
-void QtLoginWindow::addAvailableAccount(const std::string& defaultJID, const std::string& defaultPassword, const std::string& defaultCertificate, const ClientOptions& options) {
+/*void QtLoginWindow::addAvailableAccount(const std::string& defaultJID, const std::string& defaultPassword, const std::string& defaultCertificate, const ClientOptions& options) {
 	QString username = P2QSTRING(defaultJID);
 	int index = -1;
 	for (int i = 0; i < usernames_.count(); i++) {
@@ -359,10 +438,19 @@ void QtLoginWindow::addAvailableAccount(const std::string& defaultJID, const std
 		certificateFiles_[index] = P2QSTRING(defaultCertificate);
 		options_[index] = options;
 	}
-}
+}*/
 
 void QtLoginWindow::handleUsernameTextChanged() {
-	QString username = username_->currentText();
+	boost::shared_ptr<Account> account = accountsManager_->getAccountByJID(Q2PSTRING(username_->currentText()));
+	if (account) {
+		certificateFile_ = P2QSTRING(account->getCertificatePath());
+		password_->setText(P2QSTRING(account->getPassword()));
+		remember_->setChecked(!account->forgetPassword());
+		loginAutomatically_->setChecked(account->getLoginAutomatically());
+		currentOptions_ = account->getClientOptions();
+	}
+
+	/*QString username = username_->currentText();
 	for (int i = 0; i < usernames_.count(); i++) {
 		if (username_->currentText() == usernames_[i]) {
 			certificateFile_ = certificateFiles_[i];
@@ -370,7 +458,7 @@ void QtLoginWindow::handleUsernameTextChanged() {
 			remember_->setChecked(password_->text() != "");
 			currentOptions_ = options_[i];
 		}
-	}
+	}*/
 	certificateButton_->setChecked(!certificateFile_.isEmpty());
 }
 
@@ -474,6 +562,12 @@ void QtLoginWindow::handleToggleNotifications(bool enabled) {
 	settings_->storeSetting(SettingConstants::SHOW_NOTIFICATIONS, enabled);
 }
 
+void QtLoginWindow::handleDefaultButtonClicked(int index) {
+	if (accountsManager_->getDefaultAccount()->getIndex() != index) {
+		onDefaultAccountChanged(index);
+	}
+}
+
 void QtLoginWindow::handleQuit() {
 	onQuitRequest();
 }
@@ -482,9 +576,9 @@ void QtLoginWindow::quit() {
 	QApplication::quit();
 }
 
-AccountsList* QtLoginWindow::getAccountsList() {
+/*AccountsList* QtLoginWindow::getAccountsList() {
 	return accountsList_;
-}
+}*/
 
 void QtLoginWindow::setInitialMenus() {
 	menuBar_->clear();

@@ -198,6 +198,7 @@ sources = [
 	"QtAffiliationEditor.cpp",
 	"QtAccountDetailsWidget.cpp",
 	"QtAccountsListWidget.cpp",
+	"QtAccountColourWidget.cpp",
 	"QtTreeviewTriangle.cpp",
 	"QtUISettingConstants.cpp",
 	"QtURLValidator.cpp",

@@ -45,8 +45,11 @@ namespace Swift {
 			virtual void loggedOut();
 			virtual void setShowNotificationToggle(bool);
 			virtual void setMessage(const std::string& message);
-			virtual void addAvailableAccount(const std::string& defaultJID, const std::string& defaultPassword, const std::string& defaultCertificate, const ClientOptions& options);
-			virtual void removeAvailableAccount(const std::string& jid);
+			virtual void setAccountsManager(AccountsManager* manager);
+			virtual void addAvailableAccount(boost::shared_ptr<Account> account);
+			//virtual void addAvailableAccount(const std::string& defaultJID, const std::string& defaultPassword, const std::string& defaultCertificate, const ClientOptions& options);
+			virtual void removeAvailableAccount(int index);
+			//virtual void removeAvailableAccount(const std::string& jid);
 			virtual void setLoginAutomatically(bool loginAutomatically);
 			virtual void setIsLoggingIn(bool loggingIn);
 			void selectUser(const std::string& user);
@@ -54,7 +57,7 @@ namespace Swift {
 			void hide();
 			QtMenus getMenus() const;
 			virtual void quit();
-			virtual AccountsList* getAccountsList();
+			//virtual AccountsList* getAccountsList();
 
 		signals:
 			void geometryChanged();
@@ -68,6 +71,7 @@ namespace Swift {
 			void handleShowHighlightEditor();
 			void handleToggleSounds(bool enabled);
 			void handleToggleNotifications(bool enabled);
+			void handleDefaultButtonClicked(int index);
 			void handleAbout();
 			void bringToFront();
 			void toggleBringToFront();
@@ -83,10 +87,10 @@ namespace Swift {
 		private:
 			void setInitialMenus();
 			QWidget* loginWidgetWrapper_;
-			QStringList usernames_;
-			QStringList passwords_;
-			QStringList certificateFiles_;
-			std::vector<ClientOptions> options_;
+			//QStringList usernames_;
+			//QStringList passwords_;
+			//QStringList certificateFiles_;
+			//std::vector<ClientOptions> options_;
 			QComboBox* username_;
 			QLineEdit* password_;
 			QPushButton* loginButton_;
@@ -112,5 +116,6 @@ namespace Swift {
 			TimerFactory* timerFactory_;
 			ClientOptions currentOptions_; // to be removed
 			AccountsList* accountsList_;
+			AccountsManager* accountsManager_;
 	};
 }
