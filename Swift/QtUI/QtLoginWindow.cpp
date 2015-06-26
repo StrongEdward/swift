@@ -86,32 +86,15 @@ QtLoginWindow::QtLoginWindow(UIEventStream* uiEventStream, SettingsProvider* set
 	logoWidget->setLayout(logoLayout);
 	layout->addWidget(logoWidget);
 
-	//QPushButton* connectionEdit = new QPushButton(QIcon(":/icons/actions.png"), "");
-	//connectionEdit->setFixedSize(QSize(24,24));
-	//layout->addWidget(connectionEdit);
-
-	/*QtAccountDetailsWidget* details = new QtAccountDetailsWidget(this);
-	QtAccountDetailsWidget* details2 = new QtAccountDetailsWidget(this);
-
-	QWidget* accounts = new QWidget(this);
-	QVBoxLayout* accountsLayout = new QVBoxLayout();
-
-	accountsLayout->addWidget(details);
-	accountsLayout->addWidget(details2);
-	accounts->setLayout(accountsLayout);
-
-	QScrollArea* accountsArea = new QScrollArea;
-	accountsArea->setFixedSize(QSize(240, 200));
-	accountsArea->setWidget(accounts);
-
-	layout->addWidget(accountsArea);*/
-	QWidget* accountsListWrapper = new QWidget(this);
-	QLayout* wrapperLayout = new QVBoxLayout();
-	wrapperLayout->setContentsMargins(0,0,0,0);
-	wrapperLayout->setSpacing(0);
+	// Accounts list
+	accountsListWrapper_ = new QWidget(this);
+	accountsListWrapper_->setSizePolicy(QSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum));
+	QBoxLayout *accountsListLayout = new QBoxLayout(QBoxLayout::TopToBottom, accountsListWrapper_);
+	accountsListLayout->setContentsMargins(0,0,0,0);
+	accountsListLayout->setSpacing(2);
 
 	accountsList_ = new QtAccountsListWidget;
-	wrapperLayout->addWidget(static_cast<QtAccountsListWidget*>(accountsList_));
+	accountsListLayout->addWidget(static_cast<QtAccountsListWidget*>(accountsList_));
 
 	QWidget* underList = new QWidget(this);
 	QLayout* underListLayout = new QHBoxLayout();
@@ -122,19 +105,17 @@ QtLoginWindow::QtLoginWindow(UIEventStream* uiEventStream, SettingsProvider* set
 	QLayout* descriptionLayout = new QVBoxLayout();
 	descriptionLayout->setContentsMargins(2,2,2,2);
 	descriptionLayout->setSpacing(2);
-	QCheckBox* enabledDesc = new QCheckBox("- connect/enable");
-	QFont f = enabledDesc->font();
-	f.setPointSize(10);
-	enabledDesc->setFont(f);
+	QCheckBox* enabledDesc = new QCheckBox("- Connect/Enable");
+	//QFont f = enabledDesc->font();
+	//f.setPointSize(10);
+	//enabledDesc->setFont(f);
 	enabledDesc->setChecked(true);
-	//enabledDesc->setCheckable(false);
 	descriptionLayout->addWidget(enabledDesc);
-	QRadioButton* defaultDesc = new QRadioButton("- default account");
-	QFont f2 = defaultDesc->font();
-	f2.setPointSize(10);
-	defaultDesc->setFont(f2);
+	QRadioButton* defaultDesc = new QRadioButton("- Default account");
+	//QFont f2 = defaultDesc->font();
+	//f2.setPointSize(10);
+	//defaultDesc->setFont(f2);
 	defaultDesc->setChecked(true);
-	//defaultDesc->setCheckable(false);
 	descriptionLayout->addWidget(defaultDesc);
 	description->setLayout(descriptionLayout);
 	underListLayout->addWidget(description);
@@ -144,18 +125,29 @@ QtLoginWindow::QtLoginWindow(UIEventStream* uiEventStream, SettingsProvider* set
 	underListLayout->addWidget(addAccountButton);
 
 	underList->setLayout(underListLayout);
-	wrapperLayout->addWidget(underList);
+	accountsListLayout->addWidget(underList);
 
-	accountsListWrapper->setLayout(wrapperLayout);
-	layout->addWidget(accountsListWrapper);
+	okButton_ = new QPushButton(this);
+	okButton_->setText(tr("OK"));
+	okButton_->setAutoDefault(true);
+	okButton_->setDefault(true);
+	okButton_->setAccessibleName(tr("Done. Go to roster."));
+	accountsListLayout->addWidget(okButton_);
 
-	//
-	layout->addStretch(2);
+	layout->addWidget(accountsListWrapper_);
+	accountsListWrapper_->hide();
+
+
+	// Single account
+	singleAccountWrapper_ = new QWidget(this);
+	singleAccountWrapper_->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
+	QBoxLayout *singleAccountLayout = new QBoxLayout(QBoxLayout::TopToBottom, singleAccountWrapper_);
+	singleAccountLayout->setContentsMargins(0,0,0,0);
+	//singleAccountLayout->setSpacing(2);
 
 	QLabel* jidLabel = new QLabel(this);
 	jidLabel->setText("<font size='-1'>" + tr("User address:") + "</font>");
-	//layout->addWidget(jidLabel);
-
+	singleAccountLayout->addWidget(jidLabel);
 
 	username_ = new QComboBox(this);
 	username_->setEditable(true);
@@ -164,23 +156,21 @@ QtLoginWindow::QtLoginWindow(UIEventStream* uiEventStream, SettingsProvider* set
 	username_->view()->installEventFilter(this);
 	username_->setAccessibleName(tr("User address (of the form someuser@someserver.com)"));
 	username_->setAccessibleDescription(tr("This is the user address that you'll be using to log in with"));
-	//layout->addWidget(username_);
+	singleAccountLayout->addWidget(username_);
 	QLabel* jidHintLabel = new QLabel(this);
 	jidHintLabel->setText("<font size='-1' color='grey' >" + tr("Example: alice@wonderland.lit") + "</font>");
 	jidHintLabel->setAlignment(Qt::AlignRight);
-	//layout->addWidget(jidHintLabel);
-
+	singleAccountLayout->addWidget(jidHintLabel);
 
 	QLabel* passwordLabel = new QLabel();
 	passwordLabel->setText("<font size='-1'>" + tr("Password:") + "</font>");
 	passwordLabel->setAccessibleName(tr("User password"));
 	passwordLabel->setAccessibleDescription(tr("This is the password you'll use to log in to the XMPP service"));
-	//layout->addWidget(passwordLabel);
-
+	singleAccountLayout->addWidget(passwordLabel);
 
 	QWidget* w = new QWidget(this);
 	w->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
-	//layout->addWidget(w);
+	singleAccountLayout->addWidget(w);
 
 	QHBoxLayout* credentialsLayout = new QHBoxLayout(w);
 	credentialsLayout->setMargin(0);
@@ -204,32 +194,42 @@ QtLoginWindow::QtLoginWindow(UIEventStream* uiEventStream, SettingsProvider* set
 	connect(certificateButton_, SIGNAL(clicked(bool)), SLOT(handleCertficateChecked(bool)));
 
 	loginButton_ = new QPushButton(this);
-	loginButton_->setText(tr("OK"));
+	loginButton_->setText(tr("Connect"));
 	loginButton_->setAutoDefault(true);
 	loginButton_->setDefault(true);
 	loginButton_->setAccessibleName(tr("Connect now"));
-
+	singleAccountLayout->addWidget(loginButton_);
 
 	QLabel* connectionOptionsLabel = new QLabel(this);
 	connectionOptionsLabel->setText("<a href=\"#\"><font size='-1'>" + QObject::tr("Connection Options") + "</font></a>");
 	connectionOptionsLabel->setTextFormat(Qt::RichText);
 	connectionOptionsLabel->setAlignment(Qt::AlignRight|Qt::AlignVCenter);
-	//layout->addWidget(connectionOptionsLabel);
+	singleAccountLayout->addWidget(connectionOptionsLabel);
 	connect(connectionOptionsLabel, SIGNAL(linkActivated(const QString&)), SLOT(handleOpenConnectionOptions()));
 
 	message_ = new QLabel(this);
 	message_->setTextFormat(Qt::RichText);
 	message_->setWordWrap(true);
-	setMessage("Jabster: Error connecting to server");
-	layout->addWidget(message_);
-	layout->addStretch(2);
-	layout->addWidget(loginButton_);
+	setMessage("");
+	singleAccountLayout->addStretch(2);
+	singleAccountLayout->addWidget(message_);
+	singleAccountLayout->addStretch(2);
 
-	//layout->addStretch(2);
 	remember_ = new QCheckBox(tr("Remember Password?"), this);
-	//layout->addWidget(remember_);
+	singleAccountLayout->addWidget(remember_);
 	loginAutomatically_ = new QCheckBox(tr("Login Automatically?"), this);
-	//layout->addWidget(loginAutomatically_);
+	singleAccountLayout->addWidget(loginAutomatically_);
+
+	layout->addWidget(singleAccountWrapper_);
+	singleAccountWrapper_->show();
+
+	// Changing views label, TODO: find better place for it
+	viewLabel_ = new QLabel(this);
+	viewLabel_->setTextFormat(Qt::RichText);
+	viewLabel_->setAlignment(Qt::AlignRight|Qt::AlignVCenter);
+	updateViewLabelText();
+	layout->addWidget(viewLabel_);
+	connect(viewLabel_, SIGNAL(linkActivated(const QString&)), SLOT(handleChangeView()));
 
 	connect(loginButton_, SIGNAL(clicked()), SLOT(loginClicked()));
 	stack_->addWidget(loginWidgetWrapper_);
@@ -472,9 +472,9 @@ void QtLoginWindow::loggedOut() {
 
 void QtLoginWindow::setIsLoggingIn(bool loggingIn) {
 	/* Change the for loop as well if you add to this.*/
-	QWidget* widgets[5] = {username_, password_, remember_, loginAutomatically_, certificateButton_};
+	QWidget* widgets[6] = {username_, password_, remember_, loginAutomatically_, certificateButton_, viewLabel_};
 	loginButton_->setText(loggingIn ? tr("Cancel") : tr("Connect"));
-	for (int i = 0; i < 5; i++) {
+	for (int i = 0; i < 6; i++) {
 		widgets[i]->setEnabled(!loggingIn);
 	}
 	bool eagle = settings_->getSetting(SettingConstants::FORGET_PASSWORDS);
@@ -670,6 +670,27 @@ void QtLoginWindow::handleOpenConnectionOptions() {
 	QtConnectionSettingsWindow connectionSettings(currentOptions_);
 	if (connectionSettings.exec() == QDialog::Accepted) {
 		currentOptions_ = connectionSettings.getOptions();
+	}
+}
+
+void QtLoginWindow::handleChangeView() {
+	if (singleAccountWrapper_->isVisible()) {
+		singleAccountWrapper_->hide();
+		(static_cast<QBoxLayout*>(accountsListWrapper_->layout()))->insertWidget(2, message_);
+		accountsListWrapper_->show();
+	} else {
+		accountsListWrapper_->hide();
+		(static_cast<QBoxLayout*>(singleAccountWrapper_->layout()))->insertWidget(7, message_);
+		singleAccountWrapper_->show();
+	}
+	updateViewLabelText();
+}
+
+void QtLoginWindow::updateViewLabelText() {
+	if (singleAccountWrapper_->isVisibleTo(this)) {
+		viewLabel_->setText("<a href=\"#\"><font size='-1'>" + QObject::tr("Use multiple accounts") + "</font></a>");
+	} else {
+		viewLabel_->setText("<a href=\"#\"><font size='-1'>" + QObject::tr("Use one account") + "</font></a>");
 	}
 }
 

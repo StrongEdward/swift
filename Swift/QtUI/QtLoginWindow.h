@@ -80,13 +80,17 @@ namespace Swift {
 			void moveEvent(QMoveEvent* event);
 			void handleSettingChanged(const std::string& settingPath);
 			void handleOpenConnectionOptions();
+			void handleChangeView();
 
 		protected:
 			bool eventFilter(QObject *obj, QEvent *event);
 
 		private:
 			void setInitialMenus();
+			void updateViewLabelText();
 			QWidget* loginWidgetWrapper_;
+			QWidget* singleAccountWrapper_;
+			QWidget* accountsListWrapper_;
 			//QStringList usernames_;
 			//QStringList passwords_;
 			//QStringList certificateFiles_;
@@ -94,11 +98,13 @@ namespace Swift {
 			QComboBox* username_;
 			QLineEdit* password_;
 			QPushButton* loginButton_;
+			QPushButton* okButton_;
 			/* If you add a widget here, change setLoggingIn as well.*/
 			QCheckBox* remember_;
 			QCheckBox* loginAutomatically_;
 			QStackedWidget* stack_;
 			QLabel* message_;
+			QLabel* viewLabel_;
 			QString certificateFile_;
 			QToolButton* certificateButton_;
 			QMenuBar* menuBar_;
