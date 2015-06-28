@@ -42,6 +42,11 @@ class QtAccountDetailsWidget : public QFrame {
 		void handleCogwheelClicked();
 		void handleCertificateChecked(bool checked);
 		void handleColorChanged();
+		void handleAccountNameEdited(const QString& text);
+		void handleUserAddressEdited(const QString& text);
+		void handlePasswordEdited(const QString& text);
+		void handleRememberPasswordToggled(bool checked);
+		void handleAccountEnabled(bool checked);
 
 	private:
 		Ui::QtAccountDetailsWidget *ui;

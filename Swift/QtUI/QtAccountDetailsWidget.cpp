@@ -33,7 +33,7 @@ QtAccountDetailsWidget::QtAccountDetailsWidget(boost::shared_ptr<Account> accoun
 	ui->accountLayout_->setAlignment(Qt::AlignVCenter);
 	ui->accountNameLabel_->show();
 	ui->accountName_->hide();
-	ui->extendingWidget_->hide();
+	ui->extendingWidget_->hide();	
 
 	ui->connectionOptions_->setIcon(QIcon(":/icons/actions.png"));
 
@@ -57,6 +57,12 @@ QtAccountDetailsWidget::QtAccountDetailsWidget(boost::shared_ptr<Account> accoun
 	ui->rememberCheck_->setChecked(!account_->forgetPassword());
 	ui->enabledCheck_->setChecked(account_->getLoginAutomatically());
 
+	connect(ui->accountName_, &QLineEdit::textEdited, this, &QtAccountDetailsWidget::handleAccountNameEdited);
+	connect(ui->userAddress_, &QLineEdit::textEdited, this, &QtAccountDetailsWidget::handleUserAddressEdited);
+	connect(ui->password_, &QLineEdit::textEdited, this, &QtAccountDetailsWidget::handlePasswordEdited);
+	connect(ui->rememberCheck_, &QCheckBox::toggled, this, &QtAccountDetailsWidget::handleRememberPasswordToggled);
+	connect(ui->enabledCheck_, &QCheckBox::toggled, this, &QtAccountDetailsWidget::handleAccountEnabled);
+
 	buttonGroup->addButton(ui->defaultRadio_);
 	buttonGroup->setId(ui->defaultRadio_, account_->getIndex());
 
@@ -67,7 +73,6 @@ QtAccountDetailsWidget::QtAccountDetailsWidget(boost::shared_ptr<Account> accoun
 	}
 	connect(ui->certificateButton_, &QPushButton::clicked, this, &QtAccountDetailsWidget::handleCertificateChecked);
 
-	//color
 	ui->accountLayout_->insertWidget(1, color_);
 	color_->setColor(account_->getColor());
 	connect(color_, &QtAccountColorWidget::colorChanged, this, &QtAccountDetailsWidget::handleColorChanged);
@@ -152,6 +157,26 @@ void QtAccountDetailsWidget::handleColorChanged() {
 	QColor qtColor = color_->getColor();
 	RGBColor newColor(qtColor.red(), qtColor.green(), qtColor.blue());
 	account_->setColor(newColor);
+}
+
+void QtAccountDetailsWidget::handleAccountNameEdited(const QString& text) {
+	account_->setAccountName(Q2PSTRING(text));
+}
+
+void QtAccountDetailsWidget::handleUserAddressEdited(const QString& text) {
+	account_->setJID(Q2PSTRING(text));
+}
+
+void QtAccountDetailsWidget::handlePasswordEdited(const QString& text) {
+	account_->setPassword(Q2PSTRING(text));
+}
+
+void QtAccountDetailsWidget::handleRememberPasswordToggled(bool checked) {
+	account_->setRememberPassword(checked);
+}
+
+void QtAccountDetailsWidget::handleAccountEnabled(bool checked) {
+	account_->setEnabled(checked);
 }
 
 }

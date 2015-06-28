@@ -22,6 +22,7 @@ namespace Swift {
 		public:
 			virtual ~LoginWindow() {}
 			virtual void selectUser(const std::string&) = 0;
+			virtual bool isInMultiaccountView() = 0;
 			virtual void morphInto(MainWindow *mainWindow) = 0;
 			virtual void loggedOut() = 0;
 			virtual void setShowNotificationToggle(bool) = 0;

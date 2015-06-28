@@ -93,6 +93,7 @@ void Account::storeAllSettings() {
 
 Account::~Account() {
 	delete profileSettings_; // TODO: profileSettings as boost::shared_ptr, now it's created when passing to Account ctor
+	clearPassword();
 }
 
 void Account::clearPassword() {

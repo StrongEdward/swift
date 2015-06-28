@@ -41,6 +41,7 @@ namespace Swift {
 		public:
 			QtLoginWindow(UIEventStream* uiEventStream, SettingsProvider* settings, TimerFactory* timerFactory);
 
+			virtual bool isInMultiaccountView();
 			void morphInto(MainWindow *mainWindow);
 			virtual void loggedOut();
 			virtual void setShowNotificationToggle(bool);

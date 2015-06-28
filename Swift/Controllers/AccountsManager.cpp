@@ -153,7 +153,7 @@ AccountsManager::AccountsManager(EventLoop* eventLoop,
 	bool eagle = settings_->getSetting(SettingConstants::FORGET_PASSWORDS);
 	if (!eagle) {
 		loginWindow_->selectUser(getDefaultJID());
-		loginWindow_->setLoginAutomatically(getAccountByJID(getDefaultJID())->getLoginAutomatically());
+		loginWindow_->setLoginAutomatically(getAccountByJIDString(getDefaultJID())->getLoginAutomatically());
 	}
 
 	foreach (MainController* c, mainControllers_) {
@@ -210,7 +210,7 @@ boost::shared_ptr<Account> AccountsManager::getDefaultAccount() {
 	return defaultAccount_;
 }
 
-boost::shared_ptr<Account> AccountsManager::getAccountByJID(std::string jid) {
+boost::shared_ptr<Account> AccountsManager::getAccountByJIDString(std::string jid) {
 	/*foreach (boost::shared_ptr<Account> account, accounts_) {
 		if (account->getJID() == jid) {
 			return account;
@@ -251,7 +251,7 @@ void AccountsManager::addAccount(boost::shared_ptr<Account> newAccount) {
 }
 
 void AccountsManager::removeAccount(const std::string username) {
-	boost::shared_ptr<Account> account = getAccountByJID(username);
+	boost::shared_ptr<Account> account = getAccountByJIDString(username);
 	if (account) {
 		// Disconnect
 		account->setEnabled(false);
@@ -292,7 +292,7 @@ void AccountsManager::handleLoginRequest(const std::string &username, const std:
 		loginWindow_->setIsLoggingIn(true);
 
 		// I think we can update account details with every single change in widgets so below code could be removed later.
-		boost::shared_ptr<Account> account = getAccountByJID(username);
+		boost::shared_ptr<Account> account = getAccountByJIDString(username);
 
 		if (!account) { // Login to new account
 			// First parameter will not be 'username' after implementing new GUI with account name input

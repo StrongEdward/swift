@@ -80,7 +80,7 @@ namespace Swift {
 
 			JID getDefaultJID();
 			boost::shared_ptr<Account> getDefaultAccount();
-			boost::shared_ptr<Account> getAccountByJID(std::string jid); // assumption: jid is unique
+			boost::shared_ptr<Account> getAccountByJIDString(std::string jid); // assumption: jid is unique
 			MainController* getMainControllerByJIDString(const std::string& jid);
 			boost::shared_ptr<Account> getAccountAt(unsigned int index);
 			int accountsCount();

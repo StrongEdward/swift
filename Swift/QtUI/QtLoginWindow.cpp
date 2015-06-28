@@ -441,7 +441,7 @@ void QtLoginWindow::addAvailableAccount(boost::shared_ptr<Account> account) {
 }*/
 
 void QtLoginWindow::handleUsernameTextChanged() {
-	boost::shared_ptr<Account> account = accountsManager_->getAccountByJID(Q2PSTRING(username_->currentText()));
+	boost::shared_ptr<Account> account = accountsManager_->getAccountByJIDString(Q2PSTRING(username_->currentText()));
 	if (account) {
 		certificateFile_ = P2QSTRING(account->getCertificatePath());
 		password_->setText(P2QSTRING(account->getPassword()));
@@ -586,6 +586,10 @@ void QtLoginWindow::setInitialMenus() {
 #ifdef SWIFTEN_PLATFORM_MACOSX
 	menuBar_->addMenu(generalMenu_);
 #endif
+}
+
+bool QtLoginWindow::isInMultiaccountView() {
+	return accountsListWrapper_->isVisibleTo(this) && !singleAccountWrapper_->isVisibleTo(this);
 }
 
 void QtLoginWindow::morphInto(MainWindow *mainWindow) {

@@ -278,8 +278,8 @@ bool MainController::shouldBeDeleted() {
 }
 
 void MainController::purgeCachedCredentials() {
-	//safeClear(cachedPassword_);
-	account_->clearPassword();
+	// Remove it? There's no cached credentials now. Everything is saved in Account object
+	//account_->clearPassword();
 }
 
 void MainController::resetClient() {
@@ -418,7 +418,10 @@ void MainController::handleConnected() {
 
 		eventWindowController_ = new EventWindowController(eventController_, uiFactory_);
 
-		loginWindow_->morphInto(rosterController_->getWindow());
+		//if (!loginWindow_->isInMultiaccountView()) {
+			loginWindow_->morphInto(rosterController_->getWindow());
+
+		//}
 
 		DiscoInfo discoInfo;
 		discoInfo.addIdentity(DiscoInfo::Identity(CLIENT_NAME, "client", "pc"));
