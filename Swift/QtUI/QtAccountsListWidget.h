@@ -34,12 +34,13 @@ class QtAccountsListWidget : public QScrollArea, public AccountsList
 
 		virtual void setManager(AccountsManager* manager);
 		virtual void reloadAccounts();
-		virtual void addAccount(boost::shared_ptr<Account> account);
-		virtual void removeAccount(int index);
+		virtual void addAccountToList(boost::shared_ptr<Account> account);
+		virtual void removeAccountFromList(int index);
 		virtual void setDefaultAccount(int index);
 
 	private slots:
-		void handleDefaultButtonClicked(int id);
+		void handleAccountWantsToBeDefault(int index);
+		void handleAccountWantsToBeDeleted(const std::string& jid);
 
 	private:
 		Ui::QtAccountsListWidget *ui;

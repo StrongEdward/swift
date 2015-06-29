@@ -35,7 +35,8 @@ namespace Swift {
 			static const SettingsProvider::Setting<bool> FORGET_PASSWORDS;
 			static const SettingsProvider::Setting<bool> REMEMBER_RECENT_CHATS;
 			static const SettingsProvider::Setting<std::string> LAST_LOGIN_JID;
-			static const SettingsProvider::Setting<bool> LOGIN_AUTOMATICALLY;
+			static const SettingsProvider::Setting<bool> LOGIN_AUTOMATICALLY; // To be removed: We have to check each account for beeing enabled
+			static const SettingsProvider::Setting<std::string> DEFAULT_ACCOUNT;
 			/**
 			 * The #SHOW_OFFLINE setting specifies whether or not to show offline contacts in the 
 			 * roster.

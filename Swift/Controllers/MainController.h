@@ -113,10 +113,12 @@ namespace Swift {
 			bool shouldBeDeleted();
 			boost::signal<void(const std::string) > onShouldBeDeleted;
 
+			void signOut();
+
 		private:
 			void resetClient();
 			void handleConnected();
-			void handleLoginRequest();
+			void handleLoginRequest(bool enabled);
 			void handleCancelLoginRequest();
 			void handleQuitRequest();
 			void handleChangeStatusRequest(StatusShow::Type show, const std::string &statusText);
@@ -130,7 +132,6 @@ namespace Swift {
 			void handleInputIdleChanged(bool);
 			void handleShowCertificateRequest();
 			void logout();
-			void signOut();
 			void setReconnectTimer();
 			void resetPendingReconnects();
 			void resetCurrentError();

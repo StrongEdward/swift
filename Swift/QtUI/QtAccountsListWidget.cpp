@@ -4,6 +4,8 @@
  * See Documentation/Licenses/BSD-simplified.txt for more information.
  */
 
+#include <3rdParty/Boost/src/boost/bind.hpp>
+
 #include "QtAccountsListWidget.h"
 #include "ui_QtAccountsListWidget.h"
 
@@ -22,6 +24,8 @@ QtAccountsListWidget::QtAccountsListWidget(QWidget *parent)
 	accountsLayout_->setAlignment(Qt::AlignTop);
 
 	defaultGroup_ = NULL;
+
+
 }
 
 QtAccountsListWidget::~QtAccountsListWidget()
@@ -54,12 +58,14 @@ void QtAccountsListWidget::reloadAccounts() {
 
 		accounts_.push_back(new QtAccountDetailsWidget(account, defaultGroup_, this));
 		accountsLayout_->addWidget(accounts_.back());
+		accounts_.back()->onWantsToBeDefault.connect(boost::bind(&QtAccountsListWidget::handleAccountWantsToBeDefault, this, _1));
+		accounts_.back()->onWantsToBeDeleted.connect(boost::bind(&QtAccountsListWidget::handleAccountWantsToBeDeleted, this, _1));
 	}
 
-	connect(defaultGroup_, SIGNAL(buttonClicked(int)), this, SLOT(handleDefaultButtonClicked(int)));
+	connect(defaultGroup_, SIGNAL(buttonClicked(int)), this, SLOT(handleAccountWantsToBeDefault(int)));
 }
 
-void QtAccountsListWidget::addAccount(boost::shared_ptr<Account> account) {
+void QtAccountsListWidget::addAccountToList(boost::shared_ptr<Account> account) {
 	// need to check if account is on the list?
 	bool found = false;
 	for (int i = 0; i < accountsLayout_->count(); i++) {
@@ -71,30 +77,37 @@ void QtAccountsListWidget::addAccount(boost::shared_ptr<Account> account) {
 	if (!found) {
 		accounts_.push_back(new QtAccountDetailsWidget(account, defaultGroup_, this));
 		accountsLayout_->addWidget(accounts_.back());
+		accounts_.back()->onWantsToBeDefault.connect(boost::bind(&QtAccountsListWidget::handleAccountWantsToBeDefault, this, _1));
+		accounts_.back()->onWantsToBeDeleted.connect(boost::bind(&QtAccountsListWidget::handleAccountWantsToBeDeleted, this, _1));
 	}
 }
 
-void QtAccountsListWidget::removeAccount(int index) {
+void QtAccountsListWidget::removeAccountFromList(int index) {
 	if (index > 0 && static_cast<unsigned int>(index) < accounts_.size()) {
 		QtAccountDetailsWidget* widget = accounts_[index];
+
+		widget->onWantsToBeDefault.disconnect(boost::bind(&QtAccountsListWidget::handleAccountWantsToBeDefault, this, _1));
+		widget->onWantsToBeDeleted.disconnect(boost::bind(&QtAccountsListWidget::handleAccountWantsToBeDeleted, this, _1));
 
 		accountsLayout_->removeWidget(widget);
 		delete accounts_[index];
 		accounts_.erase(accounts_.begin() + index);
-
-		/*accountsLayout_->update();
-		update();
-		updateGeometry();*/
 	}
 }
 
 void QtAccountsListWidget::setDefaultAccount(int index) {
-	accounts_.at(index)->setDefault();
+	accounts_.at(index)->setDefaultAccountLook(true);
 }
 
-void QtAccountsListWidget::handleDefaultButtonClicked(int id) {
-	onDefaultButtonClicked(id);
+void QtAccountsListWidget::handleAccountWantsToBeDefault(int index) {
+	accounts_[ manager_->getDefaultAccount()->getIndex() ]->setDefaultAccountLook(false);
+	accounts_[index]->setDefaultAccountLook(true);
+
+	onAccountWantsToBeDefault(index);
 }
 
+void QtAccountsListWidget::handleAccountWantsToBeDeleted(const std::string& jid) {
+	manager_->removeAccount(jid);
+}
 
 }

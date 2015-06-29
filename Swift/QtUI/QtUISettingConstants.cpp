@@ -17,4 +17,5 @@ const SettingsProvider::Setting<int> QtUISettingConstants::HISTORYWINDOW_FONT_SI
 const SettingsProvider::Setting<bool> QtUISettingConstants::SHOW_EMOTICONS("showEmoticons", true);
 const SettingsProvider::Setting<bool> QtUISettingConstants::USE_PLAIN_CHATS("plainChats", false);
 const SettingsProvider::Setting<bool> QtUISettingConstants::USE_SCREENREADER("screenreader", false);
+const SettingsProvider::Setting<bool> QtUISettingConstants::MULTIACCOUNT_VIEW("multiaccountView", false);
 }

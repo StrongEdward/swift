@@ -76,7 +76,7 @@ namespace Swift {
 							bool useDelayForLatency);
 			~AccountsManager();
 
-			void createMainController(boost::shared_ptr<Account> account, bool inCombobox);
+			void createMainController(boost::shared_ptr<Account> account, bool triggeredByCombobox);
 
 			JID getDefaultJID();
 			boost::shared_ptr<Account> getDefaultAccount();
@@ -84,10 +84,10 @@ namespace Swift {
 			MainController* getMainControllerByJIDString(const std::string& jid);
 			boost::shared_ptr<Account> getAccountAt(unsigned int index);
 			int accountsCount();
-			void addAccount(boost::shared_ptr<Account> newAccount);
-			void removeAccount(const std::string username);
+			void addAccount(boost::shared_ptr<Account> account = boost::shared_ptr<Account>());
+			void removeAccount(const std::string& username);
 
-			void handleLoginRequest(const std::string &username, const std::string &password, const std::string& certificatePath, const ClientOptions& options, bool remember, bool loginAutomatically);
+			void handleLoginRequestTriggeredByCombobox(const std::string &username, const std::string &password, const std::string& certificatePath, const ClientOptions& options, bool remember, bool loginAutomatically);
 
 			//boost::signal<void (const MainController*, const std::string&, CertificateWithKey::ref, const ClientOptions&) > onLoginRequest;
 
@@ -96,6 +96,7 @@ namespace Swift {
 			int maxAccountIndex();
 			void handleDefaultAccountChanged(int index);
 			void handlePurgeSavedLoginRequest(const std::string& username); // to be removed, remove account directly
+			void setDefaultAccount(boost::shared_ptr<Account> account);
 
 		private:
 			//std::vector< boost::shared_ptr<Account> > accounts_;

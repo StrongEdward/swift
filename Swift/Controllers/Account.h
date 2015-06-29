@@ -20,6 +20,7 @@
 
 namespace Swift {
 	class JID;
+	class SettingsProvider;
 	class ProfileSettingsProvider;
 
 	struct RGBColor {
@@ -37,7 +38,7 @@ namespace Swift {
 	class Account {
 		public:
 			Account() {}
-			Account(ProfileSettingsProvider* profileSettings, int index = -1);
+			Account(std::string profile, SettingsProvider* settings, int index = -1);
 			Account(int index,
 					const std::string accountName,
 					const std::string jid,
@@ -46,8 +47,9 @@ namespace Swift {
 					const ClientOptions options,
 					bool rememberPassword,
 					bool autoLogin,
-					bool enabled, bool isDefault,
-					ProfileSettingsProvider* profileSettings);
+					bool enabled,
+					//bool isDefault,
+					SettingsProvider* settings);
 			~Account();
 
 			void storeAllSettings();
@@ -60,7 +62,7 @@ namespace Swift {
 			const std::string& getPassword();
 			const std::string& getCertificatePath();
 			const ClientOptions& getClientOptions();
-			bool isDefault();
+			//bool isDefault();
 			bool forgetPassword();
 			bool getLoginAutomatically();
 			bool isEnabled();
@@ -74,14 +76,14 @@ namespace Swift {
 			void setPassword(const std::string& newPassword);
 			void setCertificatePath(const std::string& newPath);
 			void setClientOptions(const ClientOptions& newOptions);
-			void setDefault(bool isDefault);
+			//void setDefault(bool isDefault);
 			void setRememberPassword(bool remember);
 			void setLoginAutomatically(bool autoLogin);
 			void setEnabled(bool enabled);
 			void setColor(RGBColor color);
 
 			// Signals
-			boost::signal<void ()> onEnabled;
+			boost::signal<void (bool)> onEnabledChanged;
 
 		private:
 			std::string serializeClientOptions(const ClientOptions& options);
@@ -97,9 +99,10 @@ namespace Swift {
 			bool rememberPassword_;
 			bool autoLogin_;
 			bool enabled_;
-			bool isDefault_;
+			//bool isDefault_;
 			RGBColor color_;
 
+			SettingsProvider* settings_;
 			ProfileSettingsProvider* profileSettings_;
 			//static int maxIndex_;
 

@@ -212,7 +212,7 @@ MainController::MainController(boost::shared_ptr<Account> account,
 	}*/
 
 	profileSettings_ = account_->getProfileSettings();
-	account_->onEnabled.connect(boost::bind(&MainController::handleLoginRequest, this));
+	account_->onEnabledChanged.connect(boost::bind(&MainController::handleLoginRequest, this, _1));
 	/*if (account_->getLoginAutomatically()) {
 		handleLoginRequest();
 	}*/
@@ -242,7 +242,7 @@ MainController::MainController(boost::shared_ptr<Account> account,
 
 MainController::~MainController() {
 	eventController_->onEventQueueLengthChange.disconnect(boost::bind(&MainController::handleEventQueueLengthChange, this, _1));
-	account_->onEnabled.disconnect(boost::bind(&MainController::handleLoginRequest, this));
+	account_->onEnabledChanged.disconnect(boost::bind(&MainController::handleLoginRequest, this, _1));
 	loginWindow_->onCancelLoginRequest.disconnect(boost::bind(&MainController::handleCancelLoginRequest, this));
 	loginWindow_->onQuitRequest.disconnect(boost::bind(&MainController::handleQuitRequest, this));
 	idleDetector_->onIdleChanged.disconnect(boost::bind(&MainController::handleInputIdleChanged, this, _1));
@@ -363,11 +363,13 @@ void MainController::resetCurrentError() {
 		lastDisconnectError_->conclude();
 		lastDisconnectError_ = boost::shared_ptr<ErrorEvent>();
 	}
+	loginWindow_->setMessage("");
 }
 
 void MainController::handleConnected() {
 	boundJID_ = client_->getJID();
 	resetCurrentError();
+
 	resetPendingReconnects();
 
 	if (settings_->getSetting(SettingConstants::FORGET_PASSWORDS)) {
@@ -557,21 +559,27 @@ void MainController::handleShowCertificateRequest() {
 	rosterController_->getWindow()->openCertificateDialog(chain);
 }
 
-void MainController::handleLoginRequest() {
+void MainController::handleLoginRequest(bool enabled) {
+	if (!enabled) {
+		return;
+	}
 
-		std::string certificatePath = account_->getCertificatePath();
+	loginWindow_->setMessage("");
+	loginWindow_->setIsLoggingIn(true);
+
+	std::string certificatePath = account_->getCertificatePath();
 #if defined(HAVE_SCHANNEL)
-		if (isCAPIURI(certificatePath)) {
-			certificate_ = boost::make_shared<CAPICertificate>(certificatePath, networkFactories_->getTimerFactory());
-		} else {
-			certificate_ = boost::make_shared<PKCS12Certificate>(certificatePath, createSafeByteArray(Q2PSTRING(account_->getPassword()));
-		}
+	if (isCAPIURI(certificatePath)) {
+		certificate_ = boost::make_shared<CAPICertificate>(certificatePath, networkFactories_->getTimerFactory());
+	} else {
+		certificate_ = boost::make_shared<PKCS12Certificate>(certificatePath, createSafeByteArray(Q2PSTRING(account_->getPassword()));
+	}
 #else
-		certificate_ = boost::make_shared<PKCS12Certificate>(certificatePath, createSafeByteArray(account_->getPassword()));
+	certificate_ = boost::make_shared<PKCS12Certificate>(certificatePath, createSafeByteArray(account_->getPassword()));
 #endif
 
-		clientOptions_ = account_->getClientOptions();
-		performLoginFromCachedCredentials();
+	clientOptions_ = account_->getClientOptions();
+	performLoginFromCachedCredentials();
 }
 
 /*void MainController::handlePurgeSavedLoginRequest(const std::string& username) {
@@ -722,7 +730,7 @@ void MainController::handleDisconnected(const boost::optional<ClientError>& erro
 		}
 		else if (forceSignout || !rosterController_) { //hasn't been logged in yet or permanent error
 			signOut();
-			loginWindow_->setMessage(message);
+			loginWindow_->setMessage(account_->getAccountName() + ": " + message);
 			loginWindow_->setIsLoggingIn(false);
 			if (beforeFirstLogin_) {
 				firstLoginFailed_ = true;

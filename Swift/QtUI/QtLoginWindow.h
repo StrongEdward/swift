@@ -72,7 +72,7 @@ namespace Swift {
 			void handleShowHighlightEditor();
 			void handleToggleSounds(bool enabled);
 			void handleToggleNotifications(bool enabled);
-			void handleDefaultButtonClicked(int index);
+			void handleAccountWantsToBeDefault(int index);
 			void handleAbout();
 			void bringToFront();
 			void toggleBringToFront();
@@ -82,6 +82,8 @@ namespace Swift {
 			void handleSettingChanged(const std::string& settingPath);
 			void handleOpenConnectionOptions();
 			void handleChangeView();
+			void handleAddAccountClicked();
+			//void handleSignOut();
 
 		protected:
 			bool eventFilter(QObject *obj, QEvent *event);

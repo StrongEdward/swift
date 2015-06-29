@@ -19,13 +19,14 @@
 #include <Swiften/StringCodecs/Base64.h>
 
 #include <Swift/Controllers/Account.h>
+#include <Swift/Controllers/Settings/SettingsProvider.h>
 #include <Swift/Controllers/ProfileSettingsProvider.h>
 
 namespace Swift {
 
 //int Account::maxIndex_ = 0;
 
-Account::Account(ProfileSettingsProvider* profileSettings, int index) : index_(index), profileSettings_(profileSettings) {
+Account::Account(std::string profile, SettingsProvider* settings, int index) : index_(index), settings_(settings), profileSettings_(new ProfileSettingsProvider(profile, settings)) {
 
 	if (index_ >= 0) {
 		profileSettings_->storeInt("index", index_);
@@ -34,13 +35,13 @@ Account::Account(ProfileSettingsProvider* profileSettings, int index) : index_(i
 	}
 
 	jid_ = profileSettings_->getStringSetting("jid");
-	accountName_ = profileSettings->getStringSetting("accountname");
+	accountName_ = profileSettings_->getStringSetting("accountname");
 	if (accountName_.empty()) {
 		accountName_ = JID(jid_).getNode();
 	}
 	password_ = profileSettings_->getStringSetting("pass");
 	certificatePath_ = profileSettings_->getStringSetting("certificate");
-	clientOptions_ = parseClientOptions(profileSettings->getStringSetting("options"));
+	clientOptions_ = parseClientOptions(profileSettings_->getStringSetting("options"));
 	rememberPassword_ = profileSettings_->getIntSetting("remember", 0);
 	autoLogin_ = profileSettings_->getIntSetting("autologin", 0);
 	enabled_ = autoLogin_;
@@ -62,8 +63,8 @@ Account::Account(int index,
 				 bool rememberPassword,
 				 bool autoLogin,
 				 bool enabled,
-				 bool isDefault,
-				 ProfileSettingsProvider* profileSettings)
+				 //bool isDefault,
+				 SettingsProvider* settings)
 	: index_(index),
 	  accountName_(accountName),
 	  jid_(JID(jid)),
@@ -73,8 +74,9 @@ Account::Account(int index,
 	  rememberPassword_(rememberPassword),
 	  autoLogin_(autoLogin),
 	  enabled_(enabled),
-	  isDefault_(isDefault),
-	  profileSettings_(profileSettings) {
+	  //isDefault_(isDefault),
+	  settings_(settings),
+	  profileSettings_(new ProfileSettingsProvider(accountName, settings_)) {
 
 	storeAllSettings();
 }
@@ -88,7 +90,7 @@ void Account::storeAllSettings() {
 	profileSettings_->storeString("options", serializeClientOptions(clientOptions_));
 	profileSettings_->storeInt("remember", rememberPassword_);
 	profileSettings_->storeInt("autologin", autoLogin_);
-	profileSettings_->storeInt("default", isDefault_);
+	//profileSettings_->storeInt("default", isDefault_);
 }
 
 Account::~Account() {
@@ -126,9 +128,9 @@ const ClientOptions& Account::getClientOptions() {
 	return clientOptions_;
 }
 
-bool Account::isDefault() {
+/*bool Account::isDefault() {
 	return isDefault_;
-}
+}*/
 
 bool Account::forgetPassword() {
 	return !rememberPassword_;
@@ -185,13 +187,13 @@ void Account::setClientOptions(const ClientOptions& newOptions) {
 	profileSettings_->storeString("options", serializeClientOptions(newOptions));
 }
 
-void Account::setDefault(bool isDefault) {
+/*void Account::setDefault(bool isDefault) {
 	if (isDefault != isDefault_) {
 		isDefault_ = isDefault;
 		profileSettings_->storeInt("default", isDefault_);
 	}
 
-}
+}*/
 
 void Account::setRememberPassword(bool remember) {
 	if (!remember) {
@@ -213,13 +215,14 @@ void Account::setLoginAutomatically(bool autoLogin) {
 }
 
 void Account::setEnabled(bool enabled) {
-	bool oldValue = enabled_;
+	bool wasEnabled = enabled_;
 	enabled_ = enabled;
 	if (enabled) {
-		onEnabled();
+		onEnabledChanged(true);
 	}
-	if (oldValue && !enabled) {
-		// send disabled signal
+	if (wasEnabled && !enabled) {
+		// send disabled signal?
+		onEnabledChanged(false);
 	}
 
 }

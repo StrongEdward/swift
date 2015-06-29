@@ -21,11 +21,11 @@ namespace Swift {
 			virtual ~AccountsList() {}
 
 			virtual void setManager(AccountsManager* manager) = 0;
-			virtual void addAccount(boost::shared_ptr<Account> account) = 0;
-			virtual void removeAccount(int index) = 0;
+			virtual void addAccountToList(boost::shared_ptr<Account> account) = 0;
+			virtual void removeAccountFromList(int index) = 0;
 			virtual void reloadAccounts() = 0;
 			virtual void setDefaultAccount(int index) = 0;
 
-			boost::signal<void (int)> onDefaultButtonClicked;
+			boost::signal<void (int)> onAccountWantsToBeDefault;
 	};
 }

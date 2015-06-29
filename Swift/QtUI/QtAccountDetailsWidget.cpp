@@ -11,14 +11,15 @@
  */
 
 #include <QFileDialog>
+#include <QMessageBox>
+
+#include <3rdParty/Boost/src/boost/bind.hpp>
 
 #include <QtSwiftUtil.h>
 
 #include <Swift/QtUI/QtAccountDetailsWidget.h>
 #include <Swift/QtUI/QtConnectionSettingsWindow.h>
 #include <Swift/QtUI/CAPICertificateSelector.h>
-
-#include <QPixmap>
 
 namespace Swift {
 
@@ -27,6 +28,7 @@ QtAccountDetailsWidget::QtAccountDetailsWidget(boost::shared_ptr<Account> accoun
 	ui(new Ui::QtAccountDetailsWidget),
 	triangle_(new QtTreeviewTriangle),
 	color_(new QtAccountColorWidget),
+	contextMenu_(new QMenu(this)),
 	account_(account)
 {
 	ui->setupUi(this);
@@ -45,6 +47,7 @@ QtAccountDetailsWidget::QtAccountDetailsWidget(boost::shared_ptr<Account> accoun
 
 	ui->statusIcon_->setPixmap(QPixmap(":/icons/offline.png"));
 	ui->deleteButton_->setIcon(QIcon(":/icons/delete.ico"));
+	connect(ui->deleteButton_, &QPushButton::clicked, this, &QtAccountDetailsWidget::handleDeleteButtonClicked);
 	ui->accountLayout_->insertWidget(0, triangle_);
 
 	connect(triangle_, &QtTreeviewTriangle::clicked, this, &QtAccountDetailsWidget::triangleClicked);
@@ -61,10 +64,13 @@ QtAccountDetailsWidget::QtAccountDetailsWidget(boost::shared_ptr<Account> accoun
 	connect(ui->userAddress_, &QLineEdit::textEdited, this, &QtAccountDetailsWidget::handleUserAddressEdited);
 	connect(ui->password_, &QLineEdit::textEdited, this, &QtAccountDetailsWidget::handlePasswordEdited);
 	connect(ui->rememberCheck_, &QCheckBox::toggled, this, &QtAccountDetailsWidget::handleRememberPasswordToggled);
-	connect(ui->enabledCheck_, &QCheckBox::toggled, this, &QtAccountDetailsWidget::handleAccountEnabled);
+	connect(ui->enabledCheck_, &QCheckBox::toggled, this, &QtAccountDetailsWidget::handleAccountEnabledChanged);
+	connect(ui->password_, &QLineEdit::returnPressed, this, &QtAccountDetailsWidget::handlePasswordReturnPressed);
+	account_->onEnabledChanged.connect(boost::bind(&QtAccountDetailsWidget::handleAccountEnabledValueChanged, this, _1));
 
 	buttonGroup->addButton(ui->defaultRadio_);
 	buttonGroup->setId(ui->defaultRadio_, account_->getIndex());
+	ui->defaultRadio_->hide(); // Because of new idea: bold default account name
 
 	connect(ui->connectionOptions_, &QPushButton::clicked, this, &QtAccountDetailsWidget::handleCogwheelClicked);
 
@@ -76,6 +82,8 @@ QtAccountDetailsWidget::QtAccountDetailsWidget(boost::shared_ptr<Account> accoun
 	ui->accountLayout_->insertWidget(1, color_);
 	color_->setColor(account_->getColor());
 	connect(color_, &QtAccountColorWidget::colorChanged, this, &QtAccountDetailsWidget::handleColorChanged);
+
+	contextMenu_->addAction(tr("Set as default"), this, SLOT(handleSetAsDefault()));
 }
 
 QtAccountDetailsWidget::~QtAccountDetailsWidget()
@@ -96,12 +104,18 @@ QSize QtAccountDetailsWidget::minimumSizeHint() const {
 	}
 }
 
-void QtAccountDetailsWidget::setDefault() {
-	ui->defaultRadio_->setChecked(true);
-}
-
 std::string QtAccountDetailsWidget::getUserAddress() {
 	return account_->getJID();
+}
+
+void QtAccountDetailsWidget::setDefaultAccountLook(bool isDefault) {
+	if (isDefault) {
+		ui->defaultRadio_->setChecked(true);
+		ui->accountNameLabel_->setStyleSheet("*{font-weight: bold}");
+	} else {
+		ui->defaultRadio_->setChecked(false);
+		ui->accountNameLabel_->setStyleSheet("");
+	}
 }
 
 void QtAccountDetailsWidget::triangleClicked() {
@@ -171,12 +185,42 @@ void QtAccountDetailsWidget::handlePasswordEdited(const QString& text) {
 	account_->setPassword(Q2PSTRING(text));
 }
 
+void QtAccountDetailsWidget::handlePasswordReturnPressed() {
+	ui->enabledCheck_->setChecked(true);
+}
+
 void QtAccountDetailsWidget::handleRememberPasswordToggled(bool checked) {
 	account_->setRememberPassword(checked);
 }
 
-void QtAccountDetailsWidget::handleAccountEnabled(bool checked) {
+void QtAccountDetailsWidget::handleAccountEnabledChanged(bool checked) {
+	account_->setJID(Q2PSTRING(ui->userAddress_->text()));
+	account_->setPassword(Q2PSTRING(ui->password_->text()));
 	account_->setEnabled(checked);
 }
+
+void QtAccountDetailsWidget::handleAccountEnabledValueChanged(bool checked) {
+	ui->enabledCheck_->setChecked(checked);
+}
+
+void QtAccountDetailsWidget::handleSetAsDefault() {
+	ui->defaultRadio_->setChecked(true);
+	onWantsToBeDefault(account_->getIndex());
+}
+
+void QtAccountDetailsWidget::handleDeleteButtonClicked() {
+	int result = QMessageBox::question(this, tr("Remove profile"), tr("Remove the profile '%1'?").arg(P2QSTRING(account_->getJID().toString())), QMessageBox::Yes | QMessageBox::No);
+	if (result == QMessageBox::Yes) {
+		onWantsToBeDeleted(account_->getJID());
+	}
+}
+
+void QtAccountDetailsWidget::mousePressEvent(QMouseEvent* event) {
+	if (event->button() == Qt::RightButton) {
+		contextMenu_->exec(QCursor::pos());
+	}
+}
+
+
 
 }
