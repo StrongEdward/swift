@@ -29,6 +29,8 @@ if env["SCONS_STAGE"] == "build" :
 			"Chat/MUCSearchController.cpp",
 			"Chat/UserSearchController.cpp",
 			"Chat/ChatMessageParser.cpp",
+			"Account.cpp",
+			"AccountsManager.cpp",
 			"ContactSuggester.cpp",
 			"MainController.cpp",
 			"ProfileController.cpp",
@@ -107,5 +109,6 @@ if env["SCONS_STAGE"] == "build" :
 			File("UnitTest/ChatMessageSummarizerTest.cpp"),
 			File("Settings/UnitTest/SettingsProviderHierachyTest.cpp"),
 			File("UnitTest/HighlightRuleTest.cpp"),
-			File("UnitTest/ContactSuggesterTest.cpp")
+			File("UnitTest/ContactSuggesterTest.cpp"),
+			File("UnitTest/AccountTest.cpp")
 		])

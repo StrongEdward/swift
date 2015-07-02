@@ -4,6 +4,12 @@
  * See the COPYING file for more information.
  */
 
+/*
+ * Copyright (c) 2015 Daniel Baczynski
+ * Licensed under the Simplified BSD license.
+ * See Documentation/Licenses/BSD-simplified.txt for more information.
+ */
+
 #pragma once
 
 #include <Swift/Controllers/Settings/SettingsProvider.h>
@@ -35,7 +41,9 @@ namespace Swift {
 			static const SettingsProvider::Setting<bool> FORGET_PASSWORDS;
 			static const SettingsProvider::Setting<bool> REMEMBER_RECENT_CHATS;
 			static const SettingsProvider::Setting<std::string> LAST_LOGIN_JID;
-			static const SettingsProvider::Setting<bool> LOGIN_AUTOMATICALLY;
+			static const SettingsProvider::Setting<bool> LOGIN_AUTOMATICALLY; // To be removed: We have to check each account for beeing enabled
+			static const SettingsProvider::Setting<std::string> DEFAULT_ACCOUNT;
+			static const SettingsProvider::Setting<std::string> SERIALIZED_ACCOUNTS;
 			/**
 			 * The #SHOW_OFFLINE setting specifies whether or not to show offline contacts in the 
 			 * roster.
@@ -104,5 +112,12 @@ namespace Swift {
 			 * log in the user; else not.
 			 */
 			static const SettingsProvider::Setting<bool> SINGLE_SIGN_ON;
+			/**
+			 * The #MULTIACCOUNT_ENABLED setting specifies wheter to show options that enables a user to go to multiaccount view.
+			 */
+			static const SettingsProvider::Setting<bool> MULTIACCOUNT_ENABLED;
+			static const SettingsProvider::Setting<std::string> SEARCHED_SERVICES;
+			static const SettingsProvider::Setting<int> LAST_SHOW;
+			static const SettingsProvider::Setting<std::string> LAST_STATUS;
 	};
 }

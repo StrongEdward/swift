@@ -4,28 +4,36 @@
  * See the COPYING file for more information.
  */
 
+/*
+ * Copyright (c) 2015 Daniel Baczynski
+ * Licensed under the Simplified BSD license.
+ * See Documentation/Licenses/BSD-simplified.txt for more information.
+ */
+
 #pragma once
 
-#include <QMainWindow>
-#include <QPointer>
-#include <QLineEdit>
-#include <QPushButton>
 #include <QCheckBox>
-#include <QStackedWidget>
+#include <QLineEdit>
+#include <QMainWindow>
 #include <QMenuBar>
+#include <QPointer>
+#include <QPushButton>
+#include <QStackedWidget>
 
-#include <Swift/Controllers/UIInterfaces/LoginWindow.h>
 #include <Swift/Controllers/UIEvents/UIEventStream.h>
+#include <Swift/Controllers/UIInterfaces/AccountsList.h>
+#include <Swift/Controllers/UIInterfaces/LoginWindow.h>
 #include <Swift/Controllers/UIInterfaces/MainWindow.h>
-#include <QtAboutWidget.h>
 
 class QLabel;
 class QToolButton;
 class QComboBox;
 
 namespace Swift {
+	class QtAboutWidget;
 	class SettingsProvider;
 	class TimerFactory;
+	class AccountsList;
 
 	class QtLoginWindow : public QMainWindow, public LoginWindow {
 		Q_OBJECT
@@ -39,12 +47,15 @@ namespace Swift {
 		public:
 			QtLoginWindow(UIEventStream* uiEventStream, SettingsProvider* settings, TimerFactory* timerFactory);
 
+			virtual bool isInMultiaccountView();
 			void morphInto(MainWindow *mainWindow);
 			virtual void loggedOut();
 			virtual void setShowNotificationToggle(bool);
 			virtual void setMessage(const std::string& message);
-			virtual void addAvailableAccount(const std::string& defaultJID, const std::string& defaultPassword, const std::string& defaultCertificate, const ClientOptions& options);
-			virtual void removeAvailableAccount(const std::string& jid);
+			virtual void setAccountsManager(AccountsManager* manager);
+			virtual void addAvailableAccount(boost::shared_ptr<Account> account);
+			virtual void removeAvailableAccount(int index);
+			virtual void clearPassword();
 			virtual void setLoginAutomatically(bool loginAutomatically);
 			virtual void setIsLoggingIn(bool loggingIn);
 			void selectUser(const std::string& user);
@@ -65,6 +76,7 @@ namespace Swift {
 			void handleShowHighlightEditor();
 			void handleToggleSounds(bool enabled);
 			void handleToggleNotifications(bool enabled);
+			void handleAccountWantsToBeDefault(int index);
 			void handleAbout();
 			void bringToFront();
 			void toggleBringToFront();
@@ -73,25 +85,28 @@ namespace Swift {
 			void moveEvent(QMoveEvent* event);
 			void handleSettingChanged(const std::string& settingPath);
 			void handleOpenConnectionOptions();
+			void handleChangeView();
+			void handleAddAccountClicked();
 
 		protected:
 			bool eventFilter(QObject *obj, QEvent *event);
 
 		private:
 			void setInitialMenus();
+			void updateViewLabelText();
 			QWidget* loginWidgetWrapper_;
-			QStringList usernames_;
-			QStringList passwords_;
-			QStringList certificateFiles_;
-			std::vector<ClientOptions> options_;
+			QWidget* singleAccountWrapper_;
+			QWidget* accountsListWrapper_;
 			QComboBox* username_;
 			QLineEdit* password_;
 			QPushButton* loginButton_;
+			QPushButton* okButton_;
 			/* If you add a widget here, change setLoggingIn as well.*/
 			QCheckBox* remember_;
 			QCheckBox* loginAutomatically_;
 			QStackedWidget* stack_;
 			QLabel* message_;
+			QLabel* viewLabel_;
 			QString certificateFile_;
 			QToolButton* certificateButton_;
 			QMenuBar* menuBar_;
@@ -108,5 +123,7 @@ namespace Swift {
 			QAction* highlightEditorAction_;
 			TimerFactory* timerFactory_;
 			ClientOptions currentOptions_;
+			AccountsList* accountsList_;
+			AccountsManager* accountsManager_;
 	};
 }

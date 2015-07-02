@@ -4,6 +4,12 @@
  * See the COPYING file for more information.
  */
 
+/*
+ * Copyright (c) 2015 Daniel Baczynski
+ * Licensed under the Simplified BSD license.
+ * See Documentation/Licenses/BSD-simplified.txt for more information.
+ */
+
 #include <cppunit/extensions/HelperMacros.h>
 #include <cppunit/extensions/TestFactoryRegistry.h>
 
@@ -37,12 +43,12 @@
 #include <Swiften/VCards/VCardMemoryStorage.h>
 #include <Swiften/Whiteboard/WhiteboardSessionManager.h>
 
+#include <Swift/Controllers/Account.h>
 #include <Swift/Controllers/Chat/ChatsManager.h>
 #include <Swift/Controllers/Chat/ChatController.h>
 #include <Swift/Controllers/Chat/MUCController.h>
 #include <Swift/Controllers/Chat/UnitTest/MockChatListWindow.h>
 #include <Swift/Controllers/FileTransfer/FileTransferOverview.h>
-#include <Swift/Controllers/ProfileSettingsProvider.h>
 #include <Swift/Controllers/SettingConstants.h>
 #include <Swift/Controllers/Settings/DummySettingsProvider.h>
 #include <Swift/Controllers/UIEvents/JoinMUCUIEvent.h>
@@ -105,7 +111,7 @@ public:
 		chatListWindowFactory_ = mocks_->InterfaceMock<ChatListWindowFactory>();
 		mucSearchWindowFactory_ = mocks_->InterfaceMock<MUCSearchWindowFactory>();
 		settings_ = new DummySettingsProvider();
-		profileSettings_ = new ProfileSettingsProvider("a", settings_);
+		account_ = boost::make_shared<Account>("a", settings_);
 		chatListWindow_ = new MockChatListWindow();
 		ftManager_ = new DummyFileTransferManager();
 		ftOverview_ = new FileTransferOverview(ftManager_);
@@ -119,7 +125,7 @@ public:
 		vcardManager_ = new VCardManager(jid_, iqRouter_, vcardStorage_);
 		mocks_->ExpectCall(chatListWindowFactory_, ChatListWindowFactory::createChatListWindow).With(uiEventStream_).Return(chatListWindow_);
 		clientBlockListManager_ = new ClientBlockListManager(iqRouter_);
-		manager_ = new ChatsManager(jid_, stanzaChannel_, iqRouter_, eventController_, chatWindowFactory_, joinMUCWindowFactory_, nickResolver_, presenceOracle_, directedPresenceSender_, uiEventStream_, chatListWindowFactory_, true, NULL, mucRegistry_, entityCapsManager_, mucManager_, mucSearchWindowFactory_, profileSettings_, ftOverview_, xmppRoster_, false, settings_, NULL, wbManager_, highlightManager_, clientBlockListManager_, emoticons_, NULL, vcardManager_);
+		manager_ = new ChatsManager(jid_, stanzaChannel_, iqRouter_, eventController_, chatWindowFactory_, joinMUCWindowFactory_, nickResolver_, presenceOracle_, directedPresenceSender_, uiEventStream_, chatListWindowFactory_, true, NULL, mucRegistry_, entityCapsManager_, mucManager_, mucSearchWindowFactory_, account_, ftOverview_, xmppRoster_, false, settings_, NULL, wbManager_, highlightManager_, clientBlockListManager_, emoticons_, NULL, vcardManager_);
 
 		manager_->setAvatarManager(avatarManager_);
 	}
@@ -127,7 +133,6 @@ public:
 	void tearDown() {
 		delete highlightManager_;
 		//delete chatListWindowFactory
-		delete profileSettings_;
 		delete avatarManager_;
 		delete manager_;
 		delete clientBlockListManager_;
@@ -491,7 +496,7 @@ private:
 	CapsProvider* capsProvider_;
 	MUCManager* mucManager_;
 	DummySettingsProvider* settings_;
-	ProfileSettingsProvider* profileSettings_;
+	boost::shared_ptr<Account> account_;
 	ChatListWindow* chatListWindow_;
 	FileTransferOverview* ftOverview_;
 	FileTransferManager* ftManager_;
