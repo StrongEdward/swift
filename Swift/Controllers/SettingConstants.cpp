@@ -4,7 +4,14 @@
  * See the COPYING file for more information.
  */
 
+/*
+ * Copyright (c) 2015 Daniel Baczynski
+ * Licensed under the Simplified BSD license.
+ * See Documentation/Licenses/BSD-simplified.txt for more information.
+ */
+
 #include <Swift/Controllers/SettingConstants.h>
+#include <Swiften/Elements/StatusShow.h>
 
 namespace Swift {
 
@@ -16,6 +23,8 @@ const SettingsProvider::Setting<bool> SettingConstants::FORGET_PASSWORDS = Setti
 const SettingsProvider::Setting<bool> SettingConstants::REMEMBER_RECENT_CHATS = SettingsProvider::Setting<bool>("rememberRecentChats", true);
 const SettingsProvider::Setting<std::string> SettingConstants::LAST_LOGIN_JID = SettingsProvider::Setting<std::string>("lastLoginJID", "");
 const SettingsProvider::Setting<bool> SettingConstants::LOGIN_AUTOMATICALLY = SettingsProvider::Setting<bool>("loginAutomatically", false);
+const SettingsProvider::Setting<std::string> SettingConstants::DEFAULT_ACCOUNT = SettingsProvider::Setting<std::string>("defaulAccount", "");
+const SettingsProvider::Setting<std::string> SettingConstants::SERIALIZED_ACCOUNTS = SettingsProvider::Setting<std::string>("serializedAccounts", "");
 const SettingsProvider::Setting<bool> SettingConstants::SHOW_OFFLINE("showOffline", false);
 const SettingsProvider::Setting<std::string> SettingConstants::EXPANDED_ROSTER_GROUPS("GroupExpandiness", "");
 const SettingsProvider::Setting<bool> SettingConstants::PLAY_SOUNDS("playSounds", true);
@@ -29,4 +38,8 @@ const SettingsProvider::Setting<std::string> SettingConstants::TRELLIS_GRID_SIZE
 const SettingsProvider::Setting<std::string> SettingConstants::TRELLIS_GRID_POSITIONS("trellisGridPositions", "");
 const SettingsProvider::Setting<bool> SettingConstants::DISCONNECT_ON_CARD_REMOVAL("disconnectOnCardRemoval", true);
 const SettingsProvider::Setting<bool> SettingConstants::SINGLE_SIGN_ON("singleSignOn", false);
+const SettingsProvider::Setting<bool> SettingConstants::MULTIACCOUNT_ENABLED("multiaccountEnabled", false);
+const SettingsProvider::Setting<std::string> SettingConstants::SEARCHED_SERVICES("searchedServices", "");
+const SettingsProvider::Setting<int> SettingConstants::LAST_SHOW("lastShow", StatusShow::Online);
+const SettingsProvider::Setting<std::string> SettingConstants::LAST_STATUS("lastStatus", "");
 }

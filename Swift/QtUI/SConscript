@@ -196,6 +196,10 @@ sources = [
 	"QtChatWindowJSBridge.cpp",
 	"QtMUCConfigurationWindow.cpp",
 	"QtAffiliationEditor.cpp",
+	"QtAccountDetailsWidget.cpp",
+	"QtAccountsListWidget.cpp",
+	"QtAccountColorWidget.cpp",
+	"QtTreeviewTriangle.cpp",
 	"QtUISettingConstants.cpp",
 	"QtURLValidator.cpp",
 	"QtResourceHelper.cpp",
@@ -291,6 +295,8 @@ myenv.Uic4("UserSearch/QtUserSearchFieldsPage.ui")
 myenv.Uic4("UserSearch/QtUserSearchResultsPage.ui")
 myenv.Uic4("QtBookmarkDetailWindow.ui")
 myenv.Uic4("QtAffiliationEditor.ui")
+myenv.Uic4("QtAccountDetailsWidget.ui")
+myenv.Uic4("QtAccountsListWidget.ui")
 myenv.Uic4("QtJoinMUCWindow.ui")
 myenv.Uic4("QtHistoryWindow.ui")
 myenv.Uic4("QtConnectionSettings.ui")

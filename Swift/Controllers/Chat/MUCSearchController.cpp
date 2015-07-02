@@ -4,6 +4,12 @@
  * See the COPYING file for more information.
  */
 
+/*
+ * Copyright (c) 2015 Daniel Baczynski
+ * Licensed under the Simplified BSD license.
+ * See Documentation/Licenses/BSD-simplified.txt for more information.
+ */
+
 #include "Swift/Controllers/Chat/MUCSearchController.h"
 
 #include <iostream>
@@ -22,9 +28,7 @@
 
 namespace Swift {
 
-static const std::string SEARCHED_SERVICES = "searchedServices";
-
-MUCSearchController::MUCSearchController(const JID& jid, MUCSearchWindowFactory* factory, IQRouter* iqRouter, ProfileSettingsProvider* settings) : jid_(jid), factory_(factory), iqRouter_(iqRouter), settings_(settings), window_(NULL), walker_(NULL) {
+MUCSearchController::MUCSearchController(const JID& jid, MUCSearchWindowFactory* factory, IQRouter* iqRouter, SettingsProvider* settings) : jid_(jid), factory_(factory), iqRouter_(iqRouter), settings_(settings), window_(NULL), walker_(NULL) {
 	itemsInProgress_ = 0;
 	loadSavedServices();
 }
@@ -47,7 +51,7 @@ void MUCSearchController::openSearchWindow() {
 
 void MUCSearchController::loadSavedServices() {
 	savedServices_.clear();
-	foreach (std::string stringItem, String::split(settings_->getStringSetting(SEARCHED_SERVICES), '\n')) {
+	foreach (std::string stringItem, String::split(settings_->getSetting(SettingConstants::SEARCHED_SERVICES), '\n')) {
 		savedServices_.push_back(JID(stringItem));
 	}
 }
@@ -68,7 +72,7 @@ void MUCSearchController::addToSavedServices(const JID& jid) {
 		collapsed += jidItem.toString();
 		++i;
 	}
-	settings_->storeString(SEARCHED_SERVICES, collapsed);
+	settings_->storeSetting(SettingConstants::SEARCHED_SERVICES, collapsed);
 	window_->addSavedServices(savedServices_);
 }
 

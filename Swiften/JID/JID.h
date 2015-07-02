@@ -4,10 +4,19 @@
  * See the COPYING file for more information.
  */
 
+/*
+ * Copyright (c) 2015 Daniel Baczynski
+ * Licensed under the Simplified BSD license.
+ * See Documentation/Licenses/BSD-simplified.txt for more information.
+ */
+
 #pragma once
 
 #include <string>
 #include <iosfwd>
+
+#include <boost/archive/text_iarchive.hpp>
+#include <boost/archive/text_oarchive.hpp>
 
 #include <Swiften/Base/API.h>
 #include <boost/optional/optional_fwd.hpp>
@@ -184,6 +193,9 @@ namespace Swift {
 		private:
 			void nameprepAndSetComponents(const std::string& node, const std::string& domain, const std::string& resource);
 			void initializeFromString(const std::string&);
+
+			friend class boost::serialization::access;
+			template<class Archive> void serialize(Archive& ar, const unsigned int version);
 	
 		private:
 			bool valid_;
@@ -192,6 +204,15 @@ namespace Swift {
 			bool hasResource_;
 			std::string resource_;
 	};
+
+	template<class Archive>
+	void JID::serialize(Archive& ar, const unsigned int /*version*/) {
+		ar & valid_;
+		ar & node_;
+		ar & domain_;
+		ar & hasResource_;
+		ar & resource_;
+	}
 	
 	SWIFTEN_API std::ostream& operator<<(std::ostream& os, const Swift::JID& j);
 }

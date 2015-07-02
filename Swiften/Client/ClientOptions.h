@@ -4,12 +4,20 @@
  * See the COPYING file for more information.
  */
 
+/*
+ * Copyright (c) 2015 Daniel Baczynski
+ * Licensed under the Simplified BSD license.
+ * See Documentation/Licenses/BSD-simplified.txt for more information.
+ */
+
 #pragma once
 
+#include <boost/serialization/split_free.hpp>
 #include <boost/shared_ptr.hpp>
 
 #include <Swiften/Base/API.h>
 #include <Swiften/Base/URL.h>
+#include <Swiften/Base/SafeByteArray.h>
 #include <Swiften/Base/SafeString.h>
 #include <Swiften/TLS/TLSOptions.h>
 
@@ -159,5 +167,100 @@ namespace Swift {
 		 * Options passed to the TLS stack
 		 */
 		TLSOptions tlsOptions;
+
+		bool operator ==(const ClientOptions& o) const {
+			return useStreamCompression == o.useStreamCompression &&
+				useTLS == o.useTLS &&
+				allowPLAINWithoutTLS == o.allowPLAINWithoutTLS &&
+				useStreamResumption == o.useStreamResumption &&
+				forgetPassword == o.forgetPassword &&
+				useAcks == o.useAcks &&
+				singleSignOn == o.singleSignOn &&
+				manualHostname == o.manualHostname &&
+				manualPort == o.manualPort &&
+				proxyType == o.proxyType &&
+				manualProxyHostname == o.manualProxyHostname &&
+				manualProxyPort == o.manualProxyPort &&
+				boshURL.toString() == o.boshURL.toString() &&
+				boshHTTPConnectProxyURL.toString() == o.boshHTTPConnectProxyURL.toString() &&
+				safeByteArrayToString(SafeByteArray(boshHTTPConnectProxyAuthID)) == safeByteArrayToString(SafeByteArray(o.boshHTTPConnectProxyAuthID)) &&
+				safeByteArrayToString(SafeByteArray(boshHTTPConnectProxyAuthPassword)) == safeByteArrayToString(SafeByteArray(o.boshHTTPConnectProxyAuthPassword)) &&
+				httpTrafficFilter == o.httpTrafficFilter &&
+				tlsOptions == o.tlsOptions;
+		}
 	};
 }
+
+namespace boost {
+namespace serialization {
+
+template<class Archive>
+void save(Archive& ar, const Swift::ClientOptions& o, const unsigned int) {
+	ar << o.useStreamCompression;
+	ar << o.useTLS;
+	ar << o.allowPLAINWithoutTLS;
+	ar << o.useStreamResumption;
+	ar << o.forgetPassword;
+	ar << o.useAcks;
+	ar << o.singleSignOn;
+	ar << o.manualHostname;
+	ar << o.manualPort;
+	ar << o.proxyType;
+	ar << o.manualProxyHostname;
+	ar << o.manualProxyPort;
+
+	std::string boshURL = o.boshURL.toString();
+	ar << boshURL;
+
+	std::string boshHTTPConnectProxyURL = o.boshHTTPConnectProxyURL.toString();
+	ar << boshHTTPConnectProxyURL;
+
+	// Warning: Breaking the safety
+	std::string ID = Swift::safeByteArrayToString(Swift::SafeByteArray(o.boshHTTPConnectProxyAuthID));
+	ar << ID;
+
+	// Warning: Breaking the safety
+	std::string password = Swift::safeByteArrayToString(Swift::SafeByteArray(o.boshHTTPConnectProxyAuthPassword));
+	ar << password;
+
+	ar << o.tlsOptions;
+}
+
+template<class Archive>
+void load(Archive& ar, Swift::ClientOptions& o, const unsigned int) {
+	ar >> o.useStreamCompression;
+	ar >> o.useTLS;
+	ar >> o.allowPLAINWithoutTLS;
+	ar >> o.useStreamResumption;
+	ar >> o.forgetPassword;
+	ar >> o.useAcks;
+	ar >> o.singleSignOn;
+	ar >> o.manualHostname;
+	ar >> o.manualPort;
+	ar >> o.proxyType;
+	ar >> o.manualProxyHostname;
+	ar >> o.manualProxyPort;
+
+	std::string boshURL;
+	ar >> boshURL;
+	o.boshURL = Swift::URL::fromString(boshURL);
+
+	std::string boshHTTPConnectProxyURL;
+	ar >> boshHTTPConnectProxyURL;
+	o.boshHTTPConnectProxyURL = Swift::URL::fromString(boshHTTPConnectProxyURL);
+
+	std::string ID;
+	ar >> ID;
+	o.boshHTTPConnectProxyAuthID = Swift::SafeString(ID);
+
+	std::string password;
+	ar >> password;
+	o.boshHTTPConnectProxyAuthPassword = Swift::SafeString(password);
+
+	ar >> o.tlsOptions;
+}
+
+} // namespace serialization
+} // namespace boost
+
+BOOST_SERIALIZATION_SPLIT_FREE(Swift::ClientOptions)
