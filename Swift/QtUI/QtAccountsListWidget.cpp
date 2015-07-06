@@ -4,14 +4,15 @@
  * See Documentation/Licenses/BSD-simplified.txt for more information.
  */
 
-#include <3rdParty/Boost/src/boost/bind.hpp>
+#include <Swift/QtUI/QtAccountsListWidget.h>
 
-#include "QtAccountsListWidget.h"
-#include "ui_QtAccountsListWidget.h"
+#include <QFrame>
+
+#include <boost/bind.hpp>
 
 #include <Swift/Controllers/AccountsManager.h>
 #include <Swift/QtUI/QtAccountDetailsWidget.h>
-#include <QFrame>
+#include <Swift/QtUI/ui_QtAccountsListWidget.h>
 
 namespace Swift {
 
@@ -24,8 +25,6 @@ QtAccountsListWidget::QtAccountsListWidget(QWidget *parent)
 	accountsLayout_->setAlignment(Qt::AlignTop);
 
 	defaultGroup_ = NULL;
-
-
 }
 
 QtAccountsListWidget::~QtAccountsListWidget()
@@ -96,7 +95,9 @@ void QtAccountsListWidget::removeAccountFromList(int index) {
 }
 
 void QtAccountsListWidget::setDefaultAccount(int index) {
-	accounts_.at(index)->setDefaultAccountLook(true);
+	if (index >= 0) {
+		accounts_.at(index)->setDefaultAccountLook(true);
+	}
 }
 
 void QtAccountsListWidget::handleAccountWantsToBeDefault(int index) {

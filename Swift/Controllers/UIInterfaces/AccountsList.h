@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include <3rdParty/Boost/src/boost/shared_ptr.hpp>
+#include <boost/shared_ptr.hpp>
 
 #include <Swiften/Base/boost_bsignals.h>
 
@@ -14,7 +14,6 @@
 #include <Swift/Controllers/AccountsManager.h>
 
 namespace Swift {
-	class AccountsManager;
 
 	class AccountsList {
 		public:

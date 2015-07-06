@@ -4,6 +4,12 @@
  * See the COPYING file for more information.
  */
 
+/*
+ * Copyright (c) 2015 Daniel Baczynski
+ * Licensed under the Simplified BSD license.
+ * See Documentation/Licenses/BSD-simplified.txt for more information.
+ */
+
 #include <Swift/QtUI/QtUISettingConstants.h>
 
 namespace Swift {
@@ -17,5 +23,5 @@ const SettingsProvider::Setting<int> QtUISettingConstants::HISTORYWINDOW_FONT_SI
 const SettingsProvider::Setting<bool> QtUISettingConstants::SHOW_EMOTICONS("showEmoticons", true);
 const SettingsProvider::Setting<bool> QtUISettingConstants::USE_PLAIN_CHATS("plainChats", false);
 const SettingsProvider::Setting<bool> QtUISettingConstants::USE_SCREENREADER("screenreader", false);
-const SettingsProvider::Setting<bool> QtUISettingConstants::MULTIACCOUNT_VIEW("multiaccountView", false);
+const SettingsProvider::Setting<bool> QtUISettingConstants::LAST_VIEW_WAS_MULTIACCOUNT("multiaccountView", false);
 }

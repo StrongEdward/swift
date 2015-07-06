@@ -13,13 +13,12 @@
 #include <QFileDialog>
 #include <QMessageBox>
 
-#include <3rdParty/Boost/src/boost/bind.hpp>
+#include <boost/bind.hpp>
 
-#include <QtSwiftUtil.h>
-
+#include <Swift/QtUI/CAPICertificateSelector.h>
 #include <Swift/QtUI/QtAccountDetailsWidget.h>
 #include <Swift/QtUI/QtConnectionSettingsWindow.h>
-#include <Swift/QtUI/CAPICertificateSelector.h>
+#include <Swift/QtUI/QtSwiftUtil.h>
 
 namespace Swift {
 
@@ -35,7 +34,7 @@ QtAccountDetailsWidget::QtAccountDetailsWidget(boost::shared_ptr<Account> accoun
 	ui->accountLayout_->setAlignment(Qt::AlignVCenter);
 	ui->accountNameLabel_->show();
 	ui->accountName_->hide();
-	ui->extendingWidget_->hide();	
+	ui->extendingWidget_->hide();
 
 	ui->connectionOptions_->setIcon(QIcon(":/icons/actions.png"));
 
@@ -47,41 +46,41 @@ QtAccountDetailsWidget::QtAccountDetailsWidget(boost::shared_ptr<Account> accoun
 
 	ui->statusIcon_->setPixmap(QPixmap(":/icons/offline.png"));
 	ui->deleteButton_->setIcon(QIcon(":/icons/delete.ico"));
-	connect(ui->deleteButton_, &QPushButton::clicked, this, &QtAccountDetailsWidget::handleDeleteButtonClicked);
+	connect(ui->deleteButton_, SIGNAL(clicked()), this, SLOT(handleDeleteButtonClicked()));
 	ui->accountLayout_->insertWidget(0, triangle_);
 
-	connect(triangle_, &QtTreeviewTriangle::clicked, this, &QtAccountDetailsWidget::triangleClicked);
+	connect(triangle_, SIGNAL(clicked()), this, SLOT(handleTriangleClicked()));
 
 	// Setting editor
 	ui->accountNameLabel_->setText(P2QSTRING(account_->getAccountName()));
 	ui->accountName_->setText(P2QSTRING(account->getAccountName()));
 	ui->userAddress_->setText(P2QSTRING(account_->getJID().toString()));
 	ui->password_->setText(P2QSTRING(account_->getPassword()));
-	ui->rememberCheck_->setChecked(!account_->forgetPassword());
+	ui->rememberCheck_->setChecked(account_->getRememberPassword());
 	ui->enabledCheck_->setChecked(account_->getLoginAutomatically());
 
-	connect(ui->accountName_, &QLineEdit::textEdited, this, &QtAccountDetailsWidget::handleAccountNameEdited);
-	connect(ui->userAddress_, &QLineEdit::textEdited, this, &QtAccountDetailsWidget::handleUserAddressEdited);
-	connect(ui->password_, &QLineEdit::textEdited, this, &QtAccountDetailsWidget::handlePasswordEdited);
-	connect(ui->rememberCheck_, &QCheckBox::toggled, this, &QtAccountDetailsWidget::handleRememberPasswordToggled);
-	connect(ui->enabledCheck_, &QCheckBox::toggled, this, &QtAccountDetailsWidget::handleAccountEnabledChanged);
-	connect(ui->password_, &QLineEdit::returnPressed, this, &QtAccountDetailsWidget::handlePasswordReturnPressed);
+	connect(ui->accountName_, SIGNAL(textEdited(const QString&)), this, SLOT(handleAccountNameEdited(const QString&)));
+	connect(ui->userAddress_, SIGNAL(textEdited(const QString&)), this, SLOT(handleUserAddressEdited(const QString&)));
+	connect(ui->password_, SIGNAL(textEdited(const QString&)), this, SLOT(handlePasswordEdited(const QString&)));
+	connect(ui->rememberCheck_, SIGNAL(toggled(bool)), this, SLOT(handleRememberPasswordToggled(bool)));
+	connect(ui->enabledCheck_, SIGNAL(clicked(bool)), this, SLOT(handleAccountEnabledClicked(bool)));
+	connect(ui->password_, SIGNAL(returnPressed()), this, SLOT(handlePasswordReturnPressed()));
 	account_->onEnabledChanged.connect(boost::bind(&QtAccountDetailsWidget::handleAccountEnabledValueChanged, this, _1));
 
 	buttonGroup->addButton(ui->defaultRadio_);
 	buttonGroup->setId(ui->defaultRadio_, account_->getIndex());
 	ui->defaultRadio_->hide(); // Because of new idea: bold default account name
 
-	connect(ui->connectionOptions_, &QPushButton::clicked, this, &QtAccountDetailsWidget::handleCogwheelClicked);
+	connect(ui->connectionOptions_, SIGNAL(clicked()), this, SLOT(handleCogwheelClicked()));
 
 	if (account_->getCertificatePath() != "") {
 		ui->certificateButton_->setChecked(true);
 	}
-	connect(ui->certificateButton_, &QPushButton::clicked, this, &QtAccountDetailsWidget::handleCertificateChecked);
+	connect(ui->certificateButton_, SIGNAL(clicked(bool)), this, SLOT(handleCertificateChecked(bool)));
 
 	ui->accountLayout_->insertWidget(1, color_);
 	color_->setColor(account_->getColor());
-	connect(color_, &QtAccountColorWidget::colorChanged, this, &QtAccountDetailsWidget::handleColorChanged);
+	connect(color_, SIGNAL(colorChanged()), this, SLOT(handleColorChanged()));
 
 	contextMenu_->addAction(tr("Set as default"), this, SLOT(handleSetAsDefault()));
 }
@@ -98,9 +97,10 @@ QSize QtAccountDetailsWidget::sizeHint() const {
 
 QSize QtAccountDetailsWidget::minimumSizeHint() const {
 	if (triangle_->isExpanded()) {
-		return QSize(220, 28 + 3*22 + 2*2);
-	} else {
-		return QSize(220, 28);
+		return QSize(190, 28 + 3*22 + 2*2);
+	}
+	else {
+		return QSize(190, 28);
 	}
 }
 
@@ -112,29 +112,24 @@ void QtAccountDetailsWidget::setDefaultAccountLook(bool isDefault) {
 	if (isDefault) {
 		ui->defaultRadio_->setChecked(true);
 		ui->accountNameLabel_->setStyleSheet("*{font-weight: bold}");
-	} else {
+	}
+	else {
 		ui->defaultRadio_->setChecked(false);
 		ui->accountNameLabel_->setStyleSheet("");
 	}
 }
 
-void QtAccountDetailsWidget::triangleClicked() {
+void QtAccountDetailsWidget::handleTriangleClicked() {
 	if (triangle_->isExpanded()) { // show expanded
 		ui->extendingWidget_->show();
-
 		ui->accountName_->show();
 		ui->accountNameLabel_->hide();
-
-		//QWidget* par = parentWidget();
-		//par->updateGeometry();
-	} else { // show collapsed
-
+	}
+	else { // show collapsed
 		ui->accountNameLabel_->show();
 		ui->extendingWidget_->hide();
 		ui->accountNameLabel_->setText(ui->accountName_->text());
 		ui->accountName_->hide();
-
-		//parentWidget()->updateGeometry();
 	}
 
 }
@@ -186,14 +181,14 @@ void QtAccountDetailsWidget::handlePasswordEdited(const QString& text) {
 }
 
 void QtAccountDetailsWidget::handlePasswordReturnPressed() {
-	ui->enabledCheck_->setChecked(true);
+	ui->enabledCheck_->click();
 }
 
 void QtAccountDetailsWidget::handleRememberPasswordToggled(bool checked) {
 	account_->setRememberPassword(checked);
 }
 
-void QtAccountDetailsWidget::handleAccountEnabledChanged(bool checked) {
+void QtAccountDetailsWidget::handleAccountEnabledClicked(bool checked) {
 	account_->setJID(Q2PSTRING(ui->userAddress_->text()));
 	account_->setPassword(Q2PSTRING(ui->password_->text()));
 	account_->setEnabled(checked);

@@ -4,6 +4,12 @@
  * See the COPYING file for more information.
  */
 
+/*
+ * Copyright (c) 2015 Daniel Baczynski
+ * Licensed under the Simplified BSD license.
+ * See Documentation/Licenses/BSD-simplified.txt for more information.
+ */
+
 #pragma once
 
 #include <Swift/Controllers/Settings/SettingsProvider.h>
@@ -20,6 +26,6 @@ namespace Swift {
 			static const SettingsProvider::Setting<bool> SHOW_EMOTICONS;
 			static const SettingsProvider::Setting<bool> USE_PLAIN_CHATS;
 			static const SettingsProvider::Setting<bool> USE_SCREENREADER;
-			static const SettingsProvider::Setting<bool> MULTIACCOUNT_VIEW;
+			static const SettingsProvider::Setting<bool> LAST_VIEW_WAS_MULTIACCOUNT;
 	};
 }

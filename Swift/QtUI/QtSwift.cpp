@@ -4,6 +4,12 @@
  * See the COPYING file for more information.
  */
 
+/*
+ * Copyright (c) 2015 Daniel Baczynski
+ * Licensed under the Simplified BSD license.
+ * See Documentation/Licenses/BSD-simplified.txt for more information.
+ */
+
 #include <Swift/QtUI/QtSwift.h>
 
 #include <string>
@@ -21,8 +27,6 @@
 #include <Swiften/Base/Path.h>
 #include <Swiften/Base/Paths.h>
 #include <Swiften/Base/Platform.h>
-//#include <Swiften/Base/String.h>
-//#include <Swiften/StringCodecs/Base64.h>
 #include <Swiften/Elements/Presence.h>
 #include <Swiften/Client/Client.h>
 #include <Swiften/Base/Paths.h>
@@ -41,7 +45,6 @@
 #include <Swift/Controllers/AccountsManager.h>
 #include <Swift/Controllers/SystemTrayController.h>
 #include <Swift/Controllers/SettingConstants.h>
-//#include <Swift/Controllers/MainController.h>
 #include <Swift/Controllers/ApplicationInfo.h>
 #include <Swift/Controllers/BuildVersion.h>
 #include <Swift/Controllers/StatusCache.h>
@@ -161,7 +164,8 @@ QtSwift::QtSwift(const po::variables_map& options) : networkFactories_(&clientMa
 
 	if (options.count("netbook-mode")) {
 		splitter_ = new QtSingleWindow(qtSettings_);
-	} else {
+	}
+	else {
 		splitter_ = NULL;
 	}
 
@@ -228,17 +232,7 @@ QtSwift::QtSwift(const po::variables_map& options) : networkFactories_(&clientMa
 	uiEventStream_ = new UIEventStream();
 	eventController_ = new EventController();
 
-	QtUIFactory* uiFactory = new QtUIFactory(settingsHierachy_,
-											 qtSettings_,
-											 tabs_,
-											 splitter_,
-											 systemTray_,
-											 chatWindowFactory_,
-											 networkFactories_.getTimerFactory(),
-											 statusCache_,
-											 startMinimized,
-											 !emoticons.empty(),
-											 enableAdHocCommandOnJID);
+	QtUIFactory* uiFactory = new QtUIFactory(settingsHierachy_, qtSettings_, tabs_, splitter_, systemTray_, chatWindowFactory_, networkFactories_.getTimerFactory(), statusCache_, startMinimized, !emoticons.empty(), enableAdHocCommandOnJID);
 	uiFactories_.push_back(uiFactory);
 
 	togglableNotifier_ = new TogglableNotifier(notifier_);
@@ -246,24 +240,7 @@ QtSwift::QtSwift(const po::variables_map& options) : networkFactories_(&clientMa
 
 	systemTrayController_ = new SystemTrayController(eventController_, systemTray_);
 
-	accountsManager_ = new AccountsManager(&clientMainThreadCaller_,
-										   uiEventStream_,
-										   eventController_,
-										   &networkFactories_,
-										   uiFactory,
-										   settingsHierachy_,
-										   systemTrayController_,
-										   soundPlayer_,
-										   storagesFactory_,
-										   certificateStorageFactory_,
-										   dock_,
-										   notifier_,
-										   togglableNotifier_,
-										   uriHandler_,
-										   &idleDetector_,
-										   emoticons,
-										   options.count("latency-debug") > 0);
-
+	accountsManager_ = new AccountsManager(&clientMainThreadCaller_, uiEventStream_, eventController_, &networkFactories_, uiFactory, settingsHierachy_, systemTrayController_, soundPlayer_, storagesFactory_, certificateStorageFactory_, dock_, notifier_, togglableNotifier_, uriHandler_, &idleDetector_, emoticons, options.count("latency-debug") > 0);
 
 	// PlatformAutoUpdaterFactory autoUpdaterFactory;
 	// if (autoUpdaterFactory.isSupported()) {
@@ -273,6 +250,8 @@ QtSwift::QtSwift(const po::variables_map& options) : networkFactories_(&clientMa
 }
 
 QtSwift::~QtSwift() {
+	delete accountsManager_;
+
 	delete autoUpdater_;
 	foreach (QtUIFactory* factory, uiFactories_) {
 		delete factory;

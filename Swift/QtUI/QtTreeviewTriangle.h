@@ -6,9 +6,9 @@
 
 #pragma once
 
-#include <QPixmap>
-#include <QMouseEvent>
 #include <QLabel>
+#include <QMouseEvent>
+#include <QPixmap>
 
 namespace Swift {
 
@@ -22,8 +22,10 @@ class QtTreeviewTriangle : public QLabel {
 
 	signals:
 		void clicked();
+
 	protected:
 		void mousePressEvent(QMouseEvent*);
+
 	private:
 		bool expanded_;
 		QPixmap expandedPixmap_;

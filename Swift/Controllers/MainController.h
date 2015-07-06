@@ -4,34 +4,39 @@
  * See the COPYING file for more information.
  */
 
+/*
+ * Copyright (c) 2015 Daniel Baczynski
+ * Licensed under the Simplified BSD license.
+ * See Documentation/Licenses/BSD-simplified.txt for more information.
+ */
+
 #pragma once
 
-#include <vector>
 #include <map>
 #include <string>
+#include <vector>
 
 #include <boost/shared_ptr.hpp>
 
 #include <Swiften/Base/boost_bsignals.h>
-#include <Swiften/Network/Timer.h>
 #include <Swiften/Client/ClientError.h>
-#include <Swiften/JID/JID.h>
+#include <Swiften/Client/ClientXMLTracer.h>
+#include <Swiften/Elements/CapsInfo.h>
 #include <Swiften/Elements/DiscoInfo.h>
-#include <Swiften/Elements/VCard.h>
 #include <Swiften/Elements/ErrorPayload.h>
 #include <Swiften/Elements/Presence.h>
-#include <Swiften/Elements/CapsInfo.h>
-#include <Swiften/Client/ClientXMLTracer.h>
+#include <Swiften/Elements/VCard.h>
+#include <Swiften/JID/JID.h>
+#include <Swiften/Network/Timer.h>
 
-#include <Swift/Controllers/Settings/SettingsProvider.h>
 #include <Swift/Controllers/ProfileSettingsProvider.h>
-#include <Swift/Controllers/XMPPEvents/ErrorEvent.h>
+#include <Swift/Controllers/Settings/SettingsProvider.h>
 #include <Swift/Controllers/UIEvents/UIEvent.h>
+#include <Swift/Controllers/XMPPEvents/ErrorEvent.h>
 
 
 namespace Swift {
 	class Account;
-	class AccountsManager;
 	class IdleDetector;
 	class UIFactory;
 	class EventLoop;
@@ -54,7 +59,6 @@ namespace Swift {
 	class TogglableNotifier;
 	class PresenceNotifier;
 	class EventNotifier;
-	//class SystemTray;
 	class SystemTrayController;
 	class SoundEventController;
 	class SoundPlayer;
@@ -87,47 +91,29 @@ namespace Swift {
 	class MainController {
 
 		public:
-			MainController(boost::shared_ptr<Account> account,
-						   EventLoop* eventLoop,
-						   UIEventStream* uiEventStream,
-						   EventController* eventController,
-						   NetworkFactories* networkFactories,
-						   UIFactory* uiFactories,
-						   LoginWindow* loginWindow,
-						   SettingsProvider* settings,
-						   SystemTrayController* systemTrayController,
-						   SoundPlayer* soundPlayer,
-						   StoragesFactory* storagesFactory,
-						   CertificateStorageFactory* certificateStorageFactory,
-						   Dock* dock,
-						   TogglableNotifier* togglableNotifier,
-						   URIHandler* uriHandler,
-						   IdleDetector* idleDetector,
-						   const std::map<std::string, std::string>& emoticons,
-						   bool useDelayForLatency,
-						   bool createdInCombobox);
+			MainController(boost::shared_ptr<Account> account, EventLoop* eventLoop, UIEventStream* uiEventStream, EventController* eventController, NetworkFactories* networkFactories, UIFactory* uiFactories, HighlightManager* highlightManager, HighlightEditorController* highlightEditorController, LoginWindow* loginWindow, XMLConsoleController* xmlConsoleController, SettingsProvider* settings, SystemTrayController* systemTrayController, SoundPlayer* soundPlayer, StoragesFactory* storagesFactory, CertificateStorageFactory* certificateStorageFactory, Dock* dock, TogglableNotifier* togglableNotifier, URIHandler* uriHandler, IdleDetector* idleDetector, const std::map<std::string, std::string>& emoticons, bool useDelayForLatency, bool createdInCombobox);
 			~MainController();
 
-			const std::string getJIDString();
-			boost::shared_ptr<Account> getAccount();
-			bool shouldBeDeleted();
-			boost::signal<void(const std::string) > onShouldBeDeleted;
-
+			const std::string getJIDString() const;
+			boost::shared_ptr<Account> getAccount() const;
+			bool shouldBeDeleted() const;
 			void signOut();
+			void prepareToQuit();
+
+			boost::signal<void(const std::string) > onShouldBeDeleted;
+			boost::signal<void(const MainController*) > onConnected;
 
 		private:
 			void resetClient();
 			void handleConnected();
 			void handleLoginRequest(bool enabled);
 			void handleCancelLoginRequest();
-			void handleQuitRequest();
 			void handleChangeStatusRequest(StatusShow::Type show, const std::string &statusText);
 			void handleDisconnected(const boost::optional<ClientError>& error);
 			void handleServerDiscoInfoResponse(boost::shared_ptr<DiscoInfo>, ErrorPayload::ref);
 			void handleEventQueueLengthChange(int count);
 			void handleVCardReceived(const JID& j, VCard::ref vCard);
 			void handleSettingChanged(const std::string& settingPath);
-			//void handlePurgeSavedLoginRequest(const std::string& username);
 			void sendPresence(boost::shared_ptr<Presence> presence);
 			void handleInputIdleChanged(bool);
 			void handleShowCertificateRequest();
@@ -135,31 +121,21 @@ namespace Swift {
 			void setReconnectTimer();
 			void resetPendingReconnects();
 			void resetCurrentError();
-			//std::string serializeClientOptions(const ClientOptions& options); // to be moved to AccountsManager
-			//void handleCacheCredentials(const std::string& password, CertificateWithKey::ref certificate, const ClientOptions& options);
 			void performLoginFromCachedCredentials();
 			void reconnectAfterError();
 			void setManagersOffline();
 			void handleNotificationClicked(const JID& jid);
-			void handleForceQuit();
 			void purgeCachedCredentials();
 
 		private:
 			boost::shared_ptr<Account> account_;
-			boost::shared_ptr<AccountsManager> accountsManager_;
 			bool createdInCombobox_;
 			bool beforeFirstLogin_;
 			bool firstLoginFailed_;
 
 			// Probably have to remove them then
-			//JID jid_;
 			JID boundJID_;
-
-			// Cached credentials
-			std::string cachedPassword_;
 			CertificateWithKey::ref certificate_;
-			ClientOptions clientOptions_;
-
 			ProfileSettingsProvider* profileSettings_;
 
 			EventLoop* eventLoop_;

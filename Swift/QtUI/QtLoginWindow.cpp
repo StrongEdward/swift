@@ -4,47 +4,55 @@
  * See the COPYING file for more information.
  */
 
-#include "QtLoginWindow.h"
+/*
+ * Copyright (c) 2015 Daniel Baczynski
+ * Licensed under the Simplified BSD license.
+ * See Documentation/Licenses/BSD-simplified.txt for more information.
+ */
 
-#include <boost/bind.hpp>
-#include <boost/smart_ptr/make_shared.hpp>
+#include <Swift/QtUI/QtLoginWindow.h>
+
 #include <algorithm>
 #include <cassert>
 
+#include <boost/bind.hpp>
+#include <boost/smart_ptr/make_shared.hpp>
+
 #include <QApplication>
 #include <QBoxLayout>
+#include <QCloseEvent>
 #include <QComboBox>
+#include <QCursor>
+#include <QDebug>
 #include <QDesktopWidget>
 #include <QFileDialog>
-#include <QStatusBar>
-#include <QToolButton>
+#include <QHBoxLayout>
+#include <QKeyEvent>
 #include <QLabel>
 #include <QMenuBar>
-#include <QHBoxLayout>
-#include <qdebug.h>
-#include <QCloseEvent>
-#include <QCursor>
 #include <QMessageBox>
-#include <QKeyEvent>
 #include <QScrollArea>
+#include <QStatusBar>
+#include <QToolButton>
  
-#include <Swift/Controllers/UIEvents/UIEventStream.h>
-#include <Swift/Controllers/UIEvents/RequestXMLConsoleUIEvent.h>
-#include <Swift/Controllers/UIEvents/RequestFileTransferListUIEvent.h>
-#include <Swift/Controllers/UIEvents/RequestHighlightEditorUIEvent.h>
-#include <Swift/Controllers/Settings/SettingsProvider.h>
-#include <Swift/Controllers/SettingConstants.h>
-#include <Swift/QtUI/QtUISettingConstants.h>
-#include <Swift/QtUI/QtAccountDetailsWidget.h> //needed after below include?
-#include <Swift/QtUI/QtAccountsListWidget.h>
 #include <Swiften/Base/Platform.h>
 #include <Swiften/Base/Paths.h>
 
-#include <QtAboutWidget.h>
-#include <QtSwiftUtil.h>
-#include <QtMainWindow.h>
-#include <QtUtilities.h>
-#include <QtConnectionSettingsWindow.h>
+#include <Swift/Controllers/UIEvents/RequestFileTransferListUIEvent.h>
+#include <Swift/Controllers/UIEvents/RequestHighlightEditorUIEvent.h>
+#include <Swift/Controllers/UIEvents/RequestXMLConsoleUIEvent.h>
+#include <Swift/Controllers/UIEvents/UIEventStream.h>
+#include <Swift/Controllers/SettingConstants.h>
+#include <Swift/Controllers/Settings/SettingsProvider.h>
+#include <Swift/QtUI/CAPICertificateSelector.h>
+#include <Swift/QtUI/QtAboutWidget.h>
+#include <Swift/QtUI/QtAccountsListWidget.h>
+#include <Swift/QtUI/QtConnectionSettingsWindow.h>
+#include <Swift/QtUI/QtMainWindow.h>
+#include <Swift/QtUI/QtSwiftUtil.h>
+#include <Swift/QtUI/QtUISettingConstants.h>
+#include <Swift/QtUI/QtUtilities.h>
+
 
 namespace Swift{
 
@@ -80,9 +88,9 @@ QtLoginWindow::QtLoginWindow(UIEventStream* uiEventStream, SettingsProvider* set
 	QWidget *logoWidget = new QWidget(this);
 	QHBoxLayout *logoLayout = new QHBoxLayout();
 	logoLayout->setMargin(0);
-	logoLayout->addStretch(0);
+	//logoLayout->addStretch(0);
 	logoLayout->addWidget(logo);
-	logoLayout->addStretch(0);
+	//logoLayout->addStretch(0);
 	logoWidget->setLayout(logoLayout);
 	layout->addWidget(logoWidget);
 
@@ -94,14 +102,20 @@ QtLoginWindow::QtLoginWindow(UIEventStream* uiEventStream, SettingsProvider* set
 	layout->addWidget(viewLabel_);
 	connect(viewLabel_, SIGNAL(linkActivated(const QString&)), SLOT(handleChangeView()));
 
+	bool multiaccountEnabled = settings_->getSetting(SettingConstants::MULTIACCOUNT_ENABLED);
+	if (!multiaccountEnabled) {
+		viewLabel_->hide();
+	}
+
 	// Accounts list
 	accountsListWrapper_ = new QWidget(this);
-	accountsListWrapper_->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Maximum));
+	accountsListWrapper_->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum));
 	QBoxLayout *accountsListLayout = new QBoxLayout(QBoxLayout::TopToBottom, accountsListWrapper_);
 	accountsListLayout->setContentsMargins(0,0,0,0);
 	accountsListLayout->setSpacing(2);
 
 	accountsList_ = new QtAccountsListWidget;
+
 	accountsListLayout->addWidget(static_cast<QtAccountsListWidget*>(accountsList_));
 
 	QWidget* underList = new QWidget(this);
@@ -109,37 +123,18 @@ QtLoginWindow::QtLoginWindow(UIEventStream* uiEventStream, SettingsProvider* set
 	underListLayout->setContentsMargins(4,4,0,4);
 	underListLayout->setSpacing(2);
 
-	//QWidget* description = new QWidget(this);
-	//QLayout* descriptionLayout = new QVBoxLayout();
-	//descriptionLayout->setContentsMargins(2,2,2,2);
-	//descriptionLayout->setSpacing(2);
-	//QCheckBox* enabledDesc = new QCheckBox("- Connect/Enable");
-	//QFont f = enabledDesc->font();
-	//f.setPointSize(10);
-	//enabledDesc->setFont(f);
-	//enabledDesc->setChecked(true);
-	//descriptionLayout->addWidget(enabledDesc);
-	//QRadioButton* defaultDesc = new QRadioButton("- Default account");
-	//QFont f2 = defaultDesc->font();
-	//f2.setPointSize(10);
-	//defaultDesc->setFont(f2);
-	//defaultDesc->setChecked(true);
-	//descriptionLayout->addWidget(defaultDesc);
-	//description->setLayout(descriptionLayout);
-	//underListLayout->addWidget(description);
-
 	QPushButton* addAccountButton = new QPushButton(QIcon(":/icons/add.ico"), "");
 	addAccountButton->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum);
 	underListLayout->addWidget(addAccountButton);
 	underListLayout->setAlignment(addAccountButton, Qt::AlignRight);
-	connect(addAccountButton, &QPushButton::clicked, this, &QtLoginWindow::handleAddAccountClicked);
+	connect(addAccountButton, SIGNAL(clicked()), this, SLOT(handleAddAccountClicked()));
 	addAccountButton->setEnabled(false);
 
 	underList->setLayout(underListLayout);
 	accountsListLayout->addWidget(underList);
 
-	accountsListLayout->addStretch(2);
-	accountsListLayout->addStretch(2);
+	//accountsListLayout->addStretch(2);
+	//accountsListLayout->addStretch(2);
 
 	okButton_ = new QPushButton(this);
 	okButton_->setText(tr("OK"));
@@ -147,7 +142,7 @@ QtLoginWindow::QtLoginWindow(UIEventStream* uiEventStream, SettingsProvider* set
 	okButton_->setDefault(true);
 	okButton_->setAccessibleName(tr("Done. Go to roster."));
 	accountsListLayout->addWidget(okButton_);
-	okButton_->hide(); // For now: when enabling/connecting to one account it automatically goes to roster so no need to show it. Then it will be useful when we have connected all accounts that we want.
+	okButton_->hide(); // For now: when enabling/connecting to one account it automatically goes to roster so no need to show it. Then it will be useful when we have connected all accounts that we want and clicking it would get us to roster.
 
 	layout->addWidget(accountsListWrapper_);
 	accountsListWrapper_->hide();
@@ -165,6 +160,8 @@ QtLoginWindow::QtLoginWindow(UIEventStream* uiEventStream, SettingsProvider* set
 	singleAccountLayout->addWidget(jidLabel);
 
 	username_ = new QComboBox(this);
+	username_->setMinimumWidth(215);
+	username_->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Preferred);
 	username_->setEditable(true);
 	username_->setWhatsThis(tr("User address - looks like someuser@someserver.com"));
 	username_->setToolTip(tr("User address - looks like someuser@someserver.com"));
@@ -236,11 +233,6 @@ QtLoginWindow::QtLoginWindow(UIEventStream* uiEventStream, SettingsProvider* set
 	singleAccountLayout->addWidget(loginAutomatically_);
 
 	layout->addWidget(singleAccountWrapper_);
-
-	updateViewLabelText();
-	if (settings_->getSetting(QtUISettingConstants::MULTIACCOUNT_VIEW)) {
-		handleChangeView();
-	}
 
 	connect(loginButton_, SIGNAL(clicked()), SLOT(loginClicked()));
 	stack_->addWidget(loginWidgetWrapper_);
@@ -321,6 +313,13 @@ QtLoginWindow::QtLoginWindow(UIEventStream* uiEventStream, SettingsProvider* set
 	qApp->installEventFilter(this);
 #endif
 
+	if (multiaccountEnabled) {
+		updateViewLabelText();
+		if (settings_->getSetting(QtUISettingConstants::LAST_VIEW_WAS_MULTIACCOUNT)) {
+			handleChangeView();
+		}
+	}
+
 	this->show();
 }
 
@@ -372,7 +371,9 @@ void QtLoginWindow::setAccountsManager(AccountsManager* manager) {
 
 	// Multi account
 	accountsList_->setManager(manager);
-	accountsList_->setDefaultAccount(accountsManager_->getDefaultAccount()->getIndex());
+	if (accountsManager_->getDefaultAccount()) {
+		accountsList_->setDefaultAccount(accountsManager_->getDefaultAccount()->getIndex());
+	}
 	accountsList_->onAccountWantsToBeDefault.connect(boost::bind(&QtLoginWindow::handleAccountWantsToBeDefault, this, _1));
 
 	// Single account
@@ -387,38 +388,11 @@ void QtLoginWindow::selectUser(const std::string& username) {
 		username_->setCurrentIndex(index);
 		password_->setFocus();
 	}
-
-	/*for (int i = 0; i < usernames_.count(); i++) {
-		if (P2QSTRING(username) == usernames_[i]) {
-			username_->setCurrentIndex(i);
-			password_->setFocus();
-			break;
-		}
-	}*/
-}
-
-void QtLoginWindow::removeAvailableAccount(int index) {
-	if (index > 0 && index < username_->count()) {
-		username_->removeItem(index);
-		accountsList_->removeAccountFromList(index);
+	else {
+		username_->lineEdit()->setText("");
+		username_->setFocus();
 	}
 }
-
-/*void QtLoginWindow::removeAvailableAccount(const std::string& jid) {
-	QString username = P2QSTRING(jid);
-	int index = -1;
-	for (int i = 0; i < usernames_.count(); i++) {
-		if (username == usernames_[i]) {
-			index = i;
-		}
-	}
-	if (index >= 0) {
-		usernames_.removeAt(index);
-		passwords_.removeAt(index);
-		certificateFiles_.removeAt(index);
-		username_->removeItem(index);
-	}
-}*/
 
 void QtLoginWindow::addAvailableAccount(boost::shared_ptr<Account> account) {
 	QString username = P2QSTRING(account->getJID().toString());
@@ -428,47 +402,37 @@ void QtLoginWindow::addAvailableAccount(boost::shared_ptr<Account> account) {
 	accountsList_->addAccountToList(account);
 }
 
-/*void QtLoginWindow::addAvailableAccount(const std::string& defaultJID, const std::string& defaultPassword, const std::string& defaultCertificate, const ClientOptions& options) {
-	QString username = P2QSTRING(defaultJID);
-	int index = -1;
-	for (int i = 0; i < usernames_.count(); i++) {
-		if (username == usernames_[i]) {
-			index = i;
-		}
+void QtLoginWindow::removeAvailableAccount(int index) {
+	if (index >= 0 && index < username_->count()) {
+		username_->removeItem(index);
+		accountsList_->removeAccountFromList(index);
 	}
-	if (index == -1) {
-		usernames_.append(username);
-		passwords_.append(P2QSTRING(defaultPassword));
-		certificateFiles_.append(P2QSTRING(defaultCertificate));
-		options_.push_back(options);
-		username_->addItem(username);
-	} else {
-		usernames_[index] = username;
-		passwords_[index] = P2QSTRING(defaultPassword);
-		certificateFiles_[index] = P2QSTRING(defaultCertificate);
-		options_[index] = options;
+	if (username_->count() == 0) {
+		selectUser("");
 	}
-}*/
+}
+
+void QtLoginWindow::clearPassword() {
+	password_->clear();
+	// TODO: clear passwords in accounts list also
+}
 
 void QtLoginWindow::handleUsernameTextChanged() {
 	boost::shared_ptr<Account> account = accountsManager_->getAccountByJIDString(Q2PSTRING(username_->currentText()));
 	if (account) {
 		certificateFile_ = P2QSTRING(account->getCertificatePath());
 		password_->setText(P2QSTRING(account->getPassword()));
-		remember_->setChecked(!account->forgetPassword());
+		remember_->setChecked(account->getRememberPassword());
 		loginAutomatically_->setChecked(account->getLoginAutomatically());
 		currentOptions_ = account->getClientOptions();
 	}
-
-	/*QString username = username_->currentText();
-	for (int i = 0; i < usernames_.count(); i++) {
-		if (username_->currentText() == usernames_[i]) {
-			certificateFile_ = certificateFiles_[i];
-			password_->setText(passwords_[i]);
-			remember_->setChecked(password_->text() != "");
-			currentOptions_ = options_[i];
-		}
-	}*/
+	else {
+		certificateFile_ = "";
+		password_->setText("");
+		remember_->setChecked(false);
+		loginAutomatically_->setChecked(false);
+		currentOptions_ = ClientOptions();
+	}
 	certificateButton_->setChecked(!certificateFile_.isEmpty());
 }
 
@@ -512,11 +476,13 @@ void QtLoginWindow::loginClicked() {
 			username_->clearEditText();
 			password_->setText("");
 		}
-	} else {
-		onCancelLoginRequest();
+	}
+	else {
+		onCancelLoginRequest(Q2PSTRING(username_->lineEdit()->text()));
 	}
 }
 
+// To be deleted? We set 'login automatically' after username_ text changed
 void QtLoginWindow::setLoginAutomatically(bool loginAutomatically) {
 	loginAutomatically_->setChecked(loginAutomatically);
 }
@@ -578,10 +544,6 @@ void QtLoginWindow::handleAccountWantsToBeDefault(int index) {
 	}
 }
 
-/*void QtLoginWindow::handleSignOut() {
-	accountsListWrapper_->updateGeometry();
-}*/
-
 void QtLoginWindow::handleQuit() {
 	onQuitRequest();
 }
@@ -589,10 +551,6 @@ void QtLoginWindow::handleQuit() {
 void QtLoginWindow::quit() {
 	QApplication::quit();
 }
-
-/*AccountsList* QtLoginWindow::getAccountsList() {
-	return accountsList_;
-}*/
 
 void QtLoginWindow::setInitialMenus() {
 	menuBar_->clear();
@@ -694,21 +652,23 @@ void QtLoginWindow::handleOpenConnectionOptions() {
 void QtLoginWindow::handleChangeView() {
 	if (singleAccountWrapper_->isVisibleTo(this)) {
 		singleAccountWrapper_->hide();
-		(static_cast<QBoxLayout*>(accountsListWrapper_->layout()))->insertWidget(3, message_);
+		(static_cast<QBoxLayout*>(accountsListWrapper_->layout()))->insertWidget(2, message_);
 		accountsListWrapper_->show();
-	} else {
+	}
+	else {
 		accountsListWrapper_->hide();
-		(static_cast<QBoxLayout*>(singleAccountWrapper_->layout()))->insertWidget(7, message_);
+		(static_cast<QBoxLayout*>(singleAccountWrapper_->layout()))->insertWidget(8, message_);
 		singleAccountWrapper_->show();
 	}
 	updateViewLabelText();
-	settings_->storeSetting(QtUISettingConstants::MULTIACCOUNT_VIEW, accountsListWrapper_->isVisibleTo(this));
+	settings_->storeSetting(QtUISettingConstants::LAST_VIEW_WAS_MULTIACCOUNT, accountsListWrapper_->isVisibleTo(this));
 }
 
 void QtLoginWindow::updateViewLabelText() {
 	if (singleAccountWrapper_->isVisibleTo(this)) {
 		viewLabel_->setText("<a href=\"#\"><font size='-1'>" + QObject::tr("Use multiple accounts") + "</font></a>");
-	} else {
+	}
+	else {
 		viewLabel_->setText("<a href=\"#\"><font size='-1'>" + QObject::tr("Use one account") + "</font></a>");
 	}
 }

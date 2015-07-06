@@ -6,16 +6,16 @@
 
 #pragma once
 
-#include <QFrame>
-#include <QPixmap>
-#include <QMenu>
-#include <QLabel>
 #include <QButtonGroup>
+#include <QFrame>
+#include <QLabel>
+#include <QMenu>
+#include <QPixmap>
 
 #include <Swift/Controllers/Account.h>
-#include <Swift/QtUI/ui_QtAccountDetailsWidget.h>
-#include <Swift/QtUI/QtTreeviewTriangle.h>
 #include <Swift/QtUI/QtAccountColorWidget.h>
+#include <Swift/QtUI/QtTreeviewTriangle.h>
+#include <Swift/QtUI/ui_QtAccountDetailsWidget.h>
 
 namespace Ui {
 class QtAccountDetailsWidget;
@@ -42,10 +42,8 @@ class QtAccountDetailsWidget : public QFrame {
 	protected:
 		void mousePressEvent(QMouseEvent*);
 
-	private:
-		void triangleClicked();
-
 	private slots:
+		void handleTriangleClicked();
 		void handleCogwheelClicked();
 		void handleCertificateChecked(bool checked);
 		void handleColorChanged();
@@ -54,7 +52,7 @@ class QtAccountDetailsWidget : public QFrame {
 		void handlePasswordEdited(const QString& text);
 		void handlePasswordReturnPressed();
 		void handleRememberPasswordToggled(bool checked);
-		void handleAccountEnabledChanged(bool checked);
+		void handleAccountEnabledClicked(bool checked);
 		void handleAccountEnabledValueChanged(bool checked);
 		void handleSetAsDefault();
 		void handleDeleteButtonClicked();

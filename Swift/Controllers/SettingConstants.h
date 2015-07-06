@@ -4,6 +4,12 @@
  * See the COPYING file for more information.
  */
 
+/*
+ * Copyright (c) 2015 Daniel Baczynski
+ * Licensed under the Simplified BSD license.
+ * See Documentation/Licenses/BSD-simplified.txt for more information.
+ */
+
 #pragma once
 
 #include <Swift/Controllers/Settings/SettingsProvider.h>
@@ -96,5 +102,10 @@ namespace Swift {
 			 * smart card is removed; else not.
 			 */
 			static const SettingsProvider::Setting<bool> DISCONNECT_ON_CARD_REMOVAL;
+
+			/**
+			 * The #MULTIACCOUNT_ENABLED setting specifies wheter to show options that enables a user to go to multiaccount view.
+			 */
+			static const SettingsProvider::Setting<bool> MULTIACCOUNT_ENABLED;
 	};
 }

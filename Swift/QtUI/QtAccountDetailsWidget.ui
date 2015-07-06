@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>252</width>
+    <width>203</width>
     <height>108</height>
    </rect>
   </property>
@@ -125,7 +125,7 @@
         <number>0</number>
        </property>
        <property name="text">
-        <string>Danp</string>
+        <string/>
        </property>
        <property name="textFormat">
         <enum>Qt::PlainText</enum>
@@ -363,9 +363,6 @@
           </property>
           <property name="toolTip">
            <string>Password</string>
-          </property>
-          <property name="toolTipDuration">
-           <number>-1</number>
           </property>
           <property name="accessibleDescription">
            <string/>

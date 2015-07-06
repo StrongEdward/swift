@@ -10,61 +10,50 @@
  * See the COPYING file for more information.
  */
 
-#include <string>
+#include <Swift/Controllers/Account.h>
 
-//#include <3rdParty/Boost/src/boost/shared_ptr.hpp>
+#include <string>
 
 #include <Swiften/Base/Algorithm.h>
 #include <Swiften/Base/String.h>
 #include <Swiften/StringCodecs/Base64.h>
 
-#include <Swift/Controllers/Account.h>
-#include <Swift/Controllers/Settings/SettingsProvider.h>
 #include <Swift/Controllers/ProfileSettingsProvider.h>
+#include <Swift/Controllers/Settings/SettingsProvider.h>
 
 namespace Swift {
 
-//int Account::maxIndex_ = 0;
-
-Account::Account(std::string profile, SettingsProvider* settings, int index) : index_(index), settings_(settings), profileSettings_(new ProfileSettingsProvider(profile, settings)) {
+Account::Account(const std::string& profile, SettingsProvider* settings, int index) : index_(index), settings_(settings), profileSettings_(new ProfileSettingsProvider(profile, settings)) {
 
 	if (index_ >= 0) {
 		profileSettings_->storeInt("index", index_);
-	} else {
+	}
+	else {
 		index_ = profileSettings_->getIntSetting("index", 0);
 	}
 
 	jid_ = profileSettings_->getStringSetting("jid");
 	accountName_ = profileSettings_->getStringSetting("accountname");
 	if (accountName_.empty()) {
-		accountName_ = JID(jid_).getNode();
+		accountName_ = jid_.getNode();
 	}
-	password_ = profileSettings_->getStringSetting("pass");
+	rememberPassword_ = profileSettings_->getIntSetting("remember", 0);
+	if (rememberPassword_) {
+		password_ = profileSettings_->getStringSetting("pass");
+	}
+	else {
+		password_ = "";
+	}
 	certificatePath_ = profileSettings_->getStringSetting("certificate");
 	clientOptions_ = parseClientOptions(profileSettings_->getStringSetting("options"));
-	rememberPassword_ = profileSettings_->getIntSetting("remember", 0);
 	autoLogin_ = profileSettings_->getIntSetting("autologin", 0);
-	enabled_ = autoLogin_;
+	enabled_ = false;
 
-	color_.red = profileSettings_->getIntSetting("red", -1);
-	color_.green = profileSettings_->getIntSetting("green", -1);
-	color_.blue = profileSettings_->getIntSetting("blue", -1);
-	if (!color_.isValid()) {
-		color_ = RGBColor();
-	}
+	determineColor();
+	storeAllSettings();
 }
 
-Account::Account(int index,
-				 const std::string accountName,
-				 const std::string jid,
-				 const std::string password,
-				 const std::string certificatePath,
-				 const ClientOptions options,
-				 bool rememberPassword,
-				 bool autoLogin,
-				 bool enabled,
-				 //bool isDefault,
-				 SettingsProvider* settings)
+Account::Account(int index, const std::string& accountName, const std::string& jid, const std::string& password, const std::string& certificatePath, const ClientOptions& options, bool rememberPassword, bool autoLogin, /*bool enabled, bool isDefault,*/ SettingsProvider* settings)
 	: index_(index),
 	  accountName_(accountName),
 	  jid_(JID(jid)),
@@ -73,11 +62,12 @@ Account::Account(int index,
 	  clientOptions_(options),
 	  rememberPassword_(rememberPassword),
 	  autoLogin_(autoLogin),
-	  enabled_(enabled),
+	  //enabled_(enabled),
 	  //isDefault_(isDefault),
 	  settings_(settings),
 	  profileSettings_(new ProfileSettingsProvider(accountName, settings_)) {
 
+	determineColor();
 	storeAllSettings();
 }
 
@@ -85,12 +75,29 @@ void Account::storeAllSettings() {
 	profileSettings_->storeInt("index", index_);
 	profileSettings_->storeString("accountname", accountName_);
 	profileSettings_->storeString("jid", jid_);
-	profileSettings_->storeString("pass", password_);
+	if (rememberPassword_) {
+		profileSettings_->storeString("pass", password_);
+	}
+	else {
+		profileSettings_->storeString("pass", "");
+	}
 	profileSettings_->storeString("certificate", certificatePath_);
 	profileSettings_->storeString("options", serializeClientOptions(clientOptions_));
 	profileSettings_->storeInt("remember", rememberPassword_);
 	profileSettings_->storeInt("autologin", autoLogin_);
 	//profileSettings_->storeInt("default", isDefault_);
+	profileSettings_->storeInt("red", color_.red);
+	profileSettings_->storeInt("green", color_.green);
+	profileSettings_->storeInt("blue", color_.blue);
+}
+
+void Account::determineColor() {
+	color_.red = profileSettings_->getIntSetting("red", -1);
+	color_.green = profileSettings_->getIntSetting("green", -1);
+	color_.blue = profileSettings_->getIntSetting("blue", -1);
+	if (!color_.isValid()) {
+		color_ = RGBColor();
+	}
 }
 
 Account::~Account() {
@@ -101,8 +108,6 @@ Account::~Account() {
 void Account::clearPassword() {
 	safeClear(password_);
 }
-
-// Getters
 
 int Account::getIndex() {
 	return index_;
@@ -132,8 +137,8 @@ const ClientOptions& Account::getClientOptions() {
 	return isDefault_;
 }*/
 
-bool Account::forgetPassword() {
-	return !rememberPassword_;
+bool Account::getRememberPassword() {
+	return rememberPassword_;
 }
 
 bool Account::getLoginAutomatically() {
@@ -151,8 +156,6 @@ RGBColor Account::getColor() {
 ProfileSettingsProvider* Account::getProfileSettings() {
 	return profileSettings_;
 }
-
-// Setters
 
 void Account::setIndex(int newIndex) {
 	if (newIndex >= 0) {
@@ -192,14 +195,14 @@ void Account::setClientOptions(const ClientOptions& newOptions) {
 		isDefault_ = isDefault;
 		profileSettings_->storeInt("default", isDefault_);
 	}
-
 }*/
 
 void Account::setRememberPassword(bool remember) {
 	if (!remember) {
 		clearPassword();
 		profileSettings_->storeString("pass", "");
-	} else {
+	}
+	else {
 		profileSettings_->storeString("pass", password_);
 	}
 	rememberPassword_ = remember;
@@ -217,14 +220,13 @@ void Account::setLoginAutomatically(bool autoLogin) {
 void Account::setEnabled(bool enabled) {
 	bool wasEnabled = enabled_;
 	enabled_ = enabled;
-	if (enabled) {
+	if (!wasEnabled && enabled) {
 		onEnabledChanged(true);
 	}
 	if (wasEnabled && !enabled) {
 		// send disabled signal?
 		onEnabledChanged(false);
 	}
-
 }
 
 void Account::setColor(RGBColor color) {
@@ -233,7 +235,6 @@ void Account::setColor(RGBColor color) {
 	profileSettings_->storeInt("green", color_.green);
 	profileSettings_->storeInt("blue", color_.blue);
 }
-
 
 #define SERIALIZE_BOOL(option) result += options.option ? "1" : "0"; result += ",";
 #define SERIALIZE_INT(option) result += boost::lexical_cast<std::string>(options.option); result += ",";
@@ -268,6 +269,7 @@ std::string Account::serializeClientOptions(const ClientOptions& options) {
 	SERIALIZE_URL(boshHTTPConnectProxyURL);
 	SERIALIZE_SAFE_STRING(boshHTTPConnectProxyAuthID);
 	SERIALIZE_SAFE_STRING(boshHTTPConnectProxyAuthPassword);
+	SERIALIZE_BOOL(tlsOptions.schannelTLS1_0Workaround);
 	return result;
 }
 
@@ -292,10 +294,10 @@ ClientOptions Account::parseClientOptions(const std::string& optionString) {
 	PARSE_BOOL(useStreamCompression, 1);
 	PARSE_INT_RAW(-1);
 	switch (intVal) {
-	case 1: result.useTLS = ClientOptions::NeverUseTLS;break;
-	case 2: result.useTLS = ClientOptions::UseTLSWhenAvailable;break;
-	case 3: result.useTLS = ClientOptions::RequireTLS;break;
-	default:;
+		case 1: result.useTLS = ClientOptions::NeverUseTLS;break;
+		case 2: result.useTLS = ClientOptions::UseTLSWhenAvailable;break;
+		case 3: result.useTLS = ClientOptions::RequireTLS;break;
+		default:;
 	}
 	PARSE_BOOL(allowPLAINWithoutTLS, 0);
 	PARSE_BOOL(useStreamResumption, 0);
@@ -304,10 +306,10 @@ ClientOptions Account::parseClientOptions(const std::string& optionString) {
 	PARSE_INT(manualPort, -1);
 	PARSE_INT_RAW(-1);
 	switch (intVal) {
-	case 1: result.proxyType = ClientOptions::NoProxy;break;
-	case 2: result.proxyType = ClientOptions::SystemConfiguredProxy;break;
-	case 3: result.proxyType = ClientOptions::SOCKS5Proxy;break;
-	case 4: result.proxyType = ClientOptions::HTTPConnectProxy;break;
+		case 1: result.proxyType = ClientOptions::NoProxy;break;
+		case 2: result.proxyType = ClientOptions::SystemConfiguredProxy;break;
+		case 3: result.proxyType = ClientOptions::SOCKS5Proxy;break;
+		case 4: result.proxyType = ClientOptions::HTTPConnectProxy;break;
 	}
 	PARSE_STRING(manualProxyHostname);
 	PARSE_INT(manualProxyPort, -1);
@@ -315,6 +317,7 @@ ClientOptions Account::parseClientOptions(const std::string& optionString) {
 	PARSE_URL(boshHTTPConnectProxyURL);
 	PARSE_SAFE_STRING(boshHTTPConnectProxyAuthID);
 	PARSE_SAFE_STRING(boshHTTPConnectProxyAuthPassword);
+	PARSE_BOOL(tlsOptions.schannelTLS1_0Workaround, false);
 
 	return result;
 }

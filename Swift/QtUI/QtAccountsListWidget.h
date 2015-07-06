@@ -8,13 +8,10 @@
 
 #include <vector>
 
-#include <QScrollArea>
 #include <QButtonGroup>
-
-//#include <3rdParty/Boost/src/boost/shared_ptr.hpp>
+#include <QScrollArea>
 
 #include <Swift/Controllers/UIInterfaces/AccountsList.h>
-#include <Swift/QtUI/QtAccountDetailsWidget.h>
 
 namespace Ui {
 class QtAccountsListWidget;
@@ -23,6 +20,7 @@ class QtAccountsListWidget;
 namespace Swift {
 
 class AccountsManager;
+class QtAccountDetailsWidget;
 
 class QtAccountsListWidget : public QScrollArea, public AccountsList
 {
@@ -49,8 +47,6 @@ class QtAccountsListWidget : public QScrollArea, public AccountsList
 
 		std::vector<QtAccountDetailsWidget*> accounts_; // Can it be removed so we will use accountsLayout_->itemAt() to get account widgets?
 		AccountsManager* manager_;
-
-
 };
 
 }
