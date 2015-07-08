@@ -13,7 +13,10 @@
 #include <Swift/Controllers/AccountsManager.h>
 
 #include <set>
+#include <vector>
 
+#include <boost/archive/text_iarchive.hpp>
+#include <boost/archive/text_oarchive.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/make_shared.hpp>
 
@@ -42,6 +45,8 @@
 
 
 namespace Swift {
+
+Account* acc = NULL;
 
 AccountsManager::AccountsManager(EventLoop* eventLoop, UIEventStream* uiEventStream, EventController* eventController, NetworkFactories* networkFactories, UIFactory* uiFactory, SettingsProvider* settings, SystemTrayController* systemTrayController, SoundPlayer* soundPlayer, StoragesFactory* storagesFactory, CertificateStorageFactory* certificateStorageFactory, Dock* dock, Notifier* notifier, TogglableNotifier* togglableNotifier, URIHandler* uriHandler, IdleDetector* idleDetector, const std::map<std::string, std::string> emoticons, bool useDelayForLatency) :
 	defaultAccount_(boost::shared_ptr<Account>()),
@@ -75,60 +80,7 @@ AccountsManager::AccountsManager(EventLoop* eventLoop, UIEventStream* uiEventStr
 	loginWindow_->onCancelLoginRequest.connect(boost::bind(&AccountsManager::handleCancelLoginRequest, this, _1));
 	loginWindow_->onQuitRequest.connect(boost::bind(&AccountsManager::handleQuitRequest, this));
 
-	std::vector<std::string> profiles = settings_->getAvailableProfiles();
-
-	// Search for bad or lacking indexes in profiles
-	bool accountsHaveIndices = true;
-	std::set<int> indices;
-	foreach (std::string profile, profiles) {
-		ProfileSettingsProvider provider(profile, settings_);
-		int index = provider.getIntSetting("index", -1);
-		if (index < 0) { // if there was no index or index was not correct
-			accountsHaveIndices = false;
-		}
-		else {
-			indices.insert(index); // putting into set to check if every index is unique
-		}
-	}
-	if (indices.size() < profiles.size() ) {
-		accountsHaveIndices = false;
-	}
-
-	// Create Main Controllers
-	maxAccountIndex_ = -1;
-	foreach (std::string profile, profiles) {
-		boost::shared_ptr<Account> account;
-		if (accountsHaveIndices) {
-			account = boost::make_shared<Account>(profile, settings_);
-			if (account->getIndex() >= maxAccountIndex_) {
-				maxAccountIndex_ = account->getIndex();
-			}
-		}
-		else {
-			account = boost::make_shared<Account>(profile, settings_, maxAccountIndex_ + 1);
-			++maxAccountIndex_;
-		}
-
-		createMainController(account, false);
-
-		/*if (loginAutomatically) {
-			mainControllers_[0]->profileSettings_ = new ProfileSettingsProvider(getDefaultJID(), settings_);
-			// Below code will be changed soon
-			boost::shared_ptr<Account> account = getAccountByJID(getDefaultJID());
-			 FIXME: deal with autologin with a cert
-			mainControllers_[0]->handleLoginRequest(getDefaultJID(), account->password_, account->certificatePath_, CertificateWithKey::ref(), account->options_, true, true);
-		} else {
-			mainController->profileSettings_ = NULL;
-		}*/
-	}
-
-	// Ensure that accounts are sorted by index
-	std::sort(mainControllers_.begin(), mainControllers_.end(), AccountsManager::compareAccounts);
-
-	// Ensure that all indices will be from 0 to n
-	for (unsigned int i = 0; i < mainControllers_.size(); i++) {
-		mainControllers_[i]->getAccount()->setIndex(i);
-	}
+	loadAccounts();
 
 	loginWindow_->onDefaultAccountChanged.connect(boost::bind(&AccountsManager::handleDefaultAccountChanged, this, _1));
 	defaultAccount_ = getAccountByJIDString(settings_->getSetting(SettingConstants::DEFAULT_ACCOUNT));
@@ -141,10 +93,16 @@ AccountsManager::AccountsManager(EventLoop* eventLoop, UIEventStream* uiEventStr
 
 	bool eagle = settings_->getSetting(SettingConstants::FORGET_PASSWORDS);
 	if (!eagle) {
-		loginWindow_->selectUser(settings_->getSetting(SettingConstants::LAST_LOGIN_JID));
+		boost::shared_ptr<Account> lastAccount = getAccountByJIDString(settings_->getSetting(SettingConstants::LAST_LOGIN_JID));
+		if (lastAccount) {
+			loginWindow_->selectUser(lastAccount->getJID());
+		}
+		else {
+			if (mainControllers_.size() > 0) {
+				loginWindow_->selectUser( defaultAccount_ ? defaultAccount_->getJID() : mainControllers_.at(0)->getAccount()->getJID() );
+			}
+		}
 	}
-
-	storeAccounts();
 
 	foreach (MainController* c, mainControllers_) {
 		if (c->getAccount()->getLoginAutomatically()) {
@@ -165,13 +123,52 @@ AccountsManager::~AccountsManager() {
 	delete xmlConsoleController_;
 }
 
-bool AccountsManager::compareAccounts (MainController* a, MainController* b) {
-	return a->getAccount()->getIndex() < b->getAccount()->getIndex();
+void AccountsManager::loadAccounts() {
+	std::string serializedAccountsString = settings_->getSetting(SettingConstants::SERIALIZED_ACCOUNTS);
+	std::vector< boost::shared_ptr<Account> > accounts;
+
+	if (serializedAccountsString != "") {
+		std::stringstream stream;
+		stream << serializedAccountsString;
+		try {
+			boost::archive::text_iarchive archive(stream);
+			while (!stream.eof()) {
+				Account* account;
+				archive >> account;
+				account->setProfileSettings(settings_); //Temporary, until get rid of profile settings at all
+				accounts.push_back(boost::shared_ptr<Account>(account));
+			}
+		}
+		catch (boost::archive::archive_exception&) {}
+	}
+	else { // Read from SettingsProvider and remove from there
+		std::vector<std::string> profiles = settings_->getAvailableProfiles();
+		foreach (std::string profile, profiles) {
+			accounts.push_back(boost::make_shared<Account>(profile, settings_));
+			//settings_->removeProfile(profile); // Not removing yet because we need to have profile settings stored (until full transition to serialization is done)
+		}
+	}
+
+	foreach(boost::shared_ptr<Account> account, accounts) {
+		createMainController(account, false);
+	}
+
+	// Ensure that all indices will be from 0 to n
+	for (unsigned int i = 0; i < mainControllers_.size(); i++) {
+		mainControllers_[i]->getAccount()->setIndex(i);
+	}
+	storeAccounts(); // In case we have read data from ProfileSettingsProvider
 }
 
-/*int AccountsManager::getMaxAccountIndex() {
-	return (mainControllers_.size() > 0 ? mainControllers_.back()->getAccount()->getIndex() : 0);
-}*/
+void AccountsManager::storeAccounts() {
+	std::stringstream stream;
+	boost::archive::text_oarchive archive(stream);
+	foreach (MainController* controller, mainControllers_) {
+		Account* account = static_cast<Account*>(controller->getAccount().get());
+		archive << account;
+	}
+	settings_->storeSetting(SettingConstants::SERIALIZED_ACCOUNTS, stream.str());
+}
 
 void AccountsManager::createMainController(boost::shared_ptr<Account> account, bool triggeredByCombobox) {
 	MainController* mainController = new MainController (account, eventLoop_, uiEventStream_, eventController_, networkFactories_, uiFactory_, highlightManager_, highlightEditorController_, loginWindow_, xmlConsoleController_, settings_, systemTrayController_, soundPlayer_, storagesFactory_, certificateStorageFactory_, dock_, togglableNotifier_, uriHandler_, idleDetector_, emoticons_, useDelayForLatency_, triggeredByCombobox);
@@ -179,6 +176,24 @@ void AccountsManager::createMainController(boost::shared_ptr<Account> account, b
 	mainControllers_.push_back(mainController);
 	mainController->onShouldBeDeleted.connect(boost::bind(&AccountsManager::removeAccount, this, _1));
 	mainController->onConnected.connect(boost::bind(&AccountsManager::handleMainControllerConnected, this, _1));
+	account->onAccountDataChanged.connect(boost::bind(&AccountsManager::handleAccountDataChanged, this));
+}
+
+void AccountsManager::setDefaultAccount(boost::shared_ptr<Account> account) {
+	if (account) {
+		defaultAccount_ = account;
+		settings_->storeSetting(SettingConstants::DEFAULT_ACCOUNT, defaultAccount_->getJID());
+	}
+}
+
+void AccountsManager::clearAutoLogins() {
+	foreach (MainController * controller, mainControllers_) {
+		controller->getAccount()->setLoginAutomatically(false);
+	}
+}
+
+int AccountsManager::getMaxAccountIndex() {
+	return (mainControllers_.size() > 0 ? mainControllers_.back()->getAccount()->getIndex() : -1);
 }
 
 JID AccountsManager::getDefaultJID() {
@@ -220,13 +235,12 @@ int AccountsManager::accountsCount() {
 
 void AccountsManager::addAccount(boost::shared_ptr<Account> account) {
 	if (!account) {
-		account = boost::shared_ptr<Account>(new Account(maxAccountIndex_ + 1, "account" + boost::lexical_cast<std::string>(maxAccountIndex_ + 1), "", "", "", ClientOptions(), false, false, settings_));
+		account = boost::shared_ptr<Account>(new Account(getMaxAccountIndex() + 1, "account" + boost::lexical_cast<std::string>(getMaxAccountIndex() + 1), "", "", "", ClientOptions(), false, false, settings_));
 	}
 	createMainController(account, false);
 	if (mainControllers_.size() == 1) {
 		setDefaultAccount(account);
 	}
-	++maxAccountIndex_;
 	loginWindow_->addAvailableAccount(account);
 }
 
@@ -237,23 +251,17 @@ void AccountsManager::removeAccount(const std::string& username) {
 
 		// Disconnect, erase from vector and repair indices
 		MainController* controllerToDelete = mainControllers_[account->getIndex()];
-		controllerToDelete->signOut();
+		//controllerToDelete->signOut();
 		mainControllers_.erase(mainControllers_.begin() + account->getIndex());
 		for (unsigned int i = 0; i < mainControllers_.size(); i++) {
 			mainControllers_[i]->getAccount()->setIndex(i);
 		}
-		maxAccountIndex_ = (mainControllers_.size() > 0 ? mainControllers_.back()->getAccount()->getIndex() : 0);
+		//maxAccountIndex_ = (mainControllers_.size() > 0 ? mainControllers_.back()->getAccount()->getIndex() : 0);
 
 		settings_->removeProfile(username);
 		loginWindow_->removeAvailableAccount(account->getIndex());
 
 		delete controllerToDelete;
-	}
-}
-
-void AccountsManager::clearAutoLogins() {
-	foreach (MainController * controller, mainControllers_) {
-		controller->getAccount()->setLoginAutomatically(false);
 	}
 }
 
@@ -270,13 +278,13 @@ void AccountsManager::handleLoginRequestTriggeredByCombobox(const std::string &u
 		boost::shared_ptr<Account> account = getAccountByJIDString(username);
 
 		if (!account) { // Login to new account
-			account = boost::shared_ptr<Account>(new Account(maxAccountIndex_ + 1, username, username, password, certificatePath, options, remember, loginAutomatically, /*false,*/ /*(mainControllers_.size() > 0 ? false : true), Set as default if there's no other accounts*/ settings_));
+			account = boost::shared_ptr<Account>(new Account(getMaxAccountIndex() + 1, username, username, password, certificatePath, options, remember, loginAutomatically, /*false,*/ /*(mainControllers_.size() > 0 ? false : true), Set as default if there's no other accounts*/ settings_));
 			createMainController(account, true);
 			if (mainControllers_.size() == 1) {
 				setDefaultAccount(account);
 			}
 			account->setEnabled(true);
-			++maxAccountIndex_;
+			//++maxAccountIndex_;
 			loginWindow_->addAvailableAccount(account);
 		}
 		else { // Login to existing account
@@ -301,11 +309,11 @@ void AccountsManager::handleCancelLoginRequest(const std::string currentUsername
 }
 
 void AccountsManager::handleDefaultAccountChanged(int index) {
-	/*defaultAccount_->setDefault(false);
-	defaultAccount_ = this->getAccountAt(index);
-	defaultAccount_->setDefault(true);*/
-
 	setDefaultAccount(getAccountAt(index));
+}
+
+void AccountsManager::handleAccountDataChanged() {
+	storeAccounts();
 }
 
 void AccountsManager::handleMainControllerConnected(const MainController* controller) {
@@ -326,25 +334,8 @@ void AccountsManager::handleQuitRequest() {
 	loginWindow_->quit();
 }
 
-void AccountsManager::setDefaultAccount(boost::shared_ptr<Account> account) {
-	if (account) {
-		defaultAccount_ = account;
-		settings_->storeSetting(SettingConstants::DEFAULT_ACCOUNT, defaultAccount_->getJID());
-	}
-}
-
-void AccountsManager::storeAccounts() {
-	std::stringstream stream;
-	boost::archive::text_oarchive archive(stream);
-	foreach (MainController* controller, mainControllers_) {
-		Account* account = static_cast<Account*>(controller->getAccount().get());
-		archive << account;
-	}
-	settings_->storeSetting(SettingConstants::SERIALIZED_ACCOUNTS, stream.str());
-}
-
-void AccountsManager::loadAccounts() {
-
+bool AccountsManager::compareAccounts (MainController* a, MainController* b) {
+	return a->getAccount()->getIndex() < b->getAccount()->getIndex();
 }
 
 } // namespace Swift

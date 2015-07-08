@@ -289,7 +289,6 @@ void MainController::resetCurrentError() {
 		lastDisconnectError_->conclude();
 		lastDisconnectError_ = boost::shared_ptr<ErrorEvent>();
 	}
-	loginWindow_->setMessage("");
 }
 
 void MainController::handleConnected() {
@@ -681,7 +680,7 @@ void MainController::handleDisconnected(const boost::optional<ClientError>& erro
 	}
 
 	if (shouldBeDeleted()) {
-		//handleQuitRequest();
+		signOut();
 		onShouldBeDeleted(account_->getJID());
 	}
 }

@@ -97,8 +97,8 @@ namespace Swift {
 			const std::string getJIDString() const;
 			boost::shared_ptr<Account> getAccount() const;
 			bool shouldBeDeleted() const;
-			void signOut();
 			void prepareToQuit();
+			void signOut();
 
 			boost::signal<void(const std::string) > onShouldBeDeleted;
 			boost::signal<void(const MainController*) > onConnected;

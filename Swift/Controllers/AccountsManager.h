@@ -48,8 +48,6 @@ namespace Swift {
 			AccountsManager(EventLoop* eventLoop, UIEventStream *uiEventStream, EventController* eventController, NetworkFactories* networkFactories, UIFactory* uiFactories, SettingsProvider* settings, SystemTrayController* systemTrayController, SoundPlayer* soundPlayer, StoragesFactory* storagesFactory, CertificateStorageFactory* certificateStorageFactory, Dock* dock, Notifier* notifier, TogglableNotifier* togglableNotifier, URIHandler* uriHandler, IdleDetector* idleDetector, const std::map<std::string, std::string> emoticons, bool useDelayForLatency);
 			~AccountsManager();
 
-			void createMainController(boost::shared_ptr<Account> account, bool triggeredByCombobox);
-
 			JID getDefaultJID();
 			boost::shared_ptr<Account> getDefaultAccount();
 			boost::shared_ptr<Account> getAccountByJIDString(const std::string& jid); // Assumption: JID is unique
@@ -59,24 +57,25 @@ namespace Swift {
 			void addAccount(boost::shared_ptr<Account> account = boost::shared_ptr<Account>());
 			void removeAccount(const std::string& username);
 
-
 		private:
-			//int getMaxAccountIndex();
+			void loadAccounts();
+			void storeAccounts();
+			void createMainController(boost::shared_ptr<Account> account, bool triggeredByCombobox);
+			void setDefaultAccount(boost::shared_ptr<Account> account);
+			void clearAutoLogins();
+			int getMaxAccountIndex();
+			std::string serializeClientOptions(const ClientOptions& options);
+			ClientOptions parseClientOptions(const std::string& optionString);
+
 			void handleDefaultAccountChanged(int index);
+			void handleAccountDataChanged();
 			void handleLoginRequestTriggeredByCombobox(const std::string &username, const std::string &password, const std::string& certificatePath, const ClientOptions& options, bool remember, bool loginAutomatically);
 			void handleCancelLoginRequest(const std::string currentUsername);
 			void handleMainControllerConnected(const MainController* controller);
 			void handlePurgeSavedLoginRequest(const std::string& username);
 			void handleQuitRequest();
 
-			void setDefaultAccount(boost::shared_ptr<Account> account);
-			void clearAutoLogins();
-			std::string serializeClientOptions(const ClientOptions& options);
-			ClientOptions parseClientOptions(const std::string& optionString);
-
 			static bool compareAccounts (MainController* a, MainController* b);
-			void storeAccounts();
-			void loadAccounts();
 
 
 		private:

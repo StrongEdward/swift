@@ -14,11 +14,11 @@
 
 #include <string>
 
-#include <boost/archive/text_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
+#include <boost/serialization/split_member.hpp>
 
 #include <Swiften/Base/boost_bsignals.h>
 #include <Swiften/Client/ClientOptions.h>
+#include <Swiften/Elements/StatusShow.h>
 #include <Swiften/JID/JID.h>
 
 namespace Swift {
@@ -44,7 +44,7 @@ namespace Swift {
 		public:
 			Account();
 			Account(const std::string& profile, SettingsProvider* settings, int index = -1);
-			Account(int index, const std::string& accountName, const std::string& jid, const std::string& password, const std::string& certificatePath, const ClientOptions& options, bool rememberPassword, bool autoLogin, /*bool enabled,*/ /*bool isDefault,*/ SettingsProvider* settings);
+			Account(int index, const std::string& accountName, const std::string& jid, const std::string& password, const std::string& certificatePath, const ClientOptions& options, bool rememberPassword, bool autoLogin, /*bool enabled,*/ SettingsProvider* settings);
 			~Account();
 
 			void clearPassword();
@@ -55,11 +55,12 @@ namespace Swift {
 			const std::string& getPassword() const;
 			const std::string& getCertificatePath() const;
 			const ClientOptions& getClientOptions() const;
-			//bool isDefault();
 			bool getRememberPassword() const;
 			bool getLoginAutomatically() const;
-			bool isEnabled() const;
+			StatusShow::Type getShow() const;
+			std::string getStatus() const;
 			RGBColor getColor() const;
+			bool isEnabled() const;
 			ProfileSettingsProvider* getProfileSettings() const;
 
 			void setIndex(int newIndex);
@@ -68,18 +69,22 @@ namespace Swift {
 			void setPassword(const std::string& newPassword);
 			void setCertificatePath(const std::string& newPath);
 			void setClientOptions(const ClientOptions& newOptions);
-			//void setDefault(bool isDefault);
 			void setRememberPassword(bool remember);
 			void setLoginAutomatically(bool autoLogin);
-			void setEnabled(bool enabled);
+			void setShow(StatusShow::Type show);
+			void setStatus(std::string& status);
 			void setColor(RGBColor color);
+			void setEnabled(bool enabled);
+			void setProfileSettings(SettingsProvider* settings);
 
 		public:
 			boost::signal<void (bool)> onEnabledChanged;
+			boost::signal<void ()> onAccountDataChanged;
 
 		private:
 			friend class boost::serialization::access;
-			template<class Archive> void serialize(Archive& ar, const unsigned int version);
+			template<class Archive> void save(Archive& ar, const unsigned int version) const;
+			template<class Archive> void load(Archive& ar, const unsigned int version);
 
 			void storeAllSettings();
 			void determineColor();
@@ -90,32 +95,60 @@ namespace Swift {
 			int index_;
 			std::string accountName_;
 			JID jid_;
-			std::string password_;
+			std::string cachedPassword_;
 			std::string certificatePath_;
 			ClientOptions clientOptions_;
 			bool rememberPassword_;
 			bool autoLogin_;
+			StatusShow::Type show_;
+			std::string status_;
+			RGBColor color_;
 			bool enabled_;
 			//bool isDefault_;
-			RGBColor color_;
 
 			SettingsProvider* settings_;
 			ProfileSettingsProvider* profileSettings_;
+
+			BOOST_SERIALIZATION_SPLIT_MEMBER()
 	};
 
 	template<class Archive>
-	void Account::serialize(Archive& ar, const unsigned int /*version*/) {
-		ar & index_;
-		ar & accountName_;
-		ar & jid_;
-		ar & password_;
-		ar & certificatePath_;
-		ar & clientOptions_;
-		ar & rememberPassword_;
-		ar & autoLogin_;
-		ar & enabled_;
-		ar & color_.red;
-		ar & color_.green;
-		ar & color_.blue;
+	void Account::save(Archive& ar, const unsigned int /*version*/) const  {
+		ar << index_;
+		ar << accountName_;
+		ar << jid_;
+		ar << rememberPassword_;
+		if (rememberPassword_) {
+			ar << cachedPassword_;
+		}
+		ar << certificatePath_;
+		ar << clientOptions_;
+		ar << autoLogin_;
+		ar << show_;
+		ar << status_;
+		ar << enabled_;
+		ar << color_.red;
+		ar << color_.green;
+		ar << color_.blue;
+	}
+
+	template<class Archive>
+	void Account::load(Archive& ar, const unsigned int /*version*/) {
+		ar >> index_;
+		ar >> accountName_;
+		ar >> jid_;
+		ar >> rememberPassword_;
+		if (rememberPassword_) {
+			ar >> cachedPassword_;
+		}
+		ar >> certificatePath_;
+		ar >> clientOptions_;
+		ar >> autoLogin_;
+		ar >> show_;
+		ar >> status_;
+		ar >> enabled_;
+		ar >> color_.red;
+		ar >> color_.green;
+		ar >> color_.blue;
 	}
 }
