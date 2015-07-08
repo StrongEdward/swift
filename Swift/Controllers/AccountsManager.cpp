@@ -144,6 +144,8 @@ AccountsManager::AccountsManager(EventLoop* eventLoop, UIEventStream* uiEventStr
 		loginWindow_->selectUser(settings_->getSetting(SettingConstants::LAST_LOGIN_JID));
 	}
 
+	storeAccounts();
+
 	foreach (MainController* c, mainControllers_) {
 		if (c->getAccount()->getLoginAutomatically()) {
 			loginWindow_->setIsLoggingIn(true);
@@ -329,6 +331,20 @@ void AccountsManager::setDefaultAccount(boost::shared_ptr<Account> account) {
 		defaultAccount_ = account;
 		settings_->storeSetting(SettingConstants::DEFAULT_ACCOUNT, defaultAccount_->getJID());
 	}
+}
+
+void AccountsManager::storeAccounts() {
+	std::stringstream stream;
+	boost::archive::text_oarchive archive(stream);
+	foreach (MainController* controller, mainControllers_) {
+		Account* account = static_cast<Account*>(controller->getAccount().get());
+		archive << account;
+	}
+	settings_->storeSetting(SettingConstants::SERIALIZED_ACCOUNTS, stream.str());
+}
+
+void AccountsManager::loadAccounts() {
+
 }
 
 } // namespace Swift

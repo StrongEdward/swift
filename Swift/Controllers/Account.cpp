@@ -23,6 +23,10 @@
 
 namespace Swift {
 
+Account::Account() : profileSettings_(NULL) {
+
+}
+
 Account::Account(const std::string& profile, SettingsProvider* settings, int index) : index_(index), settings_(settings), profileSettings_(new ProfileSettingsProvider(profile, settings)) {
 
 	if (index_ >= 0) {
@@ -101,35 +105,37 @@ void Account::determineColor() {
 }
 
 Account::~Account() {
-	delete profileSettings_; // TODO: profileSettings as boost::shared_ptr, now it's created when passing to Account ctor
 	clearPassword();
+	if (profileSettings_ != NULL) {
+		delete profileSettings_;
+	}
 }
 
 void Account::clearPassword() {
 	safeClear(password_);
 }
 
-int Account::getIndex() {
+int Account::getIndex() const {
 	return index_;
 }
 
-std::string Account::getAccountName() {
+std::string Account::getAccountName() const {
 	return accountName_;
 }
 
-const JID& Account::getJID() {
+const JID& Account::getJID() const {
 	return jid_;
 }
 
-const std::string& Account::getPassword() {
+const std::string& Account::getPassword() const {
 	return password_;
 }
 
-const std::string& Account::getCertificatePath() {
+const std::string& Account::getCertificatePath() const {
 	return certificatePath_;
 }
 
-const ClientOptions& Account::getClientOptions() {
+const ClientOptions& Account::getClientOptions() const {
 	return clientOptions_;
 }
 
@@ -137,23 +143,23 @@ const ClientOptions& Account::getClientOptions() {
 	return isDefault_;
 }*/
 
-bool Account::getRememberPassword() {
+bool Account::getRememberPassword() const {
 	return rememberPassword_;
 }
 
-bool Account::getLoginAutomatically() {
+bool Account::getLoginAutomatically() const {
 	return autoLogin_;
 }
 
-bool Account::isEnabled() {
+bool Account::isEnabled() const {
 	return enabled_;
 }
 
-RGBColor Account::getColor() {
+RGBColor Account::getColor() const {
 	return color_;
 }
 
-ProfileSettingsProvider* Account::getProfileSettings() {
+ProfileSettingsProvider* Account::getProfileSettings() const {
 	return profileSettings_;
 }
 

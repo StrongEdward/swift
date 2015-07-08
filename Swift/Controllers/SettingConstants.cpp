@@ -23,6 +23,7 @@ const SettingsProvider::Setting<bool> SettingConstants::REMEMBER_RECENT_CHATS = 
 const SettingsProvider::Setting<std::string> SettingConstants::LAST_LOGIN_JID = SettingsProvider::Setting<std::string>("lastLoginJID", "");
 const SettingsProvider::Setting<bool> SettingConstants::LOGIN_AUTOMATICALLY = SettingsProvider::Setting<bool>("loginAutomatically", false);
 const SettingsProvider::Setting<std::string> SettingConstants::DEFAULT_ACCOUNT = SettingsProvider::Setting<std::string>("defaulAccount", "");
+const SettingsProvider::Setting<std::string> SettingConstants::SERIALIZED_ACCOUNTS = SettingsProvider::Setting<std::string>("serializedAccounts", "");
 const SettingsProvider::Setting<bool> SettingConstants::SHOW_OFFLINE("showOffline", false);
 const SettingsProvider::Setting<std::string> SettingConstants::EXPANDED_ROSTER_GROUPS("GroupExpandiness", "");
 const SettingsProvider::Setting<bool> SettingConstants::PLAY_SOUNDS("playSounds", true);

@@ -43,6 +43,7 @@ namespace Swift {
 			static const SettingsProvider::Setting<std::string> LAST_LOGIN_JID;
 			static const SettingsProvider::Setting<bool> LOGIN_AUTOMATICALLY; // To be removed: We have to check each account for beeing enabled
 			static const SettingsProvider::Setting<std::string> DEFAULT_ACCOUNT;
+			static const SettingsProvider::Setting<std::string> SERIALIZED_ACCOUNTS;
 			/**
 			 * The #SHOW_OFFLINE setting specifies whether or not to show offline contacts in the 
 			 * roster.

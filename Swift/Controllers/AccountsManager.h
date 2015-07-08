@@ -61,7 +61,6 @@ namespace Swift {
 
 
 		private:
-			static bool compareAccounts (MainController* a, MainController* b);
 			//int getMaxAccountIndex();
 			void handleDefaultAccountChanged(int index);
 			void handleLoginRequestTriggeredByCombobox(const std::string &username, const std::string &password, const std::string& certificatePath, const ClientOptions& options, bool remember, bool loginAutomatically);
@@ -69,10 +68,16 @@ namespace Swift {
 			void handleMainControllerConnected(const MainController* controller);
 			void handlePurgeSavedLoginRequest(const std::string& username);
 			void handleQuitRequest();
+
 			void setDefaultAccount(boost::shared_ptr<Account> account);
 			void clearAutoLogins();
 			std::string serializeClientOptions(const ClientOptions& options);
 			ClientOptions parseClientOptions(const std::string& optionString);
+
+			static bool compareAccounts (MainController* a, MainController* b);
+			void storeAccounts();
+			void loadAccounts();
+
 
 		private:
 			std::vector<MainController*> mainControllers_;

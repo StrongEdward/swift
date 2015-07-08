@@ -14,6 +14,9 @@
 
 #include <string>
 
+#include <boost/archive/text_iarchive.hpp>
+#include <boost/archive/text_oarchive.hpp>
+
 #include <Swiften/Base/boost_bsignals.h>
 #include <Swiften/Client/ClientOptions.h>
 #include <Swiften/JID/JID.h>
@@ -28,6 +31,9 @@ namespace Swift {
 			bool isValid() {
 				return red >= 0 && red <= 255 && green >= 0 && green <= 255 && blue >= 0 && blue <= 255;
 			}
+			bool operator==(const RGBColor& other) const {
+				return	red == other.red && green == other.green && blue == other.blue;
+			}
 
 			short int red;
 			short int green;
@@ -36,25 +42,25 @@ namespace Swift {
 
 	class Account {
 		public:
-			Account() {}
+			Account();
 			Account(const std::string& profile, SettingsProvider* settings, int index = -1);
 			Account(int index, const std::string& accountName, const std::string& jid, const std::string& password, const std::string& certificatePath, const ClientOptions& options, bool rememberPassword, bool autoLogin, /*bool enabled,*/ /*bool isDefault,*/ SettingsProvider* settings);
 			~Account();
 
 			void clearPassword();
 
-			int getIndex();
-			std::string getAccountName();
-			const JID& getJID();
-			const std::string& getPassword();
-			const std::string& getCertificatePath();
-			const ClientOptions& getClientOptions();
+			int getIndex() const;
+			std::string getAccountName() const;
+			const JID& getJID() const;
+			const std::string& getPassword() const;
+			const std::string& getCertificatePath() const;
+			const ClientOptions& getClientOptions() const;
 			//bool isDefault();
-			bool getRememberPassword();
-			bool getLoginAutomatically();
-			bool isEnabled();
-			RGBColor getColor();
-			ProfileSettingsProvider* getProfileSettings();
+			bool getRememberPassword() const;
+			bool getLoginAutomatically() const;
+			bool isEnabled() const;
+			RGBColor getColor() const;
+			ProfileSettingsProvider* getProfileSettings() const;
 
 			void setIndex(int newIndex);
 			void setAccountName(const std::string& newName);
@@ -72,6 +78,9 @@ namespace Swift {
 			boost::signal<void (bool)> onEnabledChanged;
 
 		private:
+			friend class boost::serialization::access;
+			template<class Archive> void serialize(Archive& ar, const unsigned int version);
+
 			void storeAllSettings();
 			void determineColor();
 			std::string serializeClientOptions(const ClientOptions& options);
@@ -93,4 +102,20 @@ namespace Swift {
 			SettingsProvider* settings_;
 			ProfileSettingsProvider* profileSettings_;
 	};
+
+	template<class Archive>
+	void Account::serialize(Archive& ar, const unsigned int /*version*/) {
+		ar & index_;
+		ar & accountName_;
+		ar & jid_;
+		ar & password_;
+		ar & certificatePath_;
+		ar & clientOptions_;
+		ar & rememberPassword_;
+		ar & autoLogin_;
+		ar & enabled_;
+		ar & color_.red;
+		ar & color_.green;
+		ar & color_.blue;
+	}
 }
