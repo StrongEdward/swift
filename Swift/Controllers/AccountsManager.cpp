@@ -31,7 +31,6 @@
 #include <Swift/Controllers/HighlightManager.h>
 #include <Swift/Controllers/Intl.h>
 #include <Swift/Controllers/MainController.h>
-#include <Swift/Controllers/ProfileSettingsProvider.h>
 #include <Swift/Controllers/SettingConstants.h>
 #include <Swift/Controllers/Settings/SettingsProvider.h>
 #include <Swift/Controllers/SoundPlayer.h>

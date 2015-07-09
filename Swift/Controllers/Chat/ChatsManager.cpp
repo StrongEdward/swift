@@ -238,7 +238,6 @@ void ChatsManager::saveRecents() {
 	oa << recentsLimited;
 	std::string serializedStr = Base64::encode(createByteArray(serializeStream.str()));
 	account_->setRecentChatsSerialized(serializedStr);
-	//profileSettings_->storeString(RECENT_CHATS, serializedStr);
 }
 
 void ChatsManager::handleClearRecentsRequested() {
@@ -298,7 +297,6 @@ ChatListWindow::Chat ChatsManager::updateChatStatusAndAvatarHelper(const ChatLis
 
 void ChatsManager::loadRecents() {
 	std::string recentsString(account_->getRecentChatsSerialized());
-	//std::string recentsString(profileSettings_->getStringSetting(RECENT_CHATS));
 	if (recentsString.find("\t") != std::string::npos) {
 		// old format
 		std::vector<std::string> recents;

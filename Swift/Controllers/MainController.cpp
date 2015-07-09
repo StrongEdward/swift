@@ -164,7 +164,6 @@ MainController::MainController(boost::shared_ptr<Account> account, EventLoop* ev
 
 	xmppURIController_ = new XMPPURIController(uriHandler_, uiEventStream_);
 
-	profileSettings_ = account_->getProfileSettings();
 	account_->onEnabledChanged.connect(boost::bind(&MainController::handleLoginRequest, this, _1));
 
 	idleDetector_->setIdleTimeSeconds(settings->getSetting(SettingConstants::IDLE_TIMEOUT));
@@ -427,8 +426,8 @@ void MainController::handleChangeStatusRequest(StatusShow::Type show, const std:
 	presence->setStatus(statusText);
 	statusTracker_->setRequestedPresence(presence);
 	if (presence->getType() != Presence::Unavailable) {
-		profileSettings_->storeInt("lastShow", presence->getShow());
-		profileSettings_->storeString("lastStatus", presence->getStatus());
+		settings_->storeSetting(SettingConstants::LAST_SHOW, presence->getShow());
+		settings_->storeSetting(SettingConstants::LAST_STATUS, presence->getStatus());
 	}
 	if (presence->getType() != Presence::Unavailable && !client_->isAvailable()) {
 		performLoginFromCachedCredentials();
@@ -548,8 +547,8 @@ void MainController::performLoginFromCachedCredentials() {
 			client_->setCertificate(certificate_);
 		}
 		boost::shared_ptr<Presence> presence(new Presence());
-		presence->setShow(static_cast<StatusShow::Type>(profileSettings_->getIntSetting("lastShow", StatusShow::Online)));
-		presence->setStatus(profileSettings_->getStringSetting("lastStatus"));
+		presence->setShow(static_cast<StatusShow::Type>(settings_->getSetting(SettingConstants::LAST_SHOW)));
+		presence->setStatus(settings_->getSetting(SettingConstants::LAST_STATUS));
 		statusTracker_->setRequestedPresence(presence);
 	}
 	else {

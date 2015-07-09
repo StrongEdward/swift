@@ -32,7 +32,6 @@ namespace Swift {
 	class MainController;
 	class NetworkFactories;
 	class Notifier;
-	class ProfileSettingsProvider;
 	class SettingsProvider;
 	class SoundPlayer;
 	class StoragesFactory;

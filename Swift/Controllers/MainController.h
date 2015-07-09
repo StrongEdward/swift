@@ -29,7 +29,6 @@
 #include <Swiften/JID/JID.h>
 #include <Swiften/Network/Timer.h>
 
-#include <Swift/Controllers/ProfileSettingsProvider.h>
 #include <Swift/Controllers/Settings/SettingsProvider.h>
 #include <Swift/Controllers/UIEvents/UIEvent.h>
 #include <Swift/Controllers/XMPPEvents/ErrorEvent.h>
@@ -136,7 +135,6 @@ namespace Swift {
 			// Probably have to remove them then
 			JID boundJID_;
 			CertificateWithKey::ref certificate_;
-			ProfileSettingsProvider* profileSettings_;
 
 			EventLoop* eventLoop_;
 			UIEventStream* uiEventStream_;

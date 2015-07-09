@@ -11,6 +11,7 @@
  */
 
 #include <Swift/Controllers/SettingConstants.h>
+#include <Swiften/Elements/StatusShow.h>
 
 namespace Swift {
 
@@ -38,4 +39,6 @@ const SettingsProvider::Setting<std::string> SettingConstants::TRELLIS_GRID_POSI
 const SettingsProvider::Setting<bool> SettingConstants::DISCONNECT_ON_CARD_REMOVAL("disconnectOnCardRemoval", true);
 const SettingsProvider::Setting<bool> SettingConstants::MULTIACCOUNT_ENABLED("multiaccountEnabled", false);
 const SettingsProvider::Setting<std::string> SettingConstants::SEARCHED_SERVICES("searchedServices", "");
+const SettingsProvider::Setting<int> SettingConstants::LAST_SHOW("lastShow", StatusShow::Online);
+const SettingsProvider::Setting<std::string> SettingConstants::LAST_STATUS("lastStatus", "");
 }

@@ -109,5 +109,7 @@ namespace Swift {
 			 */
 			static const SettingsProvider::Setting<bool> MULTIACCOUNT_ENABLED;
 			static const SettingsProvider::Setting<std::string> SEARCHED_SERVICES;
+			static const SettingsProvider::Setting<int> LAST_SHOW;
+			static const SettingsProvider::Setting<std::string> LAST_STATUS;
 	};
 }
