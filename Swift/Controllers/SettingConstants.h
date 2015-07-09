@@ -108,5 +108,6 @@ namespace Swift {
 			 * The #MULTIACCOUNT_ENABLED setting specifies wheter to show options that enables a user to go to multiaccount view.
 			 */
 			static const SettingsProvider::Setting<bool> MULTIACCOUNT_ENABLED;
+			static const SettingsProvider::Setting<std::string> SEARCHED_SERVICES;
 	};
 }

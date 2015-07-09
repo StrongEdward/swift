@@ -4,6 +4,12 @@
  * See the COPYING file for more information.
  */
 
+/*
+ * Copyright (c) 2015 Daniel Baczynski
+ * Licensed under the Simplified BSD license.
+ * See Documentation/Licenses/BSD-simplified.txt for more information.
+ */
+
 #include <Swift/Controllers/Chat/ChatsManager.h>
 
 #include <boost/algorithm/string.hpp>
@@ -36,6 +42,7 @@
 #include <Swiften/StringCodecs/Base64.h>
 #include <Swiften/VCards/VCardManager.h>
 
+#include <Swift/Controllers/Account.h>
 #include <Swift/Controllers/Chat/AutoAcceptMUCInviteDecider.h>
 #include <Swift/Controllers/Chat/ChatController.h>
 #include <Swift/Controllers/Chat/ChatControllerBase.h>
@@ -45,7 +52,6 @@
 #include <Swift/Controllers/Chat/UserSearchController.h>
 #include <Swift/Controllers/FileTransfer/FileTransferController.h>
 #include <Swift/Controllers/FileTransfer/FileTransferOverview.h>
-#include <Swift/Controllers/ProfileSettingsProvider.h>
 #include <Swift/Controllers/SettingConstants.h>
 #include <Swift/Controllers/Settings/SettingsProvider.h>
 #include <Swift/Controllers/UIEvents/AddMUCBookmarkUIEvent.h>
@@ -100,26 +106,23 @@ namespace Swift {
 typedef std::pair<JID, ChatController*> JIDChatControllerPair;
 typedef std::pair<JID, MUCController*> JIDMUCControllerPair;
 
-#define RECENT_CHATS "recent_chats"
-
-ChatsManager::ChatsManager(
-		JID jid, StanzaChannel* stanzaChannel, 
-		IQRouter* iqRouter, 
-		EventController* eventController, 
-		ChatWindowFactory* chatWindowFactory, 
-		JoinMUCWindowFactory* joinMUCWindowFactory, 
-		NickResolver* nickResolver, 
-		PresenceOracle* presenceOracle, 
-		PresenceSender* presenceSender, 
-		UIEventStream* uiEventStream, 
-		ChatListWindowFactory* chatListWindowFactory, 
-		bool useDelayForLatency, 
-		TimerFactory* timerFactory, 
-		MUCRegistry* mucRegistry, 
-		EntityCapsProvider* entityCapsProvider, 
+ChatsManager::ChatsManager(JID jid, StanzaChannel* stanzaChannel,
+		IQRouter* iqRouter,
+		EventController* eventController,
+		ChatWindowFactory* chatWindowFactory,
+		JoinMUCWindowFactory* joinMUCWindowFactory,
+		NickResolver* nickResolver,
+		PresenceOracle* presenceOracle,
+		PresenceSender* presenceSender,
+		UIEventStream* uiEventStream,
+		ChatListWindowFactory* chatListWindowFactory,
+		bool useDelayForLatency,
+		TimerFactory* timerFactory,
+		MUCRegistry* mucRegistry,
+		EntityCapsProvider* entityCapsProvider,
 		MUCManager* mucManager,
 		MUCSearchWindowFactory* mucSearchWindowFactory,
-		ProfileSettingsProvider* profileSettings,
+		boost::shared_ptr<Account> account,
 		FileTransferOverview* ftOverview,
 		XMPPRoster* roster,
 		bool eagleMode,
@@ -160,7 +163,7 @@ ChatsManager::ChatsManager(
 	presenceSender_ = presenceSender;
 	uiEventStream_ = uiEventStream;
 	mucBookmarkManager_ = NULL;
-	profileSettings_ = profileSettings;
+	account_ = account;
 	presenceOracle_->onPresenceChange.connect(boost::bind(&ChatsManager::handlePresenceChange, this, _1));
 	uiEventConnection_ = uiEventStream_->onUIEvent.connect(boost::bind(&ChatsManager::handleUIEvent, this, _1));
 
@@ -170,7 +173,7 @@ ChatsManager::ChatsManager(
 	chatListWindow_->onClearRecentsRequested.connect(boost::bind(&ChatsManager::handleClearRecentsRequested, this));
 
 	joinMUCWindow_ = NULL;
-	mucSearchController_ = new MUCSearchController(jid_, mucSearchWindowFactory, iqRouter, profileSettings_);
+	mucSearchController_ = new MUCSearchController(jid_, mucSearchWindowFactory, iqRouter, settings_);
 	mucSearchController_->onMUCSelected.connect(boost::bind(&ChatsManager::handleMUCSelectedAfterSearch, this, _1));
 	ftOverview_->onNewFileTransferController.connect(boost::bind(&ChatsManager::handleNewFileTransferController, this, _1));
 	whiteboardManager_->onSessionRequest.connect(boost::bind(&ChatsManager::handleWhiteboardSessionRequest, this, _1, _2));
@@ -234,7 +237,8 @@ void ChatsManager::saveRecents() {
 
 	oa << recentsLimited;
 	std::string serializedStr = Base64::encode(createByteArray(serializeStream.str()));
-	profileSettings_->storeString(RECENT_CHATS, serializedStr);
+	account_->setRecentChatsSerialized(serializedStr);
+	//profileSettings_->storeString(RECENT_CHATS, serializedStr);
 }
 
 void ChatsManager::handleClearRecentsRequested() {
@@ -293,7 +297,8 @@ ChatListWindow::Chat ChatsManager::updateChatStatusAndAvatarHelper(const ChatLis
 }
 
 void ChatsManager::loadRecents() {
-	std::string recentsString(profileSettings_->getStringSetting(RECENT_CHATS));
+	std::string recentsString(account_->getRecentChatsSerialized());
+	//std::string recentsString(profileSettings_->getStringSetting(RECENT_CHATS));
 	if (recentsString.find("\t") != std::string::npos) {
 		// old format
 		std::vector<std::string> recents;

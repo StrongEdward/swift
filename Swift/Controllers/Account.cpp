@@ -53,6 +53,7 @@ Account::Account(const std::string& profile, SettingsProvider* settings, int ind
 	autoLogin_ = profileSettings_->getIntSetting("autologin", 0);
 	show_ = static_cast<StatusShow::Type>(profileSettings_->getIntSetting("lastShow", StatusShow::Online));
 	status_ = profileSettings_->getStringSetting("lastStatus");
+	recentChatsSerialized_ = profileSettings_->getStringSetting("recent_chats");
 	enabled_ = false;
 
 	determineColor();
@@ -165,6 +166,10 @@ RGBColor Account::getColor() const {
 	return color_;
 }
 
+const std::string& Account::getRecentChatsSerialized() const {
+	return recentChatsSerialized_;
+}
+
 bool Account::isEnabled() const {
 	return enabled_;
 }
@@ -250,6 +255,12 @@ void Account::setColor(RGBColor color) {
 	profileSettings_->storeInt("red", color_.red);
 	profileSettings_->storeInt("green", color_.green);
 	profileSettings_->storeInt("blue", color_.blue);
+}
+
+void Account::setRecentChatsSerialized(const std::string& recentChatsSerialized) {
+	recentChatsSerialized_ = recentChatsSerialized;
+	profileSettings_->storeString("recent_chats", recentChatsSerialized_);
+	onAccountDataChanged();
 }
 
 void Account::setEnabled(bool enabled) {

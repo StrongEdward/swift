@@ -37,4 +37,5 @@ const SettingsProvider::Setting<std::string> SettingConstants::TRELLIS_GRID_SIZE
 const SettingsProvider::Setting<std::string> SettingConstants::TRELLIS_GRID_POSITIONS("trellisGridPositions", "");
 const SettingsProvider::Setting<bool> SettingConstants::DISCONNECT_ON_CARD_REMOVAL("disconnectOnCardRemoval", true);
 const SettingsProvider::Setting<bool> SettingConstants::MULTIACCOUNT_ENABLED("multiaccountEnabled", false);
+const SettingsProvider::Setting<std::string> SettingConstants::SEARCHED_SERVICES("searchedServices", "");
 }

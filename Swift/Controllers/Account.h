@@ -60,6 +60,7 @@ namespace Swift {
 			StatusShow::Type getShow() const;
 			std::string getStatus() const;
 			RGBColor getColor() const;
+			const std::string& getRecentChatsSerialized() const;
 			bool isEnabled() const;
 			ProfileSettingsProvider* getProfileSettings() const;
 
@@ -74,6 +75,7 @@ namespace Swift {
 			void setShow(StatusShow::Type show);
 			void setStatus(std::string& status);
 			void setColor(RGBColor color);
+			void setRecentChatsSerialized(const std::string& recentChatsSerialized);
 			void setEnabled(bool enabled);
 			void setProfileSettings(SettingsProvider* settings);
 
@@ -103,6 +105,7 @@ namespace Swift {
 			StatusShow::Type show_;
 			std::string status_;
 			RGBColor color_;
+			std::string recentChatsSerialized_;
 			bool enabled_;
 			//bool isDefault_;
 
@@ -130,6 +133,7 @@ namespace Swift {
 		ar << color_.red;
 		ar << color_.green;
 		ar << color_.blue;
+		ar << recentChatsSerialized_;
 	}
 
 	template<class Archive>
@@ -150,5 +154,6 @@ namespace Swift {
 		ar >> color_.red;
 		ar >> color_.green;
 		ar >> color_.blue;
+		ar >> recentChatsSerialized_;
 	}
 }

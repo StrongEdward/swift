@@ -87,7 +87,7 @@ class AccountTest : public CppUnit::TestFixture {
 		Account* account;
 
 		bool accountsAreEqual(const Account* a, const Account* b) {
-			return a->getAccountName() == b->getAccountName() && a->getCertificatePath() == b->getCertificatePath() && a->getClientOptions() == b->getClientOptions() &&	a->getColor() == b->getColor() && a->getIndex() == b->getIndex() &&	a->getJID() == b->getJID() && a->getLoginAutomatically() == b->getLoginAutomatically() && a->getPassword() == b->getPassword() && a->getRememberPassword() == b->getRememberPassword();
+			return a->getAccountName() == b->getAccountName() && a->getCertificatePath() == b->getCertificatePath() && a->getClientOptions() == b->getClientOptions() &&	a->getColor() == b->getColor() && a->getIndex() == b->getIndex() &&	a->getJID() == b->getJID() && a->getLoginAutomatically() == b->getLoginAutomatically() && a->getPassword() == b->getPassword() && a->getRememberPassword() == b->getRememberPassword() && a->getRecentChatsSerialized() == b->getRecentChatsSerialized();
 		}
 };
 
