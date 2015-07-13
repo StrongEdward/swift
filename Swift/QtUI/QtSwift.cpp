@@ -102,6 +102,7 @@ po::options_description QtSwift::getOptionsDescription() {
 		("no-tabs", "Don't manage chat windows in tabs (unsupported)")
 		("latency-debug", "Use latency debugging (unsupported)")
 		("multi-account", po::value<int>()->default_value(1), "Number of accounts to open windows for (unsupported)")
+		("multi-account-gui", "Enable experimental multi account GUI (unsupported)")
 		("start-minimized", "Don't show the login/roster window at startup")
 		("enable-jid-adhocs", "Enable AdHoc commands to custom JID's.")
 		("trellis", "Enable support for trellis layout")
@@ -230,6 +231,8 @@ QtSwift::QtSwift(const po::variables_map& options) : networkFactories_(&clientMa
 	if (splitter_) {
 		splitter_->show();
 	}
+
+	settingsHierachy_->storeSetting(SettingConstants::MULTIACCOUNT_ENABLED, options.count("multi-account-gui"));
 
 	for (int i = 0; i < numberOfAccounts; i++) {
 		if (i > 0) {
