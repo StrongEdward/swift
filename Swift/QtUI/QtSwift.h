@@ -78,12 +78,13 @@ namespace Swift {
 
 		private:
 			QtEventLoop clientMainThreadCaller_;
-			UIEventStream* uiEventStream_;
-			AccountsManager* accountsManager_;
+			//UIEventStream* uiEventStream_;
+			//AccountsManager* accountsManager_;
 			PlatformTLSFactories tlsFactories_;
 			BoostNetworkFactories networkFactories_;
 			QtChatWindowFactory* chatWindowFactory_;
-			QtSystemTray* systemTray_;
+			std::vector<AccountsManager*> accountsManagers_;
+			std::vector<QtSystemTray*> systemTrays_;
 			SystemTrayController* systemTrayController_;
 			std::vector<QtUIFactory*> uiFactories_;
 			QtSettingsProvider* qtSettings_;
@@ -99,8 +100,8 @@ namespace Swift {
 			CertificateStorageFactory* certificateStorageFactory_;
 			AutoUpdater* autoUpdater_;
 			Notifier* notifier_;
-			TogglableNotifier* togglableNotifier_;
-			EventController* eventController_;
+			//TogglableNotifier* togglableNotifier_;
+			//EventController* eventController_;
 			StatusCache* statusCache_;
 			PlatformIdleQuerier idleQuerier_;
 			ActualIdleDetector idleDetector_;

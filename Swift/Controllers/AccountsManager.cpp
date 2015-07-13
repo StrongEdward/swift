@@ -35,6 +35,7 @@
 #include <Swift/Controllers/Settings/SettingsProvider.h>
 #include <Swift/Controllers/SoundPlayer.h>
 #include <Swift/Controllers/Storages/StoragesFactory.h>
+#include <Swift/Controllers/SystemTray.h>
 #include <Swift/Controllers/SystemTrayController.h>
 #include <Swift/Controllers/UIEvents/UIEventStream.h>
 #include <Swift/Controllers/UIInterfaces/LoginWindow.h>
@@ -45,27 +46,28 @@
 
 namespace Swift {
 
-Account* acc = NULL;
-
-AccountsManager::AccountsManager(EventLoop* eventLoop, UIEventStream* uiEventStream, EventController* eventController, NetworkFactories* networkFactories, UIFactory* uiFactory, SettingsProvider* settings, SystemTrayController* systemTrayController, SoundPlayer* soundPlayer, StoragesFactory* storagesFactory, CertificateStorageFactory* certificateStorageFactory, Dock* dock, Notifier* notifier, TogglableNotifier* togglableNotifier, URIHandler* uriHandler, IdleDetector* idleDetector, const std::map<std::string, std::string> emoticons, bool useDelayForLatency) :
+AccountsManager::AccountsManager(EventLoop* eventLoop, NetworkFactories* networkFactories, UIFactory* uiFactory, SettingsProvider* settings, SystemTray* systemTray, SoundPlayer* soundPlayer, StoragesFactory* storagesFactory, CertificateStorageFactory* certificateStorageFactory, Dock* dock, Notifier* notifier, URIHandler* uriHandler, IdleDetector* idleDetector, const std::map<std::string, std::string> emoticons, bool useDelayForLatency) :
 	defaultAccount_(boost::shared_ptr<Account>()),
-	uiEventStream_(uiEventStream),
 	settings_(settings),
 	eventLoop_(eventLoop),
-	eventController_(eventController),
 	networkFactories_(networkFactories),
 	uiFactory_(uiFactory),
-	systemTrayController_(systemTrayController),
 	soundPlayer_(soundPlayer),
 	storagesFactory_(storagesFactory),
 	certificateStorageFactory_(certificateStorageFactory),
 	dock_(dock),
-	//notifier_(notifier),
-	togglableNotifier_(togglableNotifier),
 	uriHandler_(uriHandler),
 	idleDetector_(idleDetector),
 	emoticons_(emoticons),
 	useDelayForLatency_(useDelayForLatency) {
+
+	uiEventStream_ = new UIEventStream();
+	eventController_ = new EventController();
+
+	togglableNotifier_ = new TogglableNotifier(notifier);
+	togglableNotifier_->setPersistentEnabled(settings_->getSetting(SettingConstants::SHOW_NOTIFICATIONS));
+
+	systemTrayController_ = new SystemTrayController(eventController_, systemTray);
 
 	highlightManager_ = new HighlightManager(settings_);
 	highlightEditorController_ = new HighlightEditorController(uiEventStream_, uiFactory_, highlightManager_);
@@ -117,9 +119,15 @@ AccountsManager::~AccountsManager() {
 		delete controller;
 	}
 
+	delete xmlConsoleController_;
 	delete highlightManager_;
 	delete highlightEditorController_;
-	delete xmlConsoleController_;
+	delete systemTrayController_;
+	delete togglableNotifier_;
+
+	eventController_->disconnectAll();
+	delete eventController_;
+	delete uiEventStream_;
 }
 
 void AccountsManager::loadAccounts() {

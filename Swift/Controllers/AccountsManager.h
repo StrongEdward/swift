@@ -35,6 +35,7 @@ namespace Swift {
 	class SettingsProvider;
 	class SoundPlayer;
 	class StoragesFactory;
+	class SystemTray;
 	class SystemTrayController;
 	class TogglableNotifier;
 	class UIEventStream;
@@ -44,7 +45,7 @@ namespace Swift {
 
 	class AccountsManager {
 		public:
-			AccountsManager(EventLoop* eventLoop, UIEventStream *uiEventStream, EventController* eventController, NetworkFactories* networkFactories, UIFactory* uiFactories, SettingsProvider* settings, SystemTrayController* systemTrayController, SoundPlayer* soundPlayer, StoragesFactory* storagesFactory, CertificateStorageFactory* certificateStorageFactory, Dock* dock, Notifier* notifier, TogglableNotifier* togglableNotifier, URIHandler* uriHandler, IdleDetector* idleDetector, const std::map<std::string, std::string> emoticons, bool useDelayForLatency);
+			AccountsManager(EventLoop* eventLoop, NetworkFactories* networkFactories, UIFactory* uiFactories, SettingsProvider* settings, SystemTray* systemTray, SoundPlayer* soundPlayer, StoragesFactory* storagesFactory, CertificateStorageFactory* certificateStorageFactory, Dock* dock, Notifier* notifier, URIHandler* uriHandler, IdleDetector* idleDetector, const std::map<std::string, std::string> emoticons, bool useDelayForLatency);
 			~AccountsManager();
 
 			JID getDefaultJID();

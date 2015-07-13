@@ -169,13 +169,13 @@ QtSwift::QtSwift(const po::variables_map& options) : networkFactories_(&clientMa
 		splitter_ = NULL;
 	}
 
-	/*int numberOfAccounts = 1;
+	int numberOfAccounts = 1;
 	try {
 		numberOfAccounts = options["multi-account"].as<int>();
 	} catch (...) {
 		// This seems to fail on a Mac when the .app is launched directly (the usual path).
 		numberOfAccounts = 1;
-	}*/
+	}
 
 	if (options.count("debug")) {
 		Log::setLogLevel(Swift::Log::debug);
@@ -196,8 +196,10 @@ QtSwift::QtSwift(const po::variables_map& options) : networkFactories_(&clientMa
 	chatWindowFactory_ = new QtChatWindowFactory(splitter_, settingsHierachy_, qtSettings_, tabs_, "", emoticons);
 	soundPlayer_ = new QtSoundPlayer(applicationPathProvider_);
 
-	// Ugly, because the dock depends on the tray
-	systemTray_ = new QtSystemTray();
+	// Ugly, because the dock depends on the tray, but the temporary
+	// multi-account hack creates one tray per account.
+	QtSystemTray* systemTray = new QtSystemTray();
+	systemTrays_.push_back(systemTray);
 
 #if defined(HAVE_GROWL)
 	notifier_ = new GrowlNotifier(SWIFT_APPLICATION_NAME);
@@ -229,18 +231,18 @@ QtSwift::QtSwift(const po::variables_map& options) : networkFactories_(&clientMa
 		splitter_->show();
 	}
 
-	uiEventStream_ = new UIEventStream();
-	eventController_ = new EventController();
+	for (int i = 0; i < numberOfAccounts; i++) {
+		if (i > 0) {
+			// Don't add the first tray (see note above)
+			systemTrays_.push_back(new QtSystemTray());
+		}
 
-	QtUIFactory* uiFactory = new QtUIFactory(settingsHierachy_, qtSettings_, tabs_, splitter_, systemTray_, chatWindowFactory_, networkFactories_.getTimerFactory(), statusCache_, startMinimized, !emoticons.empty(), enableAdHocCommandOnJID);
-	uiFactories_.push_back(uiFactory);
+		QtUIFactory* uiFactory = new QtUIFactory(settingsHierachy_, qtSettings_, tabs_, splitter_, systemTrays_[i], chatWindowFactory_, networkFactories_.getTimerFactory(), statusCache_, startMinimized, !emoticons.empty(), enableAdHocCommandOnJID);
+		uiFactories_.push_back(uiFactory);
 
-	togglableNotifier_ = new TogglableNotifier(notifier_);
-	togglableNotifier_->setPersistentEnabled(settingsHierachy_->getSetting(SettingConstants::SHOW_NOTIFICATIONS));
-
-	systemTrayController_ = new SystemTrayController(eventController_, systemTray_);
-
-	accountsManager_ = new AccountsManager(&clientMainThreadCaller_, uiEventStream_, eventController_, &networkFactories_, uiFactory, settingsHierachy_, systemTrayController_, soundPlayer_, storagesFactory_, certificateStorageFactory_, dock_, notifier_, togglableNotifier_, uriHandler_, &idleDetector_, emoticons, options.count("latency-debug") > 0);
+		AccountsManager* accountsManager = new AccountsManager(&clientMainThreadCaller_, &networkFactories_, uiFactory, settingsHierachy_, systemTrays_[i], soundPlayer_, storagesFactory_, certificateStorageFactory_, dock_, notifier_, uriHandler_, &idleDetector_, emoticons, options.count("latency-debug") > 0);
+		accountsManagers_.push_back(accountsManager);
+	}
 
 	// PlatformAutoUpdaterFactory autoUpdaterFactory;
 	// if (autoUpdaterFactory.isSupported()) {
@@ -250,15 +252,19 @@ QtSwift::QtSwift(const po::variables_map& options) : networkFactories_(&clientMa
 }
 
 QtSwift::~QtSwift() {
-	delete accountsManager_;
-
 	delete autoUpdater_;
 	foreach (QtUIFactory* factory, uiFactories_) {
 		delete factory;
 	}
 
+	foreach (AccountsManager* manager, accountsManagers_) {
+		delete manager;
+	}
+
 	delete notifier_;
-	delete togglableNotifier_;
+	foreach (QtSystemTray* tray, systemTrays_) {
+		delete tray;
+	}
 
 	delete tabs_;
 	delete splitter_;
@@ -273,12 +279,13 @@ QtSwift::~QtSwift() {
 	delete certificateStorageFactory_;
 	delete storagesFactory_;
 	delete applicationPathProvider_;
-	delete uiEventStream_;
+	//delete uiEventStream_;
 
-	eventController_->disconnectAll();
-	delete eventController_;
-	delete systemTrayController_;
-	delete systemTray_;
+	//eventController_->disconnectAll();
+	//delete eventController_;
+	//delete systemTrayController_;
+	//delete systemTray_;
+
 }
 
 }
