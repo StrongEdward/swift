@@ -195,6 +195,7 @@ void Account::setAccountName(const std::string& newName) {
 void Account::setJID(const std::string& newJID) {
 	jid_ = newJID;
 	onAccountDataChanged();
+	onJIDChanged(jid_, newJID);
 	profileSettings_->storeString("jid", newJID);
 }
 

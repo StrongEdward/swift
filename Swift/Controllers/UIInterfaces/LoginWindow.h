@@ -35,6 +35,7 @@ namespace Swift {
 			virtual void setMessage(const std::string&) = 0;
 			virtual void setIsLoggingIn(bool loggingIn) = 0;
 			virtual void setAccountsManager(AccountsManager* manager) = 0;
+			virtual void updateUsernamesListInCombobox() = 0;
 			virtual void addAvailableAccount(boost::shared_ptr<Account> account) = 0;
 			virtual void removeAvailableAccount(int index) = 0;
 			virtual void clearPassword() = 0;

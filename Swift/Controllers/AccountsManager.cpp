@@ -193,6 +193,7 @@ void AccountsManager::createMainController(boost::shared_ptr<Account> account, b
 	mainController->onShouldBeDeleted.connect(boost::bind(&AccountsManager::removeAccount, this, _1));
 	mainController->onConnected.connect(boost::bind(&AccountsManager::handleMainControllerConnected, this, _1));
 	account->onAccountDataChanged.connect(boost::bind(&AccountsManager::handleAccountDataChanged, this));
+	account->onJIDChanged.connect(boost::bind(&AccountsManager::handleAccountJIDChanged, this, _1, _2));
 
 	storeAccounts();
 }
@@ -252,14 +253,21 @@ int AccountsManager::accountsCount() {
 }
 
 void AccountsManager::addAccount(boost::shared_ptr<Account> account) {
+	loginWindow_->setMessage("");
 	if (!account) {
 		account = boost::shared_ptr<Account>(new Account(getMaxAccountIndex() + 1, "account" + boost::lexical_cast<std::string>(getMaxAccountIndex() + 1), "", "", "", ClientOptions(), false, false, settings_));
 	}
-	createMainController(account, false);
-	if (mainControllers_.size() == 1) {
-		setDefaultAccount(account);
+
+	if (!getAccountByJIDString(account->getJID())) {
+		createMainController(account, false);
+		if (mainControllers_.size() == 1) {
+			setDefaultAccount(account);
+		}
+		loginWindow_->addAvailableAccount(account);
 	}
-	loginWindow_->addAvailableAccount(account);
+	else {
+		loginWindow_->setMessage("Account with such address already exists");
+	}
 }
 
 void AccountsManager::removeAccount(const std::string& username) {
@@ -360,6 +368,10 @@ void AccountsManager::handleDefaultAccountChanged(int index) {
 
 void AccountsManager::handleAccountDataChanged() {
 	storeAccounts();
+}
+
+void AccountsManager::handleAccountJIDChanged(std::string oldJID, std::string newJID) {
+	loginWindow_->updateUsernamesListInCombobox();
 }
 
 void AccountsManager::handleMainControllerConnected(const MainController* controller) {

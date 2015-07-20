@@ -207,7 +207,7 @@ bool MainController::isActive() const {
 }
 
 void MainController::purgeCachedCredentials() {
-	account_->clearPassword();
+	//account_->clearPassword();
 }
 
 void MainController::resetClient() {

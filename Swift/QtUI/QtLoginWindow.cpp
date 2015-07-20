@@ -128,7 +128,7 @@ QtLoginWindow::QtLoginWindow(UIEventStream* uiEventStream, SettingsProvider* set
 	underListLayout->addWidget(addAccountButton);
 	underListLayout->setAlignment(addAccountButton, Qt::AlignRight);
 	connect(addAccountButton, SIGNAL(clicked()), this, SLOT(handleAddAccountClicked()));
-	addAccountButton->setEnabled(false);
+	//addAccountButton->setEnabled(false);
 
 	underList->setLayout(underListLayout);
 	accountsListLayout->addWidget(underList);
@@ -377,8 +377,15 @@ void QtLoginWindow::setAccountsManager(AccountsManager* manager) {
 	accountsList_->onAccountWantsToBeDefault.connect(boost::bind(&QtLoginWindow::handleAccountWantsToBeDefault, this, _1));
 
 	// Single account
-	for(int i = 0; i < manager->accountsCount(); i++) {
-		username_->addItem(P2QSTRING(manager->getAccountAt(i)->getJID().toString()));
+	updateUsernamesListInCombobox();
+}
+
+void QtLoginWindow::updateUsernamesListInCombobox() {
+	username_->clear();
+	//username_->clearEditText(); // Could be useful
+
+	for(int i = 0; i < accountsManager_->accountsCount(); i++) {
+		username_->addItem(P2QSTRING(accountsManager_->getAccountAt(i)->getJID().toString()));
 	}
 }
 

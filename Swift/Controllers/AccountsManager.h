@@ -70,6 +70,7 @@ namespace Swift {
 
 			void handleDefaultAccountChanged(int index);
 			void handleAccountDataChanged();
+			void handleAccountJIDChanged(std::string oldJID, std::string newJID);
 			void handleLoginRequestTriggeredByCombobox(const std::string &username, const std::string &password, const std::string& certificatePath, const ClientOptions& options, bool remember, bool loginAutomatically);
 			void handleCancelLoginRequest(const std::string currentUsername);
 			void handleMainControllerConnected(const MainController* controller);

@@ -82,6 +82,7 @@ namespace Swift {
 		public:
 			boost::signal<void (bool)> onEnabledChanged;
 			boost::signal<void ()> onAccountDataChanged;
+			boost::signal<void (std::string, std::string)> onJIDChanged;
 
 		private:
 			friend class boost::serialization::access;

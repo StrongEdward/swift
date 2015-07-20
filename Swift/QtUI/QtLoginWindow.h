@@ -53,6 +53,7 @@ namespace Swift {
 			virtual void setShowNotificationToggle(bool);
 			virtual void setMessage(const std::string& message);
 			virtual void setAccountsManager(AccountsManager* manager);
+			virtual void updateUsernamesListInCombobox();
 			virtual void addAvailableAccount(boost::shared_ptr<Account> account);
 			virtual void removeAvailableAccount(int index);
 			virtual void clearPassword();
