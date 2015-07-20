@@ -72,7 +72,8 @@ Account::Account(int index, const std::string& accountName, const std::string& j
 	  autoLogin_(autoLogin),
 	  show_(StatusShow::Online),
 	  status_(""),
-	  //enabled_(enabled),
+	  recentChatsSerialized_(""),
+	  enabled_(false),
 	  settings_(settings),
 	  profileSettings_(new ProfileSettingsProvider(accountName, settings_)) {
 
@@ -100,6 +101,7 @@ void Account::storeAllSettings() {
 	profileSettings_->storeInt("red", color_.red);
 	profileSettings_->storeInt("green", color_.green);
 	profileSettings_->storeInt("blue", color_.blue);
+	profileSettings_->storeString("recent_chats", recentChatsSerialized_);
 }
 
 void Account::determineColor() {
