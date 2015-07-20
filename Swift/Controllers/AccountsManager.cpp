@@ -193,6 +193,8 @@ void AccountsManager::createMainController(boost::shared_ptr<Account> account, b
 	mainController->onShouldBeDeleted.connect(boost::bind(&AccountsManager::removeAccount, this, _1));
 	mainController->onConnected.connect(boost::bind(&AccountsManager::handleMainControllerConnected, this, _1));
 	account->onAccountDataChanged.connect(boost::bind(&AccountsManager::handleAccountDataChanged, this));
+
+	storeAccounts();
 }
 
 void AccountsManager::setDefaultAccount(boost::shared_ptr<Account> account) {
@@ -278,6 +280,7 @@ void AccountsManager::removeAccount(const std::string& username) {
 		loginWindow_->removeAvailableAccount(account->getIndex());
 
 		delete controllerToDelete;
+		storeAccounts();
 	}
 }
 
