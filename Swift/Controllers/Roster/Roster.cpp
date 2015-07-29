@@ -4,6 +4,12 @@
  * See the COPYING file for more information.
  */
 
+/*
+ * Copyright (c) 2015 Daniel Baczynski
+ * Licensed under the Simplified BSD license.
+ * See Documentation/Licenses/BSD-simplified.txt for more information.
+ */
+
 #include <Swift/Controllers/Roster/Roster.h>
 
 #include <string>
@@ -16,6 +22,7 @@
 #include <Swiften/Base/foreach.h>
 #include <Swiften/JID/JID.h>
 
+#include <Swift/Controllers/Account.h>
 #include <Swift/Controllers/Roster/ContactRosterItem.h>
 #include <Swift/Controllers/Roster/RosterItem.h>
 #include <Swift/Controllers/Roster/GroupRosterItem.h>
@@ -23,10 +30,10 @@
 
 namespace Swift {
 
-Roster::Roster(bool sortByStatus, bool fullJIDMapping) : blockingSupported_(false) {
+Roster::Roster(bool sortByStatus, bool fullJIDMapping, int rosterIndex, boost::shared_ptr<Account> account) : blockingSupported_(false), index_(rosterIndex), account_(account) {
 	sortByStatus_ = sortByStatus;
 	fullJIDMapping_ = fullJIDMapping;
-	root_ = new GroupRosterItem("Dummy-Root", NULL, sortByStatus_);
+	root_ = new GroupRosterItem("Dummy-Root", NULL, sortByStatus_, index_);
 	root_->onChildrenChanged.connect(boost::bind(&Roster::handleChildrenChanged, this, root_));
 }
 
@@ -59,7 +66,7 @@ GroupRosterItem* Roster::getGroup(const std::string& groupName) {
 			return group;
 		}
 	}
-	GroupRosterItem* group = new GroupRosterItem(groupName, root_, sortByStatus_);
+	GroupRosterItem* group = new GroupRosterItem(groupName, root_, sortByStatus_, index_);
 	root_->addChild(group);
 	group->onChildrenChanged.connect(boost::bind(&Roster::handleChildrenChanged, this, group));
 	group->onDataChanged.connect(boost::bind(&Roster::handleDataChanged, this, group));
@@ -77,6 +84,18 @@ void Roster::setBlockingSupported(bool isSupported) {
 	blockingSupported_ = isSupported;
 }
 
+void Roster::setIndex(int index) {
+	index_ = index;
+}
+
+int Roster::getIndex() const {
+	return index_;
+}
+
+boost::shared_ptr<Account> Roster::getAccount() const {
+	return account_;
+}
+
 void Roster::removeGroup(const std::string& group) {
 	root_->removeGroupChild(group);
 }
@@ -91,7 +110,7 @@ void Roster::handleChildrenChanged(GroupRosterItem* item) {
 
 void Roster::addContact(const JID& jid, const JID& displayJID, const std::string& name, const std::string& groupName, const boost::filesystem::path& avatarPath) {
 	GroupRosterItem* group(getGroup(groupName));
-	ContactRosterItem *item = new ContactRosterItem(jid, displayJID, name, group);
+	ContactRosterItem *item = new ContactRosterItem(jid, displayJID, name, group, index_);
 	item->onVCardRequested.connect(boost::bind(boost::ref(onVCardUpdateRequested), jid));
 	item->setAvatarPath(avatarPath);
 	if (blockingSupported_) {
@@ -178,7 +197,7 @@ void Roster::applyOnItem(const RosterItemOperation& operation, const JID& jid) {
 	}
 	foreach (ContactRosterItem* item, i->second) {
 		operation(item);
-		filterContact(item, item->getParent());
+		filterContact(item, static_cast<GroupRosterItem*>(item->getParent()));
 	}
 }
 

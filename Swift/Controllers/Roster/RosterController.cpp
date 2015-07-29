@@ -4,6 +4,12 @@
  * See the COPYING file for more information.
  */
 
+/*
+ * Copyright (c) 2015 Daniel Baczynski
+ * Licensed under the Simplified BSD license.
+ * See Documentation/Licenses/BSD-simplified.txt for more information.
+ */
+
 #include <Swift/Controllers/Roster/RosterController.h>
 
 #include <boost/bind.hpp>
@@ -28,6 +34,7 @@
 #include <Swiften/Roster/XMPPRoster.h>
 #include <Swiften/Roster/XMPPRosterItem.h>
 
+#include <Swift/Controllers/Account.h>
 #include <Swift/Controllers/Intl.h>
 #include <Swift/Controllers/Roster/GroupRosterItem.h>
 #include <Swift/Controllers/Roster/OfflineRosterFilter.h>
@@ -57,8 +64,8 @@ namespace Swift {
 /**
  * The controller does not gain ownership of these parameters.
  */
-RosterController::RosterController(const JID& jid, XMPPRoster* xmppRoster, AvatarManager* avatarManager, MainWindowFactory* mainWindowFactory, NickManager* nickManager, NickResolver* nickResolver, PresenceOracle* presenceOracle, SubscriptionManager* subscriptionManager, EventController* eventController, UIEventStream* uiEventStream, IQRouter* iqRouter, SettingsProvider* settings, EntityCapsProvider* entityCapsManager, FileTransferOverview* fileTransferOverview, ClientBlockListManager* clientBlockListManager, VCardManager* vcardManager)
-	: myJID_(jid), xmppRoster_(xmppRoster), mainWindowFactory_(mainWindowFactory), mainWindow_(mainWindowFactory_->createMainWindow(uiEventStream)), roster_(new Roster()), offlineFilter_(new OfflineRosterFilter()), vcardManager_(vcardManager), avatarManager_(avatarManager), nickManager_(nickManager), nickResolver_(nickResolver), presenceOracle_(presenceOracle), uiEventStream_(uiEventStream), entityCapsManager_(entityCapsManager), ftOverview_(fileTransferOverview), clientBlockListManager_(clientBlockListManager) {
+RosterController::RosterController(const JID& jid, boost::shared_ptr<Account> account, XMPPRoster* xmppRoster, AvatarManager* avatarManager, MainWindowFactory* mainWindowFactory, NickManager* nickManager, NickResolver* nickResolver, PresenceOracle* presenceOracle, SubscriptionManager* subscriptionManager, EventController* eventController, UIEventStream* uiEventStream, IQRouter* iqRouter, SettingsProvider* settings, EntityCapsProvider* entityCapsManager, FileTransferOverview* fileTransferOverview, ClientBlockListManager* clientBlockListManager, VCardManager* vcardManager)
+	: myJID_(jid), xmppRoster_(xmppRoster), mainWindowFactory_(mainWindowFactory), mainWindow_(mainWindowFactory_->createMainWindow(uiEventStream)), roster_(new Roster(true, false, 0, account)), offlineFilter_(new OfflineRosterFilter()), vcardManager_(vcardManager), avatarManager_(avatarManager), nickManager_(nickManager), nickResolver_(nickResolver), presenceOracle_(presenceOracle), uiEventStream_(uiEventStream), entityCapsManager_(entityCapsManager), ftOverview_(fileTransferOverview), clientBlockListManager_(clientBlockListManager) {
 	assert(fileTransferOverview);
 	iqRouter_ = iqRouter;
 	subscriptionManager_ = subscriptionManager;
@@ -93,7 +100,7 @@ RosterController::RosterController(const JID& jid, XMPPRoster* xmppRoster, Avata
 
 	handleShowOfflineToggled(settings_->getSetting(SettingConstants::SHOW_OFFLINE));
 
-	ownContact_ = boost::make_shared<ContactRosterItem>(myJID_.toBare(), myJID_.toBare(), nickManager_->getOwnNick(), static_cast<GroupRosterItem*>(0));
+	ownContact_ = boost::make_shared<ContactRosterItem>(myJID_.toBare(), myJID_.toBare(), nickManager_->getOwnNick(), static_cast<GroupRosterItem*>(0), 0);
 	ownContact_->setVCard(vcardManager_->getVCard(myJID_.toBare()));
 	ownContact_->setAvatarPath(pathToString(avatarManager_->getAvatarPath(myJID_.toBare())));
 	mainWindow_->setMyContactRosterItem(ownContact_);
@@ -107,7 +114,7 @@ RosterController::~RosterController() {
 	delete offlineFilter_;
 	delete expandiness_;
 
-	mainWindow_->setRosterModel(NULL);
+	//mainWindow_->setRosterModel(NULL);
 	if (mainWindow_->canDelete()) {
 		delete mainWindow_;
 	}

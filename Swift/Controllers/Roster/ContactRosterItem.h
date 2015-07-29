@@ -4,6 +4,12 @@
  * See the COPYING file for more information.
  */
 
+/*
+ * Copyright (c) 2015 Daniel Baczynski
+ * Licensed under the Simplified BSD license.
+ * See Documentation/Licenses/BSD-simplified.txt for more information.
+ */
+
 #pragma once
 
 #include <map>
@@ -42,7 +48,7 @@ class ContactRosterItem : public RosterItem {
 		};
 		
 	public:
-		ContactRosterItem(const JID& jid, const JID& displayJID, const std::string& name, GroupRosterItem* parent);
+		ContactRosterItem(const JID& jid, const JID& displayJID, const std::string& name, GroupRosterItem* parent, int rosterId);
 		virtual ~ContactRosterItem();
 
 		StatusShow::Type getStatusShow() const;

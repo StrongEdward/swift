@@ -4,6 +4,12 @@
  * See the COPYING file for more information.
  */
 
+/*
+ * Copyright (c) 2015 Daniel Baczynski
+ * Licensed under the Simplified BSD license.
+ * See Documentation/Licenses/BSD-simplified.txt for more information.
+ */
+
 #include "Swift/Controllers/Roster/RosterItem.h"
 
 #include <boost/algorithm/string.hpp>
@@ -12,7 +18,7 @@
 
 namespace Swift {
 
-RosterItem::RosterItem(const std::string& name, GroupRosterItem* parent) : name_(name), sortableDisplayName_(boost::to_lower_copy(name_)), parent_(parent) {
+RosterItem::RosterItem(const std::string& name, RosterItem* parent, int rosterId) : name_(name), sortableDisplayName_(boost::to_lower_copy(name_)), parent_(parent), rosterIndex_(rosterId) {
 	/* The following would be good, but because of C++'s inheritance not working in constructors, it's not going to work. */
 	//if (parent) {
 	//	parent_->addChild(this);
@@ -23,7 +29,7 @@ RosterItem::~RosterItem() {
 
 }
 
-GroupRosterItem* RosterItem::getParent() const {
+RosterItem* RosterItem::getParent() const {
 	return parent_;
 }
 
@@ -39,6 +45,10 @@ const std::string& RosterItem::getDisplayName() const {
 
 const std::string& RosterItem::getSortableDisplayName() const {
 	return sortableDisplayName_;
+}
+
+int RosterItem::getRosterIndex() {
+	return rosterIndex_;
 }
 
 

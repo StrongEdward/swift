@@ -4,6 +4,12 @@
  * See the COPYING file for more information.
  */
 
+/*
+ * Copyright (c) 2015 Daniel Baczynski
+ * Licensed under the Simplified BSD license.
+ * See Documentation/Licenses/BSD-simplified.txt for more information.
+ */
+
 #include <Swift/Controllers/Roster/ContactRosterItem.h>
 
 #include <boost/date_time/posix_time/posix_time.hpp>
@@ -17,8 +23,8 @@
 namespace Swift {
 
 
-ContactRosterItem::ContactRosterItem(const JID& jid, const JID& displayJID, const std::string& name, GroupRosterItem* parent)
-: RosterItem(name, parent), jid_(jid), displayJID_(displayJID.toBare()), mucRole_(MUCOccupant::NoRole), mucAffiliation_(MUCOccupant::NoAffiliation), blockState_(BlockingNotSupported)
+ContactRosterItem::ContactRosterItem(const JID& jid, const JID& displayJID, const std::string& name, GroupRosterItem* parent, int rosterId)
+: RosterItem(name, parent, rosterId), jid_(jid), displayJID_(displayJID.toBare()), mucRole_(MUCOccupant::NoRole), mucAffiliation_(MUCOccupant::NoAffiliation), blockState_(BlockingNotSupported)
 {
 }
 

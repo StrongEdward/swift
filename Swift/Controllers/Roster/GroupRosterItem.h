@@ -4,6 +4,12 @@
  * See the COPYING file for more information.
  */
 
+/*
+ * Copyright (c) 2015 Daniel Baczynski
+ * Licensed under the Simplified BSD license.
+ * See Documentation/Licenses/BSD-simplified.txt for more information.
+ */
+
 #pragma once
 
 #include "Swift/Controllers/Roster/RosterItem.h"
@@ -16,7 +22,7 @@ namespace Swift {
 
 class GroupRosterItem : public RosterItem {
 	public:
-		GroupRosterItem(const std::string& name, GroupRosterItem* parent, bool sortByStatus);
+		GroupRosterItem(const std::string& name, GroupRosterItem* parent, bool sortByStatus, int rosterId);
 		virtual ~GroupRosterItem();
 		const std::vector<RosterItem*>& getChildren() const;
 		const std::vector<RosterItem*>& getDisplayedChildren() const;

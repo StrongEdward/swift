@@ -4,12 +4,19 @@
  * See the COPYING file for more information.
  */
 
+/*
+ * Copyright (c) 2015 Daniel Baczynski
+ * Licensed under the Simplified BSD license.
+ * See Documentation/Licenses/BSD-simplified.txt for more information.
+ */
+
 #pragma once
 
 #include <QStyledItemDelegate>
 #include <QColor>
 #include <QFont>
 
+#include "AccountItemDelegate.h"
 #include "GroupItemDelegate.h"
 #include "DelegateCommons.h"
 
@@ -25,11 +32,13 @@ namespace Swift {
 		void setCompact(bool compact);
 	private:
 		QSize contactSizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const;
+		void paintAccount(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const;
 		void paintGroup(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const; 
 		void paintContact(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const; 
 		bool compact_;
 		DelegateCommons common_;
 		GroupItemDelegate* groupDelegate_;
+		AccountItemDelegate* accountDelegate_;
 		QtTreeWidget* tree_;
 	};
 }

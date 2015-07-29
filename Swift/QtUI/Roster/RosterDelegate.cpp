@@ -4,6 +4,12 @@
  * See the COPYING file for more information.
  */
 
+/*
+ * Copyright (c) 2015 Daniel Baczynski
+ * Licensed under the Simplified BSD license.
+ * See Documentation/Licenses/BSD-simplified.txt for more information.
+ */
+
 #include "RosterDelegate.h"
 
 #include <QApplication>
@@ -18,6 +24,8 @@
 
 #include "Swift/Controllers/Roster/ContactRosterItem.h"
 #include "Swift/Controllers/Roster/GroupRosterItem.h"
+#include "Swift/QtUI/Roster/AccountRosterItem.h"
+#include <Swift/QtUI/QtSwiftUtil.h>
 
 #include "QtTreeWidget.h"
 #include "RosterModel.h"
@@ -27,10 +35,12 @@ namespace Swift {
 RosterDelegate::RosterDelegate(QtTreeWidget* tree, bool compact) : compact_(compact) {
 	tree_ = tree;
 	groupDelegate_ = new GroupItemDelegate();
+	accountDelegate_ = new AccountItemDelegate();
 }
 
 RosterDelegate::~RosterDelegate() {
 	delete groupDelegate_;
+	delete accountDelegate_;
 }
 
 void RosterDelegate::setCompact(bool compact) {
@@ -40,6 +50,9 @@ void RosterDelegate::setCompact(bool compact) {
 	
 QSize RosterDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index ) const {
 	RosterItem* item = static_cast<RosterItem*>(index.internalPointer());
+	if (dynamic_cast<AccountRosterItem*>(item)) {
+		return accountDelegate_->sizeHint(option, index);
+	}
 	if (dynamic_cast<GroupRosterItem*>(item)) {
 		return groupDelegate_->sizeHint(option, index);
 	}
@@ -52,10 +65,21 @@ QSize RosterDelegate::contactSizeHint(const QStyleOptionViewItem& option, const 
 
 void RosterDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const {
 	RosterItem* item = static_cast<RosterItem*>(index.internalPointer());
-	if (dynamic_cast<GroupRosterItem*>(item)) {
+	qDebug() << "Paint " << P2QSTRING(item->getDisplayName());
+	if (dynamic_cast<AccountRosterItem*>(item)) {
+		paintAccount(painter, option, index);
+	}
+	else if (dynamic_cast<GroupRosterItem*>(item)) {
 		paintGroup(painter, option, index);
-	} else {
+	}
+	else {
 		paintContact(painter, option, index);
+	}
+}
+
+void RosterDelegate::paintAccount(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const {
+	if (index.isValid()) {
+		accountDelegate_->paint(painter, option, index.data(Qt::DisplayRole).toString(), 99, tree_->isExpanded(index));
 	}
 }
 

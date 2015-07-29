@@ -4,6 +4,12 @@
  * See the COPYING file for more information.
  */
 
+/*
+ * Copyright (c) 2015 Daniel Baczynski
+ * Licensed under the Simplified BSD license.
+ * See Documentation/Licenses/BSD-simplified.txt for more information.
+ */
+
 #pragma once
 
 #include <string>
@@ -15,19 +21,21 @@
 #include <Swiften/Base/boost_bsignals.h>
 #include <Swiften/JID/JID.h>
 
+//#include <Swift/Controllers/Account.h>
+#include <Swift/Controllers/Roster/ContactRosterItem.h>
 #include <Swift/Controllers/Roster/ItemOperations/RosterItemOperation.h>
 #include <Swift/Controllers/Roster/RosterFilter.h>
-#include <Swift/Controllers/Roster/ContactRosterItem.h>
 
 namespace Swift {
 
+class Account;
 class RosterItem;
 class GroupRosterItem;
 class ContactRosterItem;
 
 class Roster {
 	public:
-		Roster(bool sortByStatus = true, bool fullJIDMapping = false);
+		Roster(bool sortByStatus = true, bool fullJIDMapping = false, int rosterIndex = -1, boost::shared_ptr<Account> account = boost::shared_ptr<Account>());
 		~Roster();
 
 		void addContact(const JID& jid, const JID& displayJID, const std::string& name, const std::string& group, const boost::filesystem::path& avatarPath);
@@ -50,6 +58,9 @@ class Roster {
 		boost::signal<void (RosterFilter* filter)> onFilterRemoved;
 		GroupRosterItem* getGroup(const std::string& groupName);
 		void setBlockingSupported(bool isSupported);
+		void setIndex(int index);
+		int getIndex() const;
+		boost::shared_ptr<Account> getAccount() const;
 
 	private:
 		void handleDataChanged(RosterItem* item);
@@ -64,6 +75,8 @@ class Roster {
 		bool fullJIDMapping_;
 		bool sortByStatus_;
 		bool blockingSupported_;
+		int index_;
+		boost::shared_ptr<Account> account_;
 };
 
 }

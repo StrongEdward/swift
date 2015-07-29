@@ -4,6 +4,12 @@
  * See the COPYING file for more information.
  */
 
+/*
+ * Copyright (c) 2015 Daniel Baczynski
+ * Licensed under the Simplified BSD license.
+ * See Documentation/Licenses/BSD-simplified.txt for more information.
+ */
+
 #pragma once
 
 #include <QDragEnterEvent>
@@ -13,7 +19,7 @@
 #include <QTreeView>
  
 #include <Swift/QtUI/Roster/RosterDelegate.h>
-#include <Swift/QtUI/Roster/RosterModel.h>
+#include <Swift/QtUI/Roster/MultipleRosterProxyModel.h>
 
 #include <Swift/Controllers/UIInterfaces/ChatWindow.h>
 
@@ -67,7 +73,8 @@ class QtTreeWidget : public QTreeView {
 		UIEventStream* eventStream_;
 
 	private:
-		RosterModel* model_;
+		MultipleRosterProxyModel* model_;
+		//RosterModel* model_;
 		Roster* roster_;
 		RosterDelegate* delegate_;
 		QtTreeWidgetItem* treeRoot_;

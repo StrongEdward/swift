@@ -4,6 +4,13 @@
  * See the COPYING file for more information.
  */
 
+/*
+ * Copyright (c) 2015 Daniel Baczynski
+ * Licensed under the Simplified BSD license.
+ * See Documentation/Licenses/BSD-simplified.txt for more information.
+ */
+
+
 #include "Swift/Controllers/Roster/GroupRosterItem.h"
 
 #include <boost/bind.hpp>
@@ -12,7 +19,7 @@
 
 namespace Swift {
 
-GroupRosterItem::GroupRosterItem(const std::string& name, GroupRosterItem* parent, bool sortByStatus) : RosterItem(name, parent), sortByStatus_(sortByStatus), manualSort_(false) {
+GroupRosterItem::GroupRosterItem(const std::string& name, GroupRosterItem* parent, bool sortByStatus, int rosterId) : RosterItem(name, parent, rosterId), sortByStatus_(sortByStatus), manualSort_(false) {
 	expanded_ = true;
 }
 

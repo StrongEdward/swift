@@ -4,6 +4,12 @@
  * See the COPYING file for more information.
  */
 
+/*
+ * Copyright (c) 2015 Daniel Baczynski
+ * Licensed under the Simplified BSD license.
+ * See Documentation/Licenses/BSD-simplified.txt for more information.
+ */
+
 #include <Swift/QtUI/Roster/RosterModel.h>
 
 #include <boost/bind.hpp>
@@ -219,13 +225,18 @@ QModelIndex RosterModel::index(int row, int column, const QModelIndex& parent) c
 		parentItem = roster_->getRoot();
 	} else {
 		parentItem = dynamic_cast<GroupRosterItem*>(getItem(parent));
-		if (!parentItem) return QModelIndex();
+		if (!parentItem) {
+			qDebug() << "Zaden item, row = " << row;
+			return QModelIndex();
+		}
 	}
-	return static_cast<size_t>(row) < parentItem->getDisplayedChildren().size() ? createIndex(row, column, parentItem->getDisplayedChildren()[row]) : QModelIndex();
+	QModelIndex temp = static_cast<size_t>(row) < parentItem->getDisplayedChildren().size() ? createIndex(row, column, parentItem->getDisplayedChildren()[row]) : QModelIndex();
+	//qDebug() << "Dla parenta " << P2QSTRING(parentItem->getDisplayName()) << "dziecko" << row << " = " << (temp.isValid() ? P2QSTRING(getItem(temp)->getDisplayName()) : "Invalid" );
+	return temp;
 }
 
 QModelIndex RosterModel::index(RosterItem* item) const {
-	GroupRosterItem* parent = item->getParent();
+	GroupRosterItem* parent = static_cast<GroupRosterItem*>(item->getParent());
 	/* Recursive check that it's ok to create such an item 
 		Assuming there are more contacts in a group than groups in a 
 		group, this could save a decent chunk of search time at startup.*/
@@ -245,7 +256,7 @@ QModelIndex RosterModel::parent(const QModelIndex& child) const {
 		return QModelIndex();
 	}
 	
-	GroupRosterItem* parent = getItem(child)->getParent();
+	GroupRosterItem* parent = static_cast<GroupRosterItem*>(getItem(child)->getParent());
 	return (parent != roster_->getRoot()) ? index(parent) : QModelIndex();
 }
 
@@ -255,7 +266,7 @@ int RosterModel::rowCount(const QModelIndex& parent) const {
 	Q_ASSERT(item);
 	GroupRosterItem* group = dynamic_cast<GroupRosterItem*>(item);
 	int count = group ? group->getDisplayedChildren().size() : 0;
-//	qDebug() << "rowCount = " << count << " where parent.isValid() == " << parent.isValid() << ", group == " << (group ? P2QSTRING(group->getDisplayName()) : "*contact*");
+	//qDebug() << "rowCount = " << count << " where parent.isValid() == " << parent.isValid() << ", group == " << (group ? P2QSTRING(group->getDisplayName()) : "*contact*");
 	return count;
 }
 

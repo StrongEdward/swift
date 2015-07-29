@@ -4,6 +4,12 @@
  * See the COPYING file for more information.
  */
 
+/*
+ * Copyright (c) 2015 Daniel Baczynski
+ * Licensed under the Simplified BSD license.
+ * See Documentation/Licenses/BSD-simplified.txt for more information.
+ */
+
 #pragma once
 
 #include <string>
@@ -24,6 +30,7 @@
 #include <Swift/Controllers/Roster/RosterGroupExpandinessPersister.h>
 
 namespace Swift {
+	class Account;
 	class IQRouter;
 	class Roster;
 	class XMPPRoster;
@@ -47,7 +54,7 @@ namespace Swift {
 
 	class RosterController {
 		public:
-			RosterController(const JID& jid, XMPPRoster* xmppRoster, AvatarManager* avatarManager, MainWindowFactory* mainWindowFactory, NickManager* nickManager, NickResolver* nickResolver, PresenceOracle* presenceOracle, SubscriptionManager* subscriptionManager, EventController* eventController, UIEventStream* uiEventStream, IQRouter* iqRouter_, SettingsProvider* settings, EntityCapsProvider* entityCapsProvider, FileTransferOverview* fileTransferOverview, ClientBlockListManager* clientBlockListManager, VCardManager* vcardManager);
+			RosterController(const JID& jid, boost::shared_ptr<Account> account, XMPPRoster* xmppRoster, AvatarManager* avatarManager, MainWindowFactory* mainWindowFactory, NickManager* nickManager, NickResolver* nickResolver, PresenceOracle* presenceOracle, SubscriptionManager* subscriptionManager, EventController* eventController, UIEventStream* uiEventStream, IQRouter* iqRouter_, SettingsProvider* settings, EntityCapsProvider* entityCapsProvider, FileTransferOverview* fileTransferOverview, ClientBlockListManager* clientBlockListManager, VCardManager* vcardManager);
 			~RosterController();
 			void showRosterWindow();
 			void setJID(const JID& jid) { myJID_ = jid; }
