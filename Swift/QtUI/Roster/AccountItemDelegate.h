@@ -22,14 +22,15 @@ namespace Swift {
 	class QtTreeWidgetItem;
 	class AccountItemDelegate {
 	public:
-		AccountItemDelegate();
+		AccountItemDelegate(bool multiaccountGui);
 		QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const;
-		void paint(QPainter* painter, const QStyleOptionViewItem& option, const QString& name, int rowCount, bool expanded) const;
+		void paint(QPainter* painter, const QStyleOptionViewItem& option, const QString& name, bool expanded) const;
 	private:
 		void paintShadowText(QPainter* painter, const QRect& region, const QString& text) const;
 		void paintExpansionTriangle(QPainter* painter, const QRect& region, int width, int height, bool expanded) const;
 		QFont groupFont_;
 		static const int groupCornerRadius_;
 		DelegateCommons common_;
+		bool multiaccountGui_;
 	};
 }

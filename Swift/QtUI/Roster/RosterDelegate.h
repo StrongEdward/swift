@@ -24,7 +24,7 @@ namespace Swift {
 	class QtTreeWidget;
 	class RosterDelegate : public QStyledItemDelegate {
 	public:
-		RosterDelegate(QtTreeWidget* tree, bool compact);
+		RosterDelegate(QtTreeWidget* tree, bool compact, bool multiaccountGui);
 		~RosterDelegate();
 		QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const;
 		void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const;
@@ -36,6 +36,7 @@ namespace Swift {
 		void paintGroup(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const; 
 		void paintContact(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const; 
 		bool compact_;
+		bool multiaccountGui_;
 		DelegateCommons common_;
 		GroupItemDelegate* groupDelegate_;
 		AccountItemDelegate* accountDelegate_;

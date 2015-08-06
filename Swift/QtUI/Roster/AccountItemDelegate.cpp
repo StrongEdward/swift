@@ -18,17 +18,23 @@
 
 namespace Swift {
 
-AccountItemDelegate::AccountItemDelegate() : groupFont_(QApplication::font()) {
+AccountItemDelegate::AccountItemDelegate(bool multiaccountGui) : groupFont_(QApplication::font()), multiaccountGui_(multiaccountGui) {
 	groupFont_.setPointSize(common_.nameFont.pointSize() - common_.detailFontSizeDrop);
 	groupFont_.setWeight(QFont::Bold);
 }
 
 QSize AccountItemDelegate::sizeHint(const QStyleOptionViewItem& /*option*/, const QModelIndex& /*index*/) const {
+	if (!multiaccountGui_) {
+		return QSize(0,0);
+	}
 	QFontMetrics groupMetrics(groupFont_);
 	return QSize(150, groupMetrics.height() + common_.verticalMargin + 2);
 }
 
-void AccountItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QString& name, int rowCount, bool expanded) const {
+void AccountItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QString& name, bool expanded) const {
+	if (!multiaccountGui_) {
+		return;
+	}
 	painter->save();
 	painter->setPen(QPen(QColor(189, 189, 189)));
 	//FIXME: It looks like Qt is passing us a rectangle that's too small
@@ -60,17 +66,17 @@ void AccountItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& o
 	int contactCountWidth = 0;
 	QRect textRect = region.adjusted(textLeftOffset, textTopOffset, -1 * textLeftOffset, -1 * textTopOffset);
 
-	if (!expanded) {
+	/*if (!expanded) {
 		QFontMetrics groupMetrics(groupFont_);
 		int contactCount = rowCount;
 		QString countString = QString("%1").arg(contactCount);
 		contactCountWidth = groupMetrics.width(countString) + 2 * common_.horizontalMargin;
-		int offsetAmount = textRect.width() - contactCountWidth + common_.horizontalMargin;
-		QRect countRect = textRect.adjusted(offsetAmount, 0, 0/*-1 * offsetAmount*/, 0);
-		paintShadowText(painter, countRect, countString);
-	}
+		int offsetAmount = textRect.width() - contactCountWidth + common_.horizontalMargin;*/
+		//QRect countRect = textRect.adjusted(offsetAmount, 0, 0/*-1 * offsetAmount*/, 0);
+		//paintShadowText(painter, countRect, countString);
+	//}
 	QRect nameTextRect = expanded ? textRect : textRect.adjusted(0, 0, -contactCountWidth, 0);
-	QString elidedName = fontMetrics.elidedText("xx" + name, Qt::ElideRight, nameTextRect.width(), Qt::TextShowMnemonic);
+	QString elidedName = fontMetrics.elidedText(name, Qt::ElideRight, nameTextRect.width(), Qt::TextShowMnemonic);
 	paintShadowText(painter, nameTextRect, elidedName);
 	painter->restore();
 }

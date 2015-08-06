@@ -32,10 +32,10 @@
 
 namespace Swift {
 
-RosterDelegate::RosterDelegate(QtTreeWidget* tree, bool compact) : compact_(compact) {
+RosterDelegate::RosterDelegate(QtTreeWidget* tree, bool compact, bool multiaccountGui) : compact_(compact), multiaccountGui_(multiaccountGui) {
 	tree_ = tree;
 	groupDelegate_ = new GroupItemDelegate();
-	accountDelegate_ = new AccountItemDelegate();
+	accountDelegate_ = new AccountItemDelegate(multiaccountGui_);
 }
 
 RosterDelegate::~RosterDelegate() {
@@ -79,7 +79,7 @@ void RosterDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option
 
 void RosterDelegate::paintAccount(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const {
 	if (index.isValid()) {
-		accountDelegate_->paint(painter, option, index.data(Qt::DisplayRole).toString(), 99, tree_->isExpanded(index));
+		accountDelegate_->paint(painter, option, index.data(Qt::DisplayRole).toString(), tree_->isExpanded(index));
 	}
 }
 

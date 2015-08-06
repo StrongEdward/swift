@@ -26,11 +26,12 @@
 
 #include <Swift/Controllers/Roster/ContactRosterItem.h>
 #include <Swift/Controllers/Roster/GroupRosterItem.h>
+#include <Swift/Controllers/SettingConstants.h>
+#include <Swift/Controllers/Settings/SettingsProvider.h>
 #include <Swift/Controllers/UIEvents/UIEventStream.h>
 #include <Swift/Controllers/UIEvents/RequestChatUIEvent.h>
 #include <Swift/Controllers/UIEvents/SendFileUIEvent.h>
-#include <Swift/Controllers/Settings/SettingsProvider.h>
- 
+
 #include <Swift/QtUI/QtUISettingConstants.h>
 #include <Swift/QtUI/Roster/RosterModel.h>
 #include <QtSwiftUtil.h>
@@ -43,7 +44,7 @@ QtTreeWidget::QtTreeWidget(UIEventStream* eventStream, SettingsProvider* setting
 	//model_ = new MultipleRosterProxyModel(this, settings_->getSetting(QtUISettingConstants::USE_SCREENREADER));
 	model_ = new RosterModel(this, settings_->getSetting(QtUISettingConstants::USE_SCREENREADER));
 	setModel(model_);
-	delegate_ = new RosterDelegate(this, settings_->getSetting(QtUISettingConstants::COMPACT_ROSTER));
+	delegate_ = new RosterDelegate(this, settings_->getSetting(QtUISettingConstants::COMPACT_ROSTER), settings_->getSetting(SettingConstants::MULTIACCOUNT_ENABLED));
 	setItemDelegate(delegate_);
 	setHeaderHidden(true);
 #ifdef SWIFT_PLATFORM_MACOSX
