@@ -12,13 +12,15 @@
 
 namespace Swift {
 
+class Roster;
 class RosterModel;
 
 class AccountRosterItem : public GroupRosterItem
 {
 	public:
 		AccountRosterItem(boost::shared_ptr<Account> account, RosterModel* model, const std::string& name, GroupRosterItem* parent, int rosterId);
-		RosterModel* getModel();
+		RosterModel* getModel() const;
+		Roster* getRoster() const;
 
 	private:
 		boost::shared_ptr<Account> account_;

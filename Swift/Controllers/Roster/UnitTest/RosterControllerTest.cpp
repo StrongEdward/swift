@@ -1,8 +1,13 @@
-
 /*
  * Copyright (c) 2010 Isode Limited.
  * All rights reserved.
  * See the COPYING file for more information.
+ */
+
+/*
+ * Copyright (c) 2015 Daniel Baczynski
+ * Licensed under the Simplified BSD license.
+ * See Documentation/Licenses/BSD-simplified.txt for more information.
  */
 
 #include <cppunit/extensions/HelperMacros.h>
@@ -12,6 +17,7 @@
 #include <Swiften/Base/Algorithm.h>
 #include <Swiften/Base/foreach.h>
 #include <Swiften/Client/ClientBlockListManager.h>
+#include <Swiften/Client/ClientOptions.h>
 #include <Swiften/Client/DummyNickManager.h>
 #include <Swiften/Client/DummyStanzaChannel.h>
 #include <Swiften/Client/NickResolver.h>
@@ -33,6 +39,7 @@
 // #include <Swiften/Elements/RosterItemPayload.h>
 // #include <Swiften/Elements/RosterPayload.h>
 
+#include <Swift/Controllers/Account.h>
 #include <Swift/Controllers/Roster/ContactRosterItem.h>
 #include <Swift/Controllers/Roster/GroupRosterItem.h>
 #include <Swift/Controllers/Roster/Roster.h>
@@ -84,6 +91,7 @@ class RosterControllerTest : public CppUnit::TestFixture {
 			capsProvider_ = new DummyCapsProvider();
 			entityCapsManager_ = new EntityCapsManager(capsProvider_, stanzaChannel_);
 			jingleSessionManager_ = new JingleSessionManager(router_);
+			account_ = boost::make_shared<Account>(0, jid_.toString(), jid_.toString(), "", "certPath", ClientOptions(), false, false, settings_);
 
 			ftManager_ = new DummyFileTransferManager();
 			ftOverview_ = new FileTransferOverview(ftManager_);
@@ -91,7 +99,7 @@ class RosterControllerTest : public CppUnit::TestFixture {
 			crypto_ = PlatformCryptoProvider::create();
 			vcardStorage_ = new VCardMemoryStorage(crypto_);
 			vcardManager_ = new VCardManager(jid_, router_, vcardStorage_);
-			rosterController_ = new RosterController(jid_, xmppRoster_, avatarManager_, mainWindowFactory_, nickManager_, nickResolver_, presenceOracle_, subscriptionManager_, eventController_, uiEventStream_, router_, settings_, entityCapsManager_, ftOverview_, clientBlockListManager_, vcardManager_);
+			rosterController_ = new RosterController(jid_, account_, xmppRoster_, avatarManager_, mainWindowFactory_, nickManager_, nickResolver_, presenceOracle_, subscriptionManager_, eventController_, uiEventStream_, router_, settings_, entityCapsManager_, ftOverview_, clientBlockListManager_, vcardManager_);
 			mainWindow_ = mainWindowFactory_->last;
 		}
 
@@ -350,6 +358,7 @@ class RosterControllerTest : public CppUnit::TestFixture {
 		DummyCapsProvider* capsProvider_;
 		EntityCapsManager* entityCapsManager_;
 		JingleSessionManager* jingleSessionManager_;
+		boost::shared_ptr<Account> account_;
 		FileTransferManager* ftManager_;
 		FileTransferOverview* ftOverview_;
 		ClientBlockListManager* clientBlockListManager_;

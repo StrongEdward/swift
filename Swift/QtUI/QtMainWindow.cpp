@@ -4,6 +4,12 @@
  * See the COPYING file for more information.
  */
 
+/*
+ * Copyright (c) 2015 Daniel Baczynski
+ * Licensed under the Simplified BSD license.
+ * See Documentation/Licenses/BSD-simplified.txt for more information.
+ */
+
 #include <Swift/QtUI/QtMainWindow.h>
 
 #include <boost/bind.hpp>
@@ -241,8 +247,12 @@ QtChatListWindow* QtMainWindow::getChatListWindow() {
 	return chatListWindow_;
 }
 
-void QtMainWindow::setRosterModel(Roster* roster) {
-	treeWidget_->setRosterModel(roster);
+void QtMainWindow::addRoster(Roster* roster) {
+	treeWidget_->addRoster(roster);
+}
+
+void QtMainWindow::removeRoster(Roster* roster) {
+	treeWidget_->removeRoster(roster);
 }
 
 void QtMainWindow::handleEditProfileRequest() {

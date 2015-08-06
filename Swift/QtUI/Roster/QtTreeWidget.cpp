@@ -40,8 +40,8 @@ namespace Swift {
 QtTreeWidget::QtTreeWidget(UIEventStream* eventStream, SettingsProvider* settings, MessageTarget messageTarget, QWidget* parent) : QTreeView(parent), tooltipShown_(false), messageTarget_(messageTarget) {
 	eventStream_ = eventStream;
 	settings_ = settings;
-	model_ = new MultipleRosterProxyModel(this, settings_->getSetting(QtUISettingConstants::USE_SCREENREADER));
-	//model_ = new RosterModel(this, settings_->getSetting(QtUISettingConstants::USE_SCREENREADER));
+	//model_ = new MultipleRosterProxyModel(this, settings_->getSetting(QtUISettingConstants::USE_SCREENREADER));
+	model_ = new RosterModel(this, settings_->getSetting(QtUISettingConstants::USE_SCREENREADER));
 	setModel(model_);
 	delegate_ = new RosterDelegate(this, settings_->getSetting(QtUISettingConstants::COMPACT_ROSTER));
 	setItemDelegate(delegate_);
@@ -60,7 +60,6 @@ QtTreeWidget::QtTreeWidget(UIEventStream* eventStream, SettingsProvider* setting
 	setRootIsDecorated(true);
 	connect(this, SIGNAL(activated(const QModelIndex&)), this, SLOT(handleItemActivated(const QModelIndex&)));
 	connect(model_, SIGNAL(itemExpanded(const QModelIndex&, bool)), this, SLOT(handleModelItemExpanded(const QModelIndex&, bool)));
-	//connect(model2_, SIGNAL(itemExpanded(const QModelIndex&, bool)), this, SLOT(handleModelItemExpanded(const QModelIndex&, bool)));
 	connect(this, SIGNAL(expanded(const QModelIndex&)), this, SLOT(handleExpanded(const QModelIndex&)));
 	connect(this, SIGNAL(collapsed(const QModelIndex&)), this, SLOT(handleCollapsed(const QModelIndex&)));
 	connect(this, SIGNAL(clicked(const QModelIndex&)), this, SLOT(handleClicked(const QModelIndex&)));
@@ -71,7 +70,6 @@ QtTreeWidget::QtTreeWidget(UIEventStream* eventStream, SettingsProvider* setting
 QtTreeWidget::~QtTreeWidget() {
 	settings_->onSettingChanged.disconnect(boost::bind(&QtTreeWidget::handleSettingChanged, this, _1));
 	delete model_;
-	//delete model2_;
 	delete delegate_;
 }
 
@@ -87,14 +85,15 @@ void QtTreeWidget::handleRefreshTooltip() {
 		QPoint position = QCursor::pos();
 		QModelIndex index = indexAt(mapFromGlobal(position));
 		QToolTip::showText(position, model_->data(index, Qt::ToolTipRole).toString());
-		//QToolTip::showText(position, model2_->data(index, Qt::ToolTipRole).toString());
 	}
 }
 
 void QtTreeWidget::setRosterModel(Roster* roster) {
-	//roster_ = roster;
-	model_->addRoster(roster);
-	//model_->setRoster(roster);
+	roster_ = roster;
+	RosterModel* model = dynamic_cast<RosterModel*>(model_);
+	if (model) {
+		model->setRoster(roster);
+	}
 	expandAll();
 }
 

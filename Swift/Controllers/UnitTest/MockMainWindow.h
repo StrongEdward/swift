@@ -4,6 +4,12 @@
  * See the COPYING file for more information.
  */
 
+/*
+ * Copyright (c) 2015 Daniel Baczynski
+ * Licensed under the Simplified BSD license.
+ * See Documentation/Licenses/BSD-simplified.txt for more information.
+ */
+
 #pragma once
 
 #include <Swift/Controllers/UIInterfaces/MainWindow.h>
@@ -14,7 +20,8 @@ namespace Swift {
 		public:
 			MockMainWindow() : roster(NULL) {}
 			virtual ~MockMainWindow() {}
-			virtual void setRosterModel(Roster* roster) {this->roster = roster;}
+			virtual void addRoster(Roster* roster) {this->roster = roster;}
+			virtual void removeRoster(Roster*) {}
 			virtual void setMyNick(const std::string& /*name*/) {}
 			virtual void setMyJID(const JID& /*jid*/) {}
 			virtual void setMyAvatarPath(const std::string& /*path*/) {}

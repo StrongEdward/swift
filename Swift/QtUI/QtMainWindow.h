@@ -4,6 +4,12 @@
  * See the COPYING file for more information.
  */
 
+/*
+ * Copyright (c) 2015 Daniel Baczynski
+ * Licensed under the Simplified BSD license.
+ * See Documentation/Licenses/BSD-simplified.txt for more information.
+ */
+
 #pragma once
 
 #include <vector>
@@ -54,7 +60,8 @@ namespace Swift {
 			static void openCertificateDialog(const std::vector<Certificate::ref>& chain, QWidget* parent);
 			QtEventWindow* getEventWindow();
 			QtChatListWindow* getChatListWindow();
-			void setRosterModel(Roster* roster);
+			void addRoster(Roster* roster);
+			void removeRoster(Roster* roster);
 			void setAvailableAdHocCommands(const std::vector<DiscoItems::Item>& commands);
 			void setBlockingCommandAvailable(bool isAvailable);
 		private slots:

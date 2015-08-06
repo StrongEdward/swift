@@ -14,30 +14,29 @@
 
 #include <qdebug.h>
 
+#include <Swift/Controllers/Roster/GroupRosterItem.h>
+#include <Swift/Controllers/Roster/ItemOperations/SetRosterIndex.h>
 #include <Swift/QtUI/Roster/QtTreeWidget.h>
 #include <Swift/QtUI/QtSwiftUtil.h>
-#include <Swift/Controllers/Roster/GroupRosterItem.h>
 
 namespace Swift {
 
 MultipleRosterProxyModel::MultipleRosterProxyModel(QtTreeWidget* view, bool screenReaderMode) : view_(view), screenReaderMode_(screenReaderMode) {
-	root_ = new GroupRosterItem("Main Root", NULL, true, -1); //sortbystatus default true
 }
 
 MultipleRosterProxyModel::~MultipleRosterProxyModel() {
-	delete root_;
-	// Delete rosters!
+	foreach (AccountRosterItem* item, accounts_) {
+		delete item->getModel();
+		delete item;
+	}
 }
 
 void MultipleRosterProxyModel::addRoster(Roster* roster) {
-	// Make sure it won't fail when doing some add/remove roster operations (possible solution: repair indices after removing from middle).
-	if (!roster) {
+	if (!roster || findRoster(roster) != -1) {
 		return;
 	}
 
 	roster->setIndex(accounts_.size());
-	//roster->onChildrenChanged.connect(boost::bind(&MultipleRosterProxyModel::handleChildrenChanged, this, _1));
-	//roster->onDataChanged.connect(boost::bind(&MultipleRosterProxyModel::handleDataChanged, this, _1));
 
 	RosterModel* rosterModel = new RosterModel(view_, screenReaderMode_);
 	rosterModel->setRoster(roster);
@@ -49,11 +48,31 @@ void MultipleRosterProxyModel::addRoster(Roster* roster) {
 	connect(rosterModel, SIGNAL(modelAboutToBeReset()), this, SLOT(handleModelAboutToBeResetInRosterModel()));
 	connect(rosterModel, SIGNAL(modelReset()), this, SLOT(handleModelResetInRosterModel()));
 
-	AccountRosterItem* accountItem = new AccountRosterItem(roster->getAccount(), rosterModel, roster->getAccount()->getAccountName(), static_cast<GroupRosterItem*>(root_), roster->getIndex());
+	AccountRosterItem* accountItem = new AccountRosterItem(roster->getAccount(), rosterModel, roster->getAccount()->getAccountName(), NULL, roster->getIndex());
 
 	accounts_.push_back(accountItem);
+	rosters_.push_back(roster);
 
 	//reLayout();
+}
+
+void MultipleRosterProxyModel::removeRoster(Roster* roster) {
+	int index = findRoster(roster);
+	if (index == -1) {
+		return;
+	}
+
+	bool removingFromMiddle = (static_cast<size_t>(index) < (accounts_.size()-1));
+
+	accounts_.erase(accounts_.begin() + index);
+
+	// Repair indices
+	if (removingFromMiddle) {
+		for (unsigned int i = index; i < accounts_.size(); i++) {
+			SetRosterIndex operation(accounts_[i]->getRosterIndex() - 1);
+			accounts_[i]->getRoster()->applyOnAllItems(operation);
+		}
+	}
 }
 
 Qt::ItemFlags MultipleRosterProxyModel::flags(const QModelIndex& index) const {
@@ -108,7 +127,7 @@ QModelIndex MultipleRosterProxyModel::index(int row, int column, const QModelInd
 }
 
 QModelIndex MultipleRosterProxyModel::index(AccountRosterItem* item) const {
-	if (item == dynamic_cast<AccountRosterItem*>(root_)) {
+	if (item->getRosterIndex() < 0) {
 		return QModelIndex();
 	}
 	return createIndex(item->getRosterIndex(), 0, item);
@@ -222,6 +241,15 @@ void MultipleRosterProxyModel::reLayout() {
 	}
 
 	endResetModel();*/
+}
+
+int MultipleRosterProxyModel::findRoster(Roster* roster) {
+	for (unsigned int i = 0; i < rosters_.size(); i++) {
+		if (rosters_[i] == roster) {
+			return i;
+		}
+	}
+	return -1;
 }
 
 

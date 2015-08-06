@@ -4,6 +4,12 @@
  * See the COPYING file for more information.
  */
 
+/*
+ * Copyright (c) 2015 Daniel Baczynski
+ * Licensed under the Simplified BSD license.
+ * See Documentation/Licenses/BSD-simplified.txt for more information.
+ */
+
 #pragma once
 
 #include <string>
@@ -36,7 +42,8 @@ namespace Swift {
 			virtual void setMyStatusType(StatusShow::Type type) = 0;
 			virtual void setMyContactRosterItem(boost::shared_ptr<ContactRosterItem> contact) = 0;
 			/** Must be able to cope with NULL to clear the roster */
-			virtual void setRosterModel(Roster* roster) = 0;
+			virtual void addRoster(Roster* roster) = 0;
+			virtual void removeRoster(Roster* roster) = 0;
 			virtual void setConnecting() = 0;
 			virtual void setBlockingCommandAvailable(bool isAvailable) = 0;
 			virtual void setAvailableAdHocCommands(const std::vector<DiscoItems::Item>& commands) = 0;

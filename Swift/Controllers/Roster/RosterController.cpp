@@ -72,7 +72,7 @@ RosterController::RosterController(const JID& jid, boost::shared_ptr<Account> ac
 	eventController_ = eventController;
 	settings_ = settings;
 	expandiness_ = new RosterGroupExpandinessPersister(roster_, settings);
-	mainWindow_->setRosterModel(roster_);
+	mainWindow_->addRoster(roster_);
 	rosterVCardProvider_ = new RosterVCardProvider(roster_, vcardManager, JID::WithoutResource);
 	
 	changeStatusConnection_ = mainWindow_->onChangeStatusRequest.connect(boost::bind(&RosterController::handleChangeStatusRequest, this, _1, _2));
@@ -114,7 +114,8 @@ RosterController::~RosterController() {
 	delete offlineFilter_;
 	delete expandiness_;
 
-	//mainWindow_->setRosterModel(NULL);
+	// mainWindow_->setRosterModel(NULL);
+	mainWindow_->removeRoster(roster_);
 	if (mainWindow_->canDelete()) {
 		delete mainWindow_;
 	}

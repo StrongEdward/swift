@@ -65,7 +65,7 @@ QSize RosterDelegate::contactSizeHint(const QStyleOptionViewItem& option, const 
 
 void RosterDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const {
 	RosterItem* item = static_cast<RosterItem*>(index.internalPointer());
-	qDebug() << "Paint " << P2QSTRING(item->getDisplayName());
+	//qDebug() << "Paint " << P2QSTRING(item->getDisplayName());
 	if (dynamic_cast<AccountRosterItem*>(item)) {
 		paintAccount(painter, option, index);
 	}

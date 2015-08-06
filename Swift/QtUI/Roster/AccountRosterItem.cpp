@@ -6,7 +6,7 @@
 
 #include "AccountRosterItem.h"
 
-//#include <Swift/Controllers/Roster/Roster.h>
+#include <Swift/Controllers/Roster/Roster.h>
 #include <Swift/QtUI/Roster/RosterModel.h>
 
 namespace Swift {
@@ -16,8 +16,12 @@ AccountRosterItem::AccountRosterItem(boost::shared_ptr<Account> account, RosterM
 
 }
 
-RosterModel* AccountRosterItem::getModel() {
+RosterModel* AccountRosterItem::getModel() const {
 	return model_;
+}
+
+Roster* AccountRosterItem::getRoster() const {
+	return model_->getRoster();
 }
 
 }

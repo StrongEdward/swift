@@ -51,6 +51,10 @@ void RosterModel::setRoster(Roster* roster) {
 	reLayout();
 }
 
+Roster*RosterModel::getRoster() const {
+	return roster_;
+}
+
 void RosterModel::reLayout() {
 	//emit layoutChanged();
 	beginResetModel();
@@ -231,7 +235,6 @@ QModelIndex RosterModel::index(int row, int column, const QModelIndex& parent) c
 		}
 	}
 	QModelIndex temp = static_cast<size_t>(row) < parentItem->getDisplayedChildren().size() ? createIndex(row, column, parentItem->getDisplayedChildren()[row]) : QModelIndex();
-	//qDebug() << "Dla parenta " << P2QSTRING(parentItem->getDisplayName()) << "dziecko" << row << " = " << (temp.isValid() ? P2QSTRING(getItem(temp)->getDisplayName()) : "Invalid" );
 	return temp;
 }
 

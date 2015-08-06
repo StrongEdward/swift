@@ -21,13 +21,14 @@ namespace Swift {
 class GroupRosterItem;
 class RosterItem {
 	public:
-		RosterItem(const std::string& name, RosterItem* parent, int rosterId);
+		RosterItem(const std::string& name, RosterItem* parent, int rosterIndex);
 		virtual ~RosterItem();
 		boost::signal<void ()> onDataChanged;
 		RosterItem* getParent() const;
 		void setDisplayName(const std::string& name);
 		const std::string& getDisplayName() const;
 		virtual const std::string& getSortableDisplayName() const;
+		void setRosterIndex(const int index);
 		int getRosterIndex();
 	private:
 		std::string name_;

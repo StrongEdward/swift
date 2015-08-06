@@ -30,7 +30,7 @@ QSize AccountItemDelegate::sizeHint(const QStyleOptionViewItem& /*option*/, cons
 
 void AccountItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QString& name, int rowCount, bool expanded) const {
 	painter->save();
-	painter->setPen(QPen(QColor(240, 150, 189)));
+	painter->setPen(QPen(QColor(189, 189, 189)));
 	//FIXME: It looks like Qt is passing us a rectangle that's too small
 	//This deliberately draws outside the lines, and we need to find a better solution.
 	int correctionAmount = groupCornerRadius_ > 0 ? 0 : 1;

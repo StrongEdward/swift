@@ -18,7 +18,7 @@
 
 namespace Swift {
 
-RosterItem::RosterItem(const std::string& name, RosterItem* parent, int rosterId) : name_(name), sortableDisplayName_(boost::to_lower_copy(name_)), parent_(parent), rosterIndex_(rosterId) {
+RosterItem::RosterItem(const std::string& name, RosterItem* parent, int rosterIndex) : name_(name), sortableDisplayName_(boost::to_lower_copy(name_)), parent_(parent), rosterIndex_(rosterIndex) {
 	/* The following would be good, but because of C++'s inheritance not working in constructors, it's not going to work. */
 	//if (parent) {
 	//	parent_->addChild(this);
@@ -45,6 +45,10 @@ const std::string& RosterItem::getDisplayName() const {
 
 const std::string& RosterItem::getSortableDisplayName() const {
 	return sortableDisplayName_;
+}
+
+void RosterItem::setRosterIndex(const int index) {
+	rosterIndex_ = index;
 }
 
 int RosterItem::getRosterIndex() {

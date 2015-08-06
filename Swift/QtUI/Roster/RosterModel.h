@@ -4,6 +4,12 @@
  * See the COPYING file for more information.
  */
 
+/*
+ * Copyright (c) 2015 Daniel Baczynski
+ * Licensed under the Simplified BSD license.
+ * See Documentation/Licenses/BSD-simplified.txt for more information.
+ */
+
 #pragma once
 
 #include <QAbstractItemModel>
@@ -33,6 +39,7 @@ namespace Swift {
 			RosterModel(QtTreeWidget* view, bool screenReaderMode);
 			~RosterModel();
 			void setRoster(Roster* swiftRoster);
+			Roster* getRoster() const;
 			Qt::ItemFlags flags(const QModelIndex& index) const;
 			int columnCount(const QModelIndex& parent = QModelIndex()) const;
 			QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const;

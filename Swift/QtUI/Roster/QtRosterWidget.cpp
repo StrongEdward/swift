@@ -4,6 +4,12 @@
  * See the COPYING file for more information.
  */
 
+/*
+ * Copyright (c) 2015 Daniel Baczynski
+ * Licensed under the Simplified BSD license.
+ * See Documentation/Licenses/BSD-simplified.txt for more information.
+ */
+
 #include <Swift/QtUI/Roster/QtRosterWidget.h>
 
 #include <QContextMenuEvent>
@@ -25,15 +31,42 @@
 #include <Swift/Controllers/Roster/GroupRosterItem.h>
 #include <Swift/Controllers/UIEvents/UIEventStream.h>
 #include <Swift/QtUI/QtSwiftUtil.h>
+#include <Swift/QtUI/QtUISettingConstants.h>
+
 
 namespace Swift {
 
 QtRosterWidget::QtRosterWidget(UIEventStream* eventStream, SettingsProvider* settings, QWidget* parent) : QtTreeWidget(eventStream, settings, MessageDefaultJID, parent) {
-
+	//disconnect(model_, SIGNAL(itemExpanded(const QModelIndex&, bool)), this, SLOT(handleModelItemExpanded(const QModelIndex&, bool))); // Neccessary?
+	setModel(NULL);
+	//delete model_;
+	model_->deleteLater();
+	model_ = new MultipleRosterProxyModel(this, settings->getSetting(QtUISettingConstants::USE_SCREENREADER));
+	connect(model_, SIGNAL(itemExpanded(const QModelIndex&, bool)), this, SLOT(handleModelItemExpanded(const QModelIndex&, bool)));
+	setModel(model_);
 }
 
 QtRosterWidget::~QtRosterWidget() {
 
+}
+
+void QtRosterWidget::setRosterModel(Roster* roster) {
+	addRoster(roster);
+}
+
+void QtRosterWidget::addRoster(Roster* roster) {
+	MultipleRosterProxyModel* model = dynamic_cast<MultipleRosterProxyModel*>(model_);
+	if (model) {
+		model->addRoster(roster);
+	}
+	expandAll();
+}
+
+void QtRosterWidget::removeRoster(Roster* roster) {
+	MultipleRosterProxyModel* model = dynamic_cast<MultipleRosterProxyModel*>(model_);
+	if (model) {
+		model->removeRoster(roster);
+	}
 }
 
 void QtRosterWidget::handleEditUserActionTriggered(bool /*checked*/) {

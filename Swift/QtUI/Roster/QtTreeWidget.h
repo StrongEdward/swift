@@ -71,9 +71,10 @@ class QtTreeWidget : public QTreeView {
 		virtual void currentChanged(const QModelIndex& current, const QModelIndex& previous);
 	protected:
 		UIEventStream* eventStream_;
+		QAbstractItemModel* model_;
 
 	private:
-		MultipleRosterProxyModel* model_;
+		//MultipleRosterProxyModel* model_;
 		//RosterModel* model_;
 		Roster* roster_;
 		RosterDelegate* delegate_;
