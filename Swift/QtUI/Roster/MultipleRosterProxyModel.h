@@ -51,11 +51,11 @@ class MultipleRosterProxyModel : public QAbstractItemModel {
 		RosterItem* getItem(const QModelIndex& index) const;
 		QModelIndex createThisModelIndex(const QModelIndex& index) const;
 		void reLayout();
-		int findRoster(Roster* roster);
+		int findPairIndexByRoster(Roster* roster);
 
 	private:
-		std::vector<AccountRosterItem*> accounts_;
-		std::vector<Roster*> rosters_;
+		typedef std::pair<AccountRosterItem*, RosterModel*> AccountModelPair;
+		std::vector<AccountModelPair> accounts_;
 
 		QtTreeWidget* view_;
 		bool screenReaderMode_;

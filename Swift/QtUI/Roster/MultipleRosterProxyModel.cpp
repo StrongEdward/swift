@@ -25,14 +25,14 @@ MultipleRosterProxyModel::MultipleRosterProxyModel(QtTreeWidget* view, bool scre
 }
 
 MultipleRosterProxyModel::~MultipleRosterProxyModel() {
-	foreach (AccountRosterItem* item, accounts_) {
-		delete item->getModel();
-		delete item;
+	foreach (AccountModelPair pair, accounts_) {
+		delete pair.first;
+		delete pair.second;
 	}
 }
 
 void MultipleRosterProxyModel::addRoster(Roster* roster) {
-	if (!roster || findRoster(roster) != -1) {
+	if (!roster || findPairIndexByRoster(roster) != -1) {
 		return;
 	}
 
@@ -40,37 +40,38 @@ void MultipleRosterProxyModel::addRoster(Roster* roster) {
 
 	RosterModel* rosterModel = new RosterModel(view_, screenReaderMode_);
 	rosterModel->setRoster(roster);
-	connect(rosterModel, SIGNAL(itemExpanded(const QModelIndex&, bool)), this, SLOT(handleItemExpandedInRosterModel(const QModelIndex&, bool)));
 
+	connect(rosterModel, SIGNAL(itemExpanded(const QModelIndex&, bool)), this, SLOT(handleItemExpandedInRosterModel(const QModelIndex&, bool)));
 	connect(rosterModel, SIGNAL(dataChanged(const QModelIndex&, const QModelIndex&)), this, SLOT(handleDataChangedInRosterModel(const QModelIndex&, const QModelIndex&)));
 	connect(rosterModel, SIGNAL(layoutAboutToBeChanged()), this, SLOT(handleLayoutAboutToBeChangedInRosterModel()));
 	connect(rosterModel, SIGNAL(layoutChanged()), this, SLOT(handleLayoutChangedInRosterModel()));
 	connect(rosterModel, SIGNAL(modelAboutToBeReset()), this, SLOT(handleModelAboutToBeResetInRosterModel()));
 	connect(rosterModel, SIGNAL(modelReset()), this, SLOT(handleModelResetInRosterModel()));
 
-	AccountRosterItem* accountItem = new AccountRosterItem(roster->getAccount(), rosterModel, roster->getAccount()->getAccountName(), NULL, roster->getIndex());
+	AccountRosterItem* accountItem = new AccountRosterItem(roster->getAccount(), roster->getAccount()->getAccountName(), NULL, roster->getIndex());
 
-	accounts_.push_back(accountItem);
-	rosters_.push_back(roster);
+	accounts_.push_back(std::make_pair(accountItem, rosterModel));
 
 	//reLayout();
 }
 
 void MultipleRosterProxyModel::removeRoster(Roster* roster) {
-	int index = findRoster(roster);
+	int index = findPairIndexByRoster(roster);
 	if (index == -1) {
 		return;
 	}
 
 	bool removingFromMiddle = (static_cast<size_t>(index) < (accounts_.size()-1));
 
+	delete accounts_[index].first;
+	delete accounts_[index].second;
 	accounts_.erase(accounts_.begin() + index);
 
 	// Repair indices
 	if (removingFromMiddle) {
 		for (unsigned int i = index; i < accounts_.size(); i++) {
-			SetRosterIndex operation(accounts_[i]->getRosterIndex() - 1);
-			accounts_[i]->getRoster()->applyOnAllItems(operation);
+			SetRosterIndex operation(accounts_[i].first->getRosterIndex() - 1);
+			accounts_[i].second->getRoster()->applyOnAllItems(operation);
 		}
 	}
 }
@@ -79,7 +80,7 @@ Qt::ItemFlags MultipleRosterProxyModel::flags(const QModelIndex& index) const {
 	Qt::ItemFlags flags = QAbstractItemModel::flags(index);
 	RosterItem* item = getItem(index);
 	if (item && static_cast<size_t>(item->getRosterIndex()) < accounts_.size()) {
-		flags |= accounts_[item->getRosterIndex()]->getModel()->flags(index);
+		flags |= accounts_[item->getRosterIndex()].second->flags(index);
 	}
 	return flags;
 }
@@ -90,12 +91,10 @@ int MultipleRosterProxyModel::columnCount(const QModelIndex&) const {
 
 QVariant MultipleRosterProxyModel::data(const QModelIndex& index, int role) const {
 	RosterItem* item = getItem(index);
-	if (!item) {
+	if (!item || static_cast<size_t>(item->getRosterIndex()) >= accounts_.size()) {
 		return QVariant();
 	}
-
-	Q_ASSERT(static_cast<size_t>(item->getRosterIndex()) < accounts_.size());
-	return accounts_[item->getRosterIndex()]->getModel()->data(index, role);
+	return accounts_[item->getRosterIndex()].second->data(index, role);
 }
 
 QModelIndex MultipleRosterProxyModel::index(int row, int column, const QModelIndex& parent) const {
@@ -107,7 +106,7 @@ QModelIndex MultipleRosterProxyModel::index(int row, int column, const QModelInd
 	if (!parent.isValid()) {
 		// Top level
 		Q_ASSERT(row >= 0 && static_cast<size_t>(row) < accounts_.size());
-		return createIndex(row, column, accounts_[row]);
+		return createIndex(row, column, accounts_[row].first);
 	}
 	else {
 		parentItem = getItem(parent);
@@ -120,9 +119,9 @@ QModelIndex MultipleRosterProxyModel::index(int row, int column, const QModelInd
 		Q_ASSERT(static_cast<size_t>(rosterIndex) < accounts_.size());
 
 		if (dynamic_cast<AccountRosterItem*>(parentItem)) {
-			return createThisModelIndex(accounts_[rosterIndex]->getModel()->index(row, column, QModelIndex()));
+			return createThisModelIndex(accounts_[rosterIndex].second->index(row, column, QModelIndex()));
 		}
-		return createThisModelIndex(accounts_[rosterIndex]->getModel()->index(row, column, parent));
+		return createThisModelIndex(accounts_[rosterIndex].second->index(row, column, parent));
 	}
 }
 
@@ -143,13 +142,13 @@ QModelIndex MultipleRosterProxyModel::parent(const QModelIndex& child) const {
 	Q_ASSERT(static_cast<size_t>(childItem->getRosterIndex()) < accounts_.size());
 
 	// Assuming childItem is GroupRosterItem or ContactRosterItem...
-	QModelIndex returnedParent = createThisModelIndex(accounts_[childItem->getRosterIndex()]->getModel()->parent(child));
+	QModelIndex returnedParent = createThisModelIndex(accounts_[childItem->getRosterIndex()].second->parent(child));
 	if (returnedParent.isValid()) {
 		return returnedParent;
 	}
 	else {
 		// child's parent is RosterModel root so we connect child (GroupRosterItem) to corresponding account item
-		return createIndex(childItem->getRosterIndex(), 0, accounts_[childItem->getRosterIndex()]);
+		return createIndex(childItem->getRosterIndex(), 0, accounts_[childItem->getRosterIndex()].first);
 	}
 }
 
@@ -169,9 +168,9 @@ int MultipleRosterProxyModel::rowCount(const QModelIndex& parent) const {
 	Q_ASSERT(static_cast<size_t>(rosterIndex) < accounts_.size());
 
 	if (dynamic_cast<AccountRosterItem*>(item)) {
-		return accounts_[rosterIndex]->getModel()->rowCount();
+		return accounts_[rosterIndex].second->rowCount();
 	}
-	return accounts_[rosterIndex]->getModel()->rowCount(parent);
+	return accounts_[rosterIndex].second->rowCount(parent);
 }
 
 QMimeData* MultipleRosterProxyModel::mimeData(const QModelIndexList& indexes) const {
@@ -243,9 +242,9 @@ void MultipleRosterProxyModel::reLayout() {
 	endResetModel();*/
 }
 
-int MultipleRosterProxyModel::findRoster(Roster* roster) {
-	for (unsigned int i = 0; i < rosters_.size(); i++) {
-		if (rosters_[i] == roster) {
+int MultipleRosterProxyModel::findPairIndexByRoster(Roster* roster) {
+	for (unsigned int i = 0; i < accounts_.size(); i++) {
+		if (accounts_[i].second->getRoster() == roster) {
 			return i;
 		}
 	}

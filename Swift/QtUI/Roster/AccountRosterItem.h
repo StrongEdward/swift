@@ -18,14 +18,10 @@ class RosterModel;
 class AccountRosterItem : public GroupRosterItem
 {
 	public:
-		AccountRosterItem(boost::shared_ptr<Account> account, RosterModel* model, const std::string& name, GroupRosterItem* parent, int rosterId);
-		RosterModel* getModel() const;
-		Roster* getRoster() const;
+		AccountRosterItem(boost::shared_ptr<Account> account, const std::string& name, GroupRosterItem* parent, int rosterId);
 
 	private:
 		boost::shared_ptr<Account> account_;
-		RosterModel* model_;
-		bool expanded_;
 };
 
 }
