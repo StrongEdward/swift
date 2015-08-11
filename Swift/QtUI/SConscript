@@ -151,7 +151,6 @@ sources = [
 #	"Roster/QtTreeWidgetItem.cpp",
 	"Roster/RosterDelegate.cpp",
 	"Roster/AccountItemDelegate.cpp",
-	"Roster/AccountRosterItem.cpp",
 	"Roster/GroupItemDelegate.cpp",
 	"Roster/DelegateCommons.cpp",
 	"Roster/QtFilterWidget.cpp",

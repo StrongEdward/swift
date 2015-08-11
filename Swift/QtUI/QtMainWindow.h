@@ -19,11 +19,12 @@
 #include <QList>
 
 #include <Swift/Controllers/UIInterfaces/MainWindow.h>
+#include <Swift/Controllers/Roster/AccountRosterItem.h>
 
-#include <Swift/QtUI/QtRosterHeader.h>
-#include <Swift/QtUI/EventViewer/QtEventWindow.h>
 #include <Swift/QtUI/ChatList/QtChatListWindow.h>
+#include <Swift/QtUI/EventViewer/QtEventWindow.h>
 #include <Swift/QtUI/QtLoginWindow.h>
+#include <Swift/QtUI/QtRosterHeader.h>
 
 class QComboBox;
 class QLineEdit;
@@ -62,6 +63,7 @@ namespace Swift {
 			QtChatListWindow* getChatListWindow();
 			void addRoster(Roster* roster);
 			void removeRoster(Roster* roster);
+			AccountRosterItem* getAccountItem(const std::string accountDisplayName) const;
 			void setAvailableAdHocCommands(const std::vector<DiscoItems::Item>& commands);
 			void setBlockingCommandAvailable(bool isAvailable);
 		private slots:

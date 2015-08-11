@@ -26,7 +26,7 @@ const SettingsProvider::Setting<bool> SettingConstants::LOGIN_AUTOMATICALLY = Se
 const SettingsProvider::Setting<std::string> SettingConstants::DEFAULT_ACCOUNT = SettingsProvider::Setting<std::string>("defaulAccount", "");
 const SettingsProvider::Setting<std::string> SettingConstants::SERIALIZED_ACCOUNTS = SettingsProvider::Setting<std::string>("serializedAccounts", "");
 const SettingsProvider::Setting<bool> SettingConstants::SHOW_OFFLINE("showOffline", false);
-const SettingsProvider::Setting<std::string> SettingConstants::EXPANDED_ROSTER_GROUPS("GroupExpandiness", "");
+const SettingsProvider::Setting<std::string> SettingConstants::COLLAPSED_ROSTER_ITEMS("CollapsedRosterItems", "");
 const SettingsProvider::Setting<bool> SettingConstants::PLAY_SOUNDS("playSounds", true);
 const SettingsProvider::Setting<std::string> SettingConstants::HIGHLIGHT_RULES("highlightRules", "@");
 const SettingsProvider::Setting<bool> SettingConstants::SPELL_CHECKER("spellChecker", false);

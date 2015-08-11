@@ -76,7 +76,6 @@ class RosterControllerTest : public CppUnit::TestFixture {
 			jid_ = JID("testjid@swift.im/swift");
 			xmppRoster_ = new XMPPRosterImpl();
 			avatarManager_ = new NullAvatarManager();
-			mainWindowFactory_ = new MockMainWindowFactory();
 			mucRegistry_ = new MUCRegistry();
 			nickResolver_ = new NickResolver(jid_.toBare(), xmppRoster_, NULL, mucRegistry_);
 			channel_ = new DummyIQChannel();
@@ -92,6 +91,7 @@ class RosterControllerTest : public CppUnit::TestFixture {
 			entityCapsManager_ = new EntityCapsManager(capsProvider_, stanzaChannel_);
 			jingleSessionManager_ = new JingleSessionManager(router_);
 			account_ = boost::make_shared<Account>(0, jid_.toString(), jid_.toString(), "", "certPath", ClientOptions(), false, false, settings_);
+			mainWindowFactory_ = new MockMainWindowFactory(account_);
 
 			ftManager_ = new DummyFileTransferManager();
 			ftOverview_ = new FileTransferOverview(ftManager_);

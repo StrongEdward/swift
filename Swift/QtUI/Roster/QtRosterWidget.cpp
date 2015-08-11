@@ -39,8 +39,9 @@ namespace Swift {
 QtRosterWidget::QtRosterWidget(UIEventStream* eventStream, SettingsProvider* settings, QWidget* parent) : QtTreeWidget(eventStream, settings, MessageDefaultJID, parent) {
 	//disconnect(model_, SIGNAL(itemExpanded(const QModelIndex&, bool)), this, SLOT(handleModelItemExpanded(const QModelIndex&, bool))); // Neccessary?
 	setModel(NULL);
-	//delete model_;
-	model_->deleteLater();
+	QAbstractItemModel* modelToDelete = model_;
+	modelToDelete->deleteLater();
+
 	model_ = new MultipleRosterProxyModel(this, settings->getSetting(QtUISettingConstants::USE_SCREENREADER));
 	connect(model_, SIGNAL(itemExpanded(const QModelIndex&, bool)), this, SLOT(handleModelItemExpanded(const QModelIndex&, bool)));
 	setModel(model_);
@@ -67,6 +68,14 @@ void QtRosterWidget::removeRoster(Roster* roster) {
 	if (model) {
 		model->removeRoster(roster);
 	}
+}
+
+AccountRosterItem* QtRosterWidget::getAccountItem(const std::string accountDisplayName) const {
+	MultipleRosterProxyModel* model = dynamic_cast<MultipleRosterProxyModel*>(model_);
+	if (model) {
+		return model->getAccountItem(accountDisplayName);
+	}
+	return NULL;
 }
 
 void QtRosterWidget::handleEditUserActionTriggered(bool /*checked*/) {

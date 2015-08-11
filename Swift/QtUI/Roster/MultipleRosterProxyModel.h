@@ -12,7 +12,7 @@
 #include <QAbstractItemModel>
 
 #include <Swift/Controllers/Account.h>
-#include <Swift/QtUI/Roster/AccountRosterItem.h>
+#include <Swift/Controllers/Roster/AccountRosterItem.h>
 #include <Swift/QtUI/Roster/RosterModel.h>
 
 namespace Swift {
@@ -26,6 +26,7 @@ class MultipleRosterProxyModel : public QAbstractItemModel {
 		~MultipleRosterProxyModel();
 		void addRoster(Roster* roster);
 		void removeRoster(Roster* roster);
+		AccountRosterItem* getAccountItem(const std::string& accountDisplayName) const;
 		Qt::ItemFlags flags(const QModelIndex& index) const;
 		int columnCount(const QModelIndex& parent = QModelIndex()) const;
 		QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const;
@@ -46,6 +47,7 @@ class MultipleRosterProxyModel : public QAbstractItemModel {
 		void handleLayoutChangedInRosterModel();
 		void handleModelAboutToBeResetInRosterModel();
 		void handleModelResetInRosterModel();
+		void handleAccountItemExpandedChanged();
 
 	private:
 		RosterItem* getItem(const QModelIndex& index) const;

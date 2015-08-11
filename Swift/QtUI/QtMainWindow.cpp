@@ -255,6 +255,10 @@ void QtMainWindow::removeRoster(Roster* roster) {
 	treeWidget_->removeRoster(roster);
 }
 
+AccountRosterItem* QtMainWindow::getAccountItem(const std::string accountDisplayName) const {
+	return treeWidget_->getAccountItem(accountDisplayName);
+}
+
 void QtMainWindow::handleEditProfileRequest() {
 	uiEventStream_->send(boost::make_shared<RequestProfileEditorUIEvent>());
 }

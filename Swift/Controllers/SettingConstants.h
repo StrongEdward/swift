@@ -52,12 +52,12 @@ namespace Swift {
 			 */
 			static const SettingsProvider::Setting<bool> SHOW_OFFLINE;
 			/**
-			 * The #EXPANDED_ROSTER_GROUPS setting specifies the list of groups that are expanded
-			 * in the roster UI.
+			 * The #COLLAPSED_ROSTER_ITEMS setting specifies the list of items (groups and accounts)
+			 * that are collapsed in the roster UI.
 			 *
-			 * Its value is a string with group names seperated by newlines.
+			 * Its value is a serialized CollapsedRosterItemsSet as string.
 			 */
-			static const SettingsProvider::Setting<std::string> EXPANDED_ROSTER_GROUPS;
+			static const SettingsProvider::Setting<std::string> COLLAPSED_ROSTER_ITEMS;
 			static const SettingsProvider::Setting<bool> PLAY_SOUNDS;
 			/**
 			 * The #HIGHLIGHT_RULES setting specifies the highlight rules and the associated actions.

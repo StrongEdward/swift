@@ -18,10 +18,11 @@ namespace Swift {
 	class Roster;
 	class MockMainWindow : public MainWindow {
 		public:
-			MockMainWindow() : roster(NULL) {}
-			virtual ~MockMainWindow() {}
+			MockMainWindow(boost::shared_ptr<Account> account) : roster(NULL) { item = new AccountRosterItem(account, account->getAccountName(), NULL, 0); }
+			virtual ~MockMainWindow() { delete item; }
 			virtual void addRoster(Roster* roster) {this->roster = roster;}
 			virtual void removeRoster(Roster*) {}
+			virtual AccountRosterItem* getAccountItem(const std::string /*accountDisplayName*/) const { return item; }
 			virtual void setMyNick(const std::string& /*name*/) {}
 			virtual void setMyJID(const JID& /*jid*/) {}
 			virtual void setMyAvatarPath(const std::string& /*path*/) {}
@@ -34,6 +35,7 @@ namespace Swift {
 			virtual void openCertificateDialog(const std::vector<Certificate::ref>& /*chain*/) {}
 			virtual void setBlockingCommandAvailable(bool /*isAvailable*/) {}
 			Roster* roster;
+			AccountRosterItem* item;
 
 	};
 }

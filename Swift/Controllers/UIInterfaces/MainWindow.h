@@ -22,6 +22,7 @@
 #include <Swiften/TLS/Certificate.h>
 #include <Swiften/Base/boost_bsignals.h>
 #include <Swift/Controllers/Roster/ContactRosterItem.h>
+#include <Swift/Controllers/Roster/AccountRosterItem.h>
 
 namespace Swift {
 	class Roster;
@@ -44,6 +45,7 @@ namespace Swift {
 			/** Must be able to cope with NULL to clear the roster */
 			virtual void addRoster(Roster* roster) = 0;
 			virtual void removeRoster(Roster* roster) = 0;
+			virtual AccountRosterItem* getAccountItem(const std::string accountDisplayName) const = 0;
 			virtual void setConnecting() = 0;
 			virtual void setBlockingCommandAvailable(bool isAvailable) = 0;
 			virtual void setAvailableAdHocCommands(const std::vector<DiscoItems::Item>& commands) = 0;

@@ -22,9 +22,9 @@
 #include <qdebug.h>
 #include <QBitmap>
 
-#include "Swift/Controllers/Roster/ContactRosterItem.h"
-#include "Swift/Controllers/Roster/GroupRosterItem.h"
-#include "Swift/QtUI/Roster/AccountRosterItem.h"
+#include <Swift/Controllers/Roster/ContactRosterItem.h>
+#include <Swift/Controllers/Roster/GroupRosterItem.h>
+#include <Swift/Controllers/Roster/AccountRosterItem.h>
 #include <Swift/QtUI/QtSwiftUtil.h>
 
 #include "QtTreeWidget.h"

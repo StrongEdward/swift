@@ -58,6 +58,7 @@
 #include <Swift/Controllers/XMPPEvents/ErrorEvent.h>
 #include <Swift/Controllers/XMPPEvents/EventController.h>
 #include <Swift/Controllers/XMPPEvents/SubscriptionRequestEvent.h>
+#include <Swift/Controllers/Roster/CollapsedRosterItemsSet.h>
 
 namespace Swift {
 
@@ -67,12 +68,15 @@ namespace Swift {
 RosterController::RosterController(const JID& jid, boost::shared_ptr<Account> account, XMPPRoster* xmppRoster, AvatarManager* avatarManager, MainWindowFactory* mainWindowFactory, NickManager* nickManager, NickResolver* nickResolver, PresenceOracle* presenceOracle, SubscriptionManager* subscriptionManager, EventController* eventController, UIEventStream* uiEventStream, IQRouter* iqRouter, SettingsProvider* settings, EntityCapsProvider* entityCapsManager, FileTransferOverview* fileTransferOverview, ClientBlockListManager* clientBlockListManager, VCardManager* vcardManager)
 	: myJID_(jid), xmppRoster_(xmppRoster), mainWindowFactory_(mainWindowFactory), mainWindow_(mainWindowFactory_->createMainWindow(uiEventStream)), roster_(new Roster(true, false, 0, account)), offlineFilter_(new OfflineRosterFilter()), vcardManager_(vcardManager), avatarManager_(avatarManager), nickManager_(nickManager), nickResolver_(nickResolver), presenceOracle_(presenceOracle), uiEventStream_(uiEventStream), entityCapsManager_(entityCapsManager), ftOverview_(fileTransferOverview), clientBlockListManager_(clientBlockListManager) {
 	assert(fileTransferOverview);
+	assert(account);
 	iqRouter_ = iqRouter;
 	subscriptionManager_ = subscriptionManager;
 	eventController_ = eventController;
 	settings_ = settings;
-	expandiness_ = new RosterGroupExpandinessPersister(roster_, settings);
+	CollapsedRosterItemsSet* collapsedItems = new CollapsedRosterItemsSet(); // To be moved outside of RosterController
+	expandiness_ = new RosterGroupExpandinessPersister(roster_, collapsedItems, settings_);
 	mainWindow_->addRoster(roster_);
+	expandiness_->setAccountItem(mainWindow_->getAccountItem(account->getAccountName()));
 	rosterVCardProvider_ = new RosterVCardProvider(roster_, vcardManager, JID::WithoutResource);
 	
 	changeStatusConnection_ = mainWindow_->onChangeStatusRequest.connect(boost::bind(&RosterController::handleChangeStatusRequest, this, _1, _2));

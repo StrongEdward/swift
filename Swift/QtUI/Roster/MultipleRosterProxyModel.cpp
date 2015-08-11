@@ -49,10 +49,10 @@ void MultipleRosterProxyModel::addRoster(Roster* roster) {
 	connect(rosterModel, SIGNAL(modelReset()), this, SLOT(handleModelResetInRosterModel()));
 
 	AccountRosterItem* accountItem = new AccountRosterItem(roster->getAccount(), roster->getAccount()->getAccountName(), NULL, roster->getIndex());
-
+	accountItem->onExpandedChanged.connect(boost::bind(&MultipleRosterProxyModel::handleAccountItemExpandedChanged, this));
 	accounts_.push_back(std::make_pair(accountItem, rosterModel));
 
-	//reLayout();
+	reLayout();
 }
 
 void MultipleRosterProxyModel::removeRoster(Roster* roster) {
@@ -74,6 +74,15 @@ void MultipleRosterProxyModel::removeRoster(Roster* roster) {
 			accounts_[i].second->getRoster()->applyOnAllItems(operation);
 		}
 	}
+}
+
+AccountRosterItem* MultipleRosterProxyModel::getAccountItem(const std::string& accountDisplayName) const {
+	foreach (AccountModelPair pair, accounts_) {
+		if (pair.first->getDisplayName() == accountDisplayName) {
+			return pair.first;
+		}
+	}
+	return NULL;
 }
 
 Qt::ItemFlags MultipleRosterProxyModel::flags(const QModelIndex& index) const {
@@ -210,6 +219,7 @@ void MultipleRosterProxyModel::handleItemExpandedInRosterModel(const QModelIndex
 
 void MultipleRosterProxyModel::handleDataChangedInRosterModel(const QModelIndex& topLeft, const QModelIndex& bottomRight) {
 	emit dataChanged(createThisModelIndex(topLeft), createThisModelIndex(bottomRight));
+	reLayout();
 }
 
 void MultipleRosterProxyModel::handleLayoutAboutToBeChangedInRosterModel() {
@@ -228,18 +238,17 @@ void MultipleRosterProxyModel::handleModelResetInRosterModel() {
 	endResetModel();
 }
 
-
+void MultipleRosterProxyModel::handleAccountItemExpandedChanged() {
+	reLayout();
+}
 
 void MultipleRosterProxyModel::reLayout() {
-	/*beginResetModel();
+	//beginResetModel();
+	//endResetModel();
 
-	foreach (AccountRosterItem* account, accounts_) {
-		//AccountRosterItem* child = dynamic_cast<AccountRosterItem*>(model.second);
-		//if (!child) continue;
-		emit itemExpanded(index(account), account->isExpanded());
+	foreach (AccountModelPair pair, accounts_) {
+		emit itemExpanded(index(pair.first), pair.first->isExpanded());
 	}
-
-	endResetModel();*/
 }
 
 int MultipleRosterProxyModel::findPairIndexByRoster(Roster* roster) {
