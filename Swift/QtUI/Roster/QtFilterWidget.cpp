@@ -10,6 +10,12 @@
  * See Documentation/Licenses/BSD-simplified.txt for more information.
  */
 
+/*
+ * Copyright (c) 2015 Daniel Baczynski
+ * Licensed under the Simplified BSD license.
+ * See Documentation/Licenses/BSD-simplified.txt for more information.
+ */
+
 #include <QEvent>
 #include <QKeyEvent>
 #include <QLayout>
@@ -24,7 +30,7 @@
 
 namespace Swift {
 
-QtFilterWidget::QtFilterWidget(QWidget* parent, QtTreeWidget* treeView, UIEventStream* eventStream, QBoxLayout* layout) : QWidget(parent), treeView_(treeView), eventStream_(eventStream), fuzzyRosterFilter_(0), isModifierSinglePressed_(false) {
+QtFilterWidget::QtFilterWidget(QWidget* parent, QtRosterWidget* treeView, UIEventStream* eventStream, QBoxLayout* layout) : QWidget(parent), treeView_(treeView), eventStream_(eventStream), fuzzyRosterFilter_(0), isModifierSinglePressed_(false) {
 	int targetIndex = layout->indexOf(treeView);
 
 	QVBoxLayout* vboxLayout = new QVBoxLayout(this);
@@ -42,7 +48,7 @@ QtFilterWidget::QtFilterWidget(QWidget* parent, QtTreeWidget* treeView, UIEventS
 	filterLineEdit_->installEventFilter(this);
 	treeView->installEventFilter(this);
 
-	sourceModel_ = treeView_->model();
+	sourceModel_ = dynamic_cast<MultipleRosterProxyModel*>(treeView_->model());
 }
 
 QtFilterWidget::~QtFilterWidget() {
@@ -97,29 +103,55 @@ bool QtFilterWidget::eventFilter(QObject*, QEvent* event) {
 }
 
 void QtFilterWidget::popAllFilters() {
-	std::vector<RosterFilter*> filters = treeView_->getRoster()->getFilters();
+	std::vector<Roster*> rosters = treeView_->getRosters();
+	if (rosters.empty()) {
+		return;
+	}
+
+	// Assuming that every roster has the same filters.
+	std::vector<RosterFilter*> filters = rosters[0]->getFilters();
 	foreach(RosterFilter* filter, filters) {
 		filters_.push_back(filter);
 		treeView_->getRoster()->removeFilter(filter);
 	}
-	treeView_->getRoster()->onFilterAdded.connect(boost::bind(&QtFilterWidget::handleFilterAdded, this, _1));
-	treeView_->getRoster()->onFilterRemoved.connect(boost::bind(&QtFilterWidget::handleFilterRemoved, this, _1));
+
+	foreach (Roster* roster, rosters) {
+		roster->onFilterAdded.connect(boost::bind(&QtFilterWidget::handleFilterAdded, this, _1));
+		roster->onFilterRemoved.connect(boost::bind(&QtFilterWidget::handleFilterRemoved, this, _1));
+	}
 }
 
 void QtFilterWidget::pushAllFilters() {
-	treeView_->getRoster()->onFilterAdded.disconnect(boost::bind(&QtFilterWidget::handleFilterAdded, this, _1));
-	treeView_->getRoster()->onFilterRemoved.disconnect(boost::bind(&QtFilterWidget::handleFilterRemoved, this, _1));
+	std::vector<Roster*> rosters = treeView_->getRosters();
+	if (rosters.empty()) {
+		return;
+	}
+
+	foreach (Roster* roster, rosters) {
+		roster->onFilterAdded.disconnect(boost::bind(&QtFilterWidget::handleFilterAdded, this, _1));
+		roster->onFilterRemoved.disconnect(boost::bind(&QtFilterWidget::handleFilterRemoved, this, _1));
+	}
+
 	foreach(RosterFilter* filter, filters_) {
-		treeView_->getRoster()->addFilter(filter);
+		foreach (Roster* roster, rosters) {
+			roster->addFilter(filter);
+		}
 	}
 	filters_.clear();
 }
 
 void QtFilterWidget::updateRosterFilters() {
+	std::vector<Roster*> rosters = treeView_->getRosters();
+	if (rosters.empty()) {
+		return;
+	}
+
 	if (fuzzyRosterFilter_) {
 		if (filterLineEdit_->text().isEmpty()) {
 			// remove currently installed search filter and put old filters back
-			treeView_->getRoster()->removeFilter(fuzzyRosterFilter_);
+			foreach (Roster* roster, rosters) {
+				roster->removeFilter(fuzzyRosterFilter_);
+			}
 			delete fuzzyRosterFilter_;
 			fuzzyRosterFilter_ = NULL;
 			pushAllFilters();
@@ -138,14 +170,23 @@ void QtFilterWidget::updateRosterFilters() {
 }
 
 void QtFilterWidget::updateSearchFilter() {
+	std::vector<Roster*> rosters = treeView_->getRosters();
+	if (rosters.empty()) {
+		return;
+	}
+
 	if (fuzzyRosterFilter_) {
-		treeView_->getRoster()->removeFilter(fuzzyRosterFilter_);
+		foreach (Roster* roster, rosters) {
+			roster->removeFilter(fuzzyRosterFilter_);
+		}
 		delete fuzzyRosterFilter_;
 		fuzzyRosterFilter_ = NULL;
 	}
 	fuzzyRosterFilter_ = new FuzzyRosterFilter(Q2PSTRING(filterLineEdit_->text()));
-	treeView_->getRoster()->addFilter(fuzzyRosterFilter_);
-	treeView_->setCurrentIndex(sourceModel_->index(0, 0, sourceModel_->index(0,0)));
+	foreach (Roster* roster, rosters) {
+		roster->addFilter(fuzzyRosterFilter_);
+	}
+	treeView_->setCurrentIndex(sourceModel_->index(0,0, sourceModel_->index(0, 0, sourceModel_->index(0,0))));
 }
 
 void QtFilterWidget::handleFilterAdded(RosterFilter* filter) {

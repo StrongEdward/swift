@@ -51,6 +51,7 @@ void MultipleRosterProxyModel::addRoster(Roster* roster) {
 	AccountRosterItem* accountItem = new AccountRosterItem(roster->getAccount(), roster->getAccount()->getAccountName(), NULL, roster->getIndex());
 	accountItem->onExpandedChanged.connect(boost::bind(&MultipleRosterProxyModel::handleAccountItemExpandedChanged, this));
 	accounts_.push_back(std::make_pair(accountItem, rosterModel));
+	rosters_.push_back(roster);
 
 	reLayout();
 }
@@ -66,6 +67,7 @@ void MultipleRosterProxyModel::removeRoster(Roster* roster) {
 	delete accounts_[index].first;
 	delete accounts_[index].second;
 	accounts_.erase(accounts_.begin() + index);
+	rosters_.erase(rosters_.begin() + index);
 
 	// Repair indices
 	if (removingFromMiddle) {
@@ -74,6 +76,10 @@ void MultipleRosterProxyModel::removeRoster(Roster* roster) {
 			accounts_[i].second->getRoster()->applyOnAllItems(operation);
 		}
 	}
+}
+
+std::vector<Roster*> MultipleRosterProxyModel::getRosters() const {
+	return rosters_;
 }
 
 AccountRosterItem* MultipleRosterProxyModel::getAccountItem(const std::string& accountDisplayName) const {

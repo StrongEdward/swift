@@ -26,6 +26,7 @@ class MultipleRosterProxyModel : public QAbstractItemModel {
 		~MultipleRosterProxyModel();
 		void addRoster(Roster* roster);
 		void removeRoster(Roster* roster);
+		std::vector<Roster*> getRosters() const;
 		AccountRosterItem* getAccountItem(const std::string& accountDisplayName) const;
 		Qt::ItemFlags flags(const QModelIndex& index) const;
 		int columnCount(const QModelIndex& parent = QModelIndex()) const;
@@ -58,6 +59,7 @@ class MultipleRosterProxyModel : public QAbstractItemModel {
 	private:
 		typedef std::pair<AccountRosterItem*, RosterModel*> AccountModelPair;
 		std::vector<AccountModelPair> accounts_;
+		std::vector<Roster*> rosters_;
 
 		QtTreeWidget* view_;
 		bool screenReaderMode_;

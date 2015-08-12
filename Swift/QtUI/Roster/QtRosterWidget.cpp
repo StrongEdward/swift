@@ -70,6 +70,14 @@ void QtRosterWidget::removeRoster(Roster* roster) {
 	}
 }
 
+std::vector<Roster*> QtRosterWidget::getRosters() const {
+	MultipleRosterProxyModel* model = dynamic_cast<MultipleRosterProxyModel*>(model_);
+	if (model) {
+		return model->getRosters();
+	}
+	return std::vector<Roster*>();
+}
+
 AccountRosterItem* QtRosterWidget::getAccountItem(const std::string accountDisplayName) const {
 	MultipleRosterProxyModel* model = dynamic_cast<MultipleRosterProxyModel*>(model_);
 	if (model) {

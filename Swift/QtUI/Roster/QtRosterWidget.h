@@ -26,6 +26,7 @@ class QtRosterWidget : public QtTreeWidget {
 		void setRosterModel(Roster* roster); // override
 		void addRoster(Roster* roster);
 		void removeRoster(Roster* roster);
+		std::vector<Roster*> getRosters() const;
 		AccountRosterItem* getAccountItem(const std::string accountDisplayName) const;
 
 	public slots:
