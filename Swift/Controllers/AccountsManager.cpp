@@ -37,6 +37,7 @@
 #include <Swift/Controllers/HighlightManager.h>
 #include <Swift/Controllers/Intl.h>
 #include <Swift/Controllers/MainController.h>
+#include <Swift/Controllers/Roster/CollapsedRosterItemsSet.h>
 #include <Swift/Controllers/SettingConstants.h>
 #include <Swift/Controllers/Settings/SettingsProvider.h>
 #include <Swift/Controllers/SoundPlayer.h>
@@ -83,6 +84,8 @@ AccountsManager::AccountsManager(EventLoop* eventLoop, NetworkFactories* network
 
 	xmlConsoleController_ = new XMLConsoleController(uiEventStream_, uiFactory_);
 
+	collapsedRosterItems_ = new CollapsedRosterItemsSet();
+
 	loginWindow_ = uiFactory->createLoginWindow(uiEventStream_);
 	loginWindow_->setShowNotificationToggle(!notifier->isExternallyConfigured());
 	loginWindow_->onLoginRequest.connect(boost::bind(&AccountsManager::handleLoginRequestTriggeredByCombobox, this, _1, _2, _3, _4, _5, _6));
@@ -93,6 +96,7 @@ AccountsManager::AccountsManager(EventLoop* eventLoop, NetworkFactories* network
 	mainWindow_ = uiFactory->createMainWindow(uiEventStream_);
 
 	loadAccounts();
+
 
 	loginWindow_->onDefaultAccountChanged.connect(boost::bind(&AccountsManager::handleDefaultAccountChanged, this, _1));
 	defaultAccount_ = getAccountByJIDString(settings_->getSetting(SettingConstants::DEFAULT_ACCOUNT));
@@ -190,7 +194,7 @@ void AccountsManager::storeAccounts() {
 }
 
 void AccountsManager::createMainController(boost::shared_ptr<Account> account, bool triggeredByCombobox) {
-	MainController* mainController = new MainController (account, eventLoop_, uiEventStream_, eventController_, networkFactories_, uiFactory_, highlightManager_, highlightEditorController_, fileTransferListController_, loginWindow_, mainWindow_, xmlConsoleController_, settings_, systemTrayController_, soundPlayer_, storagesFactory_, certificateStorageFactory_, dock_, togglableNotifier_, uriHandler_, idleDetector_, emoticons_, useDelayForLatency_, triggeredByCombobox);
+	MainController* mainController = new MainController (account, eventLoop_, uiEventStream_, eventController_, networkFactories_, uiFactory_, highlightManager_, highlightEditorController_, fileTransferListController_, loginWindow_, mainWindow_, xmlConsoleController_, settings_, systemTrayController_, soundPlayer_, storagesFactory_, certificateStorageFactory_, dock_, togglableNotifier_, uriHandler_, idleDetector_, emoticons_, collapsedRosterItems_, useDelayForLatency_, triggeredByCombobox);
 
 	mainControllers_.push_back(mainController);
 	mainController->onShouldBeDeleted.connect(boost::bind(&AccountsManager::removeAccount, this, _1));

@@ -31,6 +31,7 @@
 
 namespace Swift {
 	class Account;
+	class CollapsedRosterItemsSet;
 	class IQRouter;
 	class Roster;
 	class XMPPRoster;
@@ -54,7 +55,7 @@ namespace Swift {
 
 	class RosterController {
 		public:
-			RosterController(const JID& jid, boost::shared_ptr<Account> account, XMPPRoster* xmppRoster, AvatarManager* avatarManager, MainWindow* mainWindow, NickManager* nickManager, NickResolver* nickResolver, PresenceOracle* presenceOracle, SubscriptionManager* subscriptionManager, EventController* eventController, UIEventStream* uiEventStream, IQRouter* iqRouter_, SettingsProvider* settings, EntityCapsProvider* entityCapsProvider, FileTransferOverview* fileTransferOverview, ClientBlockListManager* clientBlockListManager, VCardManager* vcardManager);
+			RosterController(const JID& jid, boost::shared_ptr<Account> account, XMPPRoster* xmppRoster, AvatarManager* avatarManager, MainWindow* mainWindow, NickManager* nickManager, NickResolver* nickResolver, PresenceOracle* presenceOracle, SubscriptionManager* subscriptionManager, EventController* eventController, UIEventStream* uiEventStream, IQRouter* iqRouter_, SettingsProvider* settings, EntityCapsProvider* entityCapsProvider, FileTransferOverview* fileTransferOverview, ClientBlockListManager* clientBlockListManager, VCardManager* vcardManager, CollapsedRosterItemsSet* collapsedRosterItems);
 			~RosterController();
 			void showRosterWindow();
 			void setJID(const JID& jid) { myJID_ = jid; }

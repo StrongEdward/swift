@@ -36,6 +36,7 @@
 
 #include <Swift/Controllers/Account.h>
 #include <Swift/Controllers/Intl.h>
+#include <Swift/Controllers/Roster/CollapsedRosterItemsSet.h>
 #include <Swift/Controllers/Roster/GroupRosterItem.h>
 #include <Swift/Controllers/Roster/OfflineRosterFilter.h>
 #include <Swift/Controllers/Roster/Roster.h>
@@ -58,14 +59,13 @@
 #include <Swift/Controllers/XMPPEvents/ErrorEvent.h>
 #include <Swift/Controllers/XMPPEvents/EventController.h>
 #include <Swift/Controllers/XMPPEvents/SubscriptionRequestEvent.h>
-#include <Swift/Controllers/Roster/CollapsedRosterItemsSet.h>
 
 namespace Swift {
 
 /**
  * The controller does not gain ownership of these parameters.
  */
-RosterController::RosterController(const JID& jid, boost::shared_ptr<Account> account, XMPPRoster* xmppRoster, AvatarManager* avatarManager, MainWindow* mainWindow, NickManager* nickManager, NickResolver* nickResolver, PresenceOracle* presenceOracle, SubscriptionManager* subscriptionManager, EventController* eventController, UIEventStream* uiEventStream, IQRouter* iqRouter, SettingsProvider* settings, EntityCapsProvider* entityCapsManager, FileTransferOverview* fileTransferOverview, ClientBlockListManager* clientBlockListManager, VCardManager* vcardManager)
+RosterController::RosterController(const JID& jid, boost::shared_ptr<Account> account, XMPPRoster* xmppRoster, AvatarManager* avatarManager, MainWindow* mainWindow, NickManager* nickManager, NickResolver* nickResolver, PresenceOracle* presenceOracle, SubscriptionManager* subscriptionManager, EventController* eventController, UIEventStream* uiEventStream, IQRouter* iqRouter, SettingsProvider* settings, EntityCapsProvider* entityCapsManager, FileTransferOverview* fileTransferOverview, ClientBlockListManager* clientBlockListManager, VCardManager* vcardManager, CollapsedRosterItemsSet* collapsedRosterItems)
 	: myJID_(jid), xmppRoster_(xmppRoster), mainWindow_(mainWindow), roster_(new Roster(true, false, 0, account)), offlineFilter_(new OfflineRosterFilter()), vcardManager_(vcardManager), avatarManager_(avatarManager), nickManager_(nickManager), nickResolver_(nickResolver), presenceOracle_(presenceOracle), uiEventStream_(uiEventStream), entityCapsManager_(entityCapsManager), ftOverview_(fileTransferOverview), clientBlockListManager_(clientBlockListManager) {
 	assert(fileTransferOverview);
 	assert(account);
@@ -73,8 +73,7 @@ RosterController::RosterController(const JID& jid, boost::shared_ptr<Account> ac
 	subscriptionManager_ = subscriptionManager;
 	eventController_ = eventController;
 	settings_ = settings;
-	CollapsedRosterItemsSet* collapsedItems = new CollapsedRosterItemsSet(); // To be moved outside of RosterController
-	expandiness_ = new RosterGroupExpandinessPersister(roster_, collapsedItems, settings_);
+	expandiness_ = new RosterGroupExpandinessPersister(roster_, collapsedRosterItems, settings_);
 	mainWindow_->addRoster(roster_);
 	expandiness_->setAccountItem(mainWindow_->getAccountItem(account->getAccountName()));
 	rosterVCardProvider_ = new RosterVCardProvider(roster_, vcardManager, JID::WithoutResource);

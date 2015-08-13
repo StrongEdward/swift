@@ -100,7 +100,8 @@ class RosterControllerTest : public CppUnit::TestFixture {
 			vcardManager_ = new VCardManager(jid_, router_, vcardStorage_);
 			mainWindowFactory_ = new MockMainWindowFactory(account_);
 			mainWindow_ = dynamic_cast<MockMainWindow*>(mainWindowFactory_->createMainWindow(uiEventStream_));
-			rosterController_ = new RosterController(jid_, account_, xmppRoster_, avatarManager_, mainWindow_, nickManager_, nickResolver_, presenceOracle_, subscriptionManager_, eventController_, uiEventStream_, router_, settings_, entityCapsManager_, ftOverview_, clientBlockListManager_, vcardManager_);
+			collapsedItems_ = new CollapsedRosterItemsSet();
+			rosterController_ = new RosterController(jid_, account_, xmppRoster_, avatarManager_, mainWindow_, nickManager_, nickResolver_, presenceOracle_, subscriptionManager_, eventController_, uiEventStream_, router_, settings_, entityCapsManager_, ftOverview_, clientBlockListManager_, vcardManager_, collapsedItems_);
 		}
 
 		void tearDown() {
@@ -128,6 +129,7 @@ class RosterControllerTest : public CppUnit::TestFixture {
 			delete uiEventStream_;
 			delete settings_;
 			delete xmppRoster_;
+			delete collapsedItems_;
 		}
 
 	GroupRosterItem* groupChild(size_t i) {
@@ -365,6 +367,7 @@ class RosterControllerTest : public CppUnit::TestFixture {
 		CryptoProvider* crypto_;
 		VCardStorage* vcardStorage_;
 		VCardManager* vcardManager_;
+		CollapsedRosterItemsSet* collapsedItems_;
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(RosterControllerTest);

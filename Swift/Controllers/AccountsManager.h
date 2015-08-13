@@ -21,6 +21,7 @@ namespace Swift {
 	class Account;
 	class CertificateStorageFactory;
 	class ClientOptions;
+	class CollapsedRosterItemsSet;
 	class Dock;
 	class EventController;
 	class EventLoop;
@@ -108,6 +109,7 @@ namespace Swift {
 			HighlightEditorController* highlightEditorController_;
 			FileTransferListController* fileTransferListController_;
 			XMLConsoleController* xmlConsoleController_;
+			CollapsedRosterItemsSet* collapsedRosterItems_;
 	};
 }
 

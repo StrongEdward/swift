@@ -45,6 +45,7 @@ namespace Swift {
 	class CertificateStorageFactory;
 	class CertificateStorage;
 	class CertificateStorageTrustChecker;
+	class CollapsedRosterItemsSet;
 	class EventController;
 	class MainWindow;
 	class RosterController;
@@ -91,7 +92,7 @@ namespace Swift {
 	class MainController {
 
 		public:
-			MainController(boost::shared_ptr<Account> account, EventLoop* eventLoop, UIEventStream* uiEventStream, EventController* eventController, NetworkFactories* networkFactories, UIFactory* uiFactories, HighlightManager* highlightManager, HighlightEditorController* highlightEditorController, FileTransferListController* ftlController, LoginWindow* loginWindow, MainWindow* mainWindow, XMLConsoleController* xmlConsoleController, SettingsProvider* settings, SystemTrayController* systemTrayController, SoundPlayer* soundPlayer, StoragesFactory* storagesFactory, CertificateStorageFactory* certificateStorageFactory, Dock* dock, TogglableNotifier* togglableNotifier, URIHandler* uriHandler, IdleDetector* idleDetector, const std::map<std::string, std::string>& emoticons, bool useDelayForLatency, bool createdInCombobox);
+			MainController(boost::shared_ptr<Account> account, EventLoop* eventLoop, UIEventStream* uiEventStream, EventController* eventController, NetworkFactories* networkFactories, UIFactory* uiFactories, HighlightManager* highlightManager, HighlightEditorController* highlightEditorController, FileTransferListController* ftlController, LoginWindow* loginWindow, MainWindow* mainWindow, XMLConsoleController* xmlConsoleController, SettingsProvider* settings, SystemTrayController* systemTrayController, SoundPlayer* soundPlayer, StoragesFactory* storagesFactory, CertificateStorageFactory* certificateStorageFactory, Dock* dock, TogglableNotifier* togglableNotifier, URIHandler* uriHandler, IdleDetector* idleDetector, const std::map<std::string, std::string>& emoticons, CollapsedRosterItemsSet* collapsedRosterItems_, bool useDelayForLatency, bool createdInCombobox);
 			~MainController();
 
 			const std::string getJIDString() const;
@@ -197,5 +198,6 @@ namespace Swift {
 			HighlightManager* highlightManager_;
 			HighlightEditorController* highlightEditorController_;
 			std::map<std::string, std::string> emoticons_;
+			CollapsedRosterItemsSet* collapsedRosterItems_;
 	};
 }
