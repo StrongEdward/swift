@@ -31,6 +31,7 @@ namespace Swift {
 	class JID;
 	class LoginWindow;
 	class MainController;
+	class MainWindow;
 	class NetworkFactories;
 	class Notifier;
 	class SettingsProvider;
@@ -82,6 +83,7 @@ namespace Swift {
 		private:
 			std::vector<MainController*> mainControllers_;
 			LoginWindow* loginWindow_;
+			MainWindow* mainWindow_;
 			boost::shared_ptr<Account> defaultAccount_;
 			int maxAccountIndex_;
 

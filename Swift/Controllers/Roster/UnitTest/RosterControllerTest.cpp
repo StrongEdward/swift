@@ -91,7 +91,6 @@ class RosterControllerTest : public CppUnit::TestFixture {
 			entityCapsManager_ = new EntityCapsManager(capsProvider_, stanzaChannel_);
 			jingleSessionManager_ = new JingleSessionManager(router_);
 			account_ = boost::make_shared<Account>(0, jid_.toString(), jid_.toString(), "", "certPath", ClientOptions(), false, false, settings_);
-			mainWindowFactory_ = new MockMainWindowFactory(account_);
 
 			ftManager_ = new DummyFileTransferManager();
 			ftOverview_ = new FileTransferOverview(ftManager_);
@@ -99,8 +98,9 @@ class RosterControllerTest : public CppUnit::TestFixture {
 			crypto_ = PlatformCryptoProvider::create();
 			vcardStorage_ = new VCardMemoryStorage(crypto_);
 			vcardManager_ = new VCardManager(jid_, router_, vcardStorage_);
-			rosterController_ = new RosterController(jid_, account_, xmppRoster_, avatarManager_, mainWindowFactory_, nickManager_, nickResolver_, presenceOracle_, subscriptionManager_, eventController_, uiEventStream_, router_, settings_, entityCapsManager_, ftOverview_, clientBlockListManager_, vcardManager_);
-			mainWindow_ = mainWindowFactory_->last;
+			mainWindowFactory_ = new MockMainWindowFactory(account_);
+			mainWindow_ = dynamic_cast<MockMainWindow*>(mainWindowFactory_->createMainWindow(uiEventStream_));
+			rosterController_ = new RosterController(jid_, account_, xmppRoster_, avatarManager_, mainWindow_, nickManager_, nickResolver_, presenceOracle_, subscriptionManager_, eventController_, uiEventStream_, router_, settings_, entityCapsManager_, ftOverview_, clientBlockListManager_, vcardManager_);
 		}
 
 		void tearDown() {

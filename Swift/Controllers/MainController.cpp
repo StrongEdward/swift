@@ -102,7 +102,7 @@ static const std::string CLIENT_NAME = "Swift";
 static const std::string CLIENT_NODE = "http://swift.im";
 
 
-MainController::MainController(boost::shared_ptr<Account> account, EventLoop* eventLoop, UIEventStream *uiEventStream, EventController* eventController, NetworkFactories* networkFactories, UIFactory* uiFactories, HighlightManager* highlightManager, HighlightEditorController* highlightEditorController, FileTransferListController* ftlController, LoginWindow* loginWindow, XMLConsoleController* xmlConsoleController, SettingsProvider* settings, SystemTrayController* systemTrayController, SoundPlayer* soundPlayer, StoragesFactory* storagesFactory, CertificateStorageFactory* certificateStorageFactory, Dock* dock, TogglableNotifier* togglableNotifier, URIHandler* uriHandler, IdleDetector* idleDetector, const std::map<std::string, std::string>& emoticons, bool useDelayForLatency, bool createdInCombobox) :
+MainController::MainController(boost::shared_ptr<Account> account, EventLoop* eventLoop, UIEventStream *uiEventStream, EventController* eventController, NetworkFactories* networkFactories, UIFactory* uiFactories, HighlightManager* highlightManager, HighlightEditorController* highlightEditorController, FileTransferListController* ftlController, LoginWindow* loginWindow, MainWindow* mainWindow, XMLConsoleController* xmlConsoleController, SettingsProvider* settings, SystemTrayController* systemTrayController, SoundPlayer* soundPlayer, StoragesFactory* storagesFactory, CertificateStorageFactory* certificateStorageFactory, Dock* dock, TogglableNotifier* togglableNotifier, URIHandler* uriHandler, IdleDetector* idleDetector, const std::map<std::string, std::string>& emoticons, bool useDelayForLatency, bool createdInCombobox) :
 	account_(account),
 	createdInCombobox_(createdInCombobox),
 	beforeFirstLogin_(true),
@@ -119,6 +119,7 @@ MainController::MainController(boost::shared_ptr<Account> account, EventLoop* ev
 	idleDetector_(idleDetector),
 	togglableNotifier_(togglableNotifier),
 	loginWindow_(loginWindow),
+	mainWindow_(mainWindow),
 	xmlConsoleController_(xmlConsoleController),
 	fileTransferListController_(ftlController),
 	systemTrayController_(systemTrayController),
@@ -310,7 +311,7 @@ void MainController::handleConnected() {
 		showProfileController_ = new ShowProfileController(client_->getVCardManager(), uiFactory_, uiEventStream_);
 		ftOverview_ = new FileTransferOverview(client_->getFileTransferManager());
 		fileTransferListController_->setFileTransferOverview(ftOverview_);
-		rosterController_ = new RosterController(boundJID_, account_, client_->getRoster(), client_->getAvatarManager(), uiFactory_, client_->getNickManager(), client_->getNickResolver(), client_->getPresenceOracle(), client_->getSubscriptionManager(), eventController_, uiEventStream_, client_->getIQRouter(), settings_, client_->getEntityCapsProvider(), ftOverview_, client_->getClientBlockListManager(), client_->getVCardManager());
+		rosterController_ = new RosterController(boundJID_, account_, client_->getRoster(), client_->getAvatarManager(), mainWindow_, client_->getNickManager(), client_->getNickResolver(), client_->getPresenceOracle(), client_->getSubscriptionManager(), eventController_, uiEventStream_, client_->getIQRouter(), settings_, client_->getEntityCapsProvider(), ftOverview_, client_->getClientBlockListManager(), client_->getVCardManager());
 		rosterController_->onChangeStatusRequest.connect(boost::bind(&MainController::handleChangeStatusRequest, this, _1, _2));
 		rosterController_->onSignOutRequest.connect(boost::bind(&MainController::signOut, this));
 		rosterController_->getWindow()->onShowCertificateRequest.connect(boost::bind(&MainController::handleShowCertificateRequest, this));

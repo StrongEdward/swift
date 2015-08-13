@@ -45,6 +45,7 @@
 #include <Swift/Controllers/SystemTrayController.h>
 #include <Swift/Controllers/UIEvents/UIEventStream.h>
 #include <Swift/Controllers/UIInterfaces/LoginWindow.h>
+#include <Swift/Controllers/UIInterfaces/MainWindow.h>
 #include <Swift/Controllers/UIInterfaces/UIFactory.h>
 #include <Swift/Controllers/XMLConsoleController.h>
 #include <Swift/Controllers/XMPPEvents/EventController.h>
@@ -88,6 +89,8 @@ AccountsManager::AccountsManager(EventLoop* eventLoop, NetworkFactories* network
 	loginWindow_->onPurgeSavedLoginRequest.connect(boost::bind(&AccountsManager::handlePurgeSavedLoginRequest, this, _1));
 	loginWindow_->onCancelLoginRequest.connect(boost::bind(&AccountsManager::handleCancelLoginRequest, this, _1));
 	loginWindow_->onQuitRequest.connect(boost::bind(&AccountsManager::handleQuitRequest, this));
+
+	mainWindow_ = uiFactory->createMainWindow(uiEventStream_);
 
 	loadAccounts();
 
@@ -187,7 +190,7 @@ void AccountsManager::storeAccounts() {
 }
 
 void AccountsManager::createMainController(boost::shared_ptr<Account> account, bool triggeredByCombobox) {
-	MainController* mainController = new MainController (account, eventLoop_, uiEventStream_, eventController_, networkFactories_, uiFactory_, highlightManager_, highlightEditorController_, fileTransferListController_, loginWindow_, xmlConsoleController_, settings_, systemTrayController_, soundPlayer_, storagesFactory_, certificateStorageFactory_, dock_, togglableNotifier_, uriHandler_, idleDetector_, emoticons_, useDelayForLatency_, triggeredByCombobox);
+	MainController* mainController = new MainController (account, eventLoop_, uiEventStream_, eventController_, networkFactories_, uiFactory_, highlightManager_, highlightEditorController_, fileTransferListController_, loginWindow_, mainWindow_, xmlConsoleController_, settings_, systemTrayController_, soundPlayer_, storagesFactory_, certificateStorageFactory_, dock_, togglableNotifier_, uriHandler_, idleDetector_, emoticons_, useDelayForLatency_, triggeredByCombobox);
 
 	mainControllers_.push_back(mainController);
 	mainController->onShouldBeDeleted.connect(boost::bind(&AccountsManager::removeAccount, this, _1));

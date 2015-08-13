@@ -49,6 +49,7 @@ namespace Swift {
 	class MainWindow;
 	class RosterController;
 	class LoginWindow;
+	class MainWindow;
 	class EventLoop;
 	class MUCController;
 	class Notifier;
@@ -90,7 +91,7 @@ namespace Swift {
 	class MainController {
 
 		public:
-			MainController(boost::shared_ptr<Account> account, EventLoop* eventLoop, UIEventStream* uiEventStream, EventController* eventController, NetworkFactories* networkFactories, UIFactory* uiFactories, HighlightManager* highlightManager, HighlightEditorController* highlightEditorController, FileTransferListController* ftlController, LoginWindow* loginWindow, XMLConsoleController* xmlConsoleController, SettingsProvider* settings, SystemTrayController* systemTrayController, SoundPlayer* soundPlayer, StoragesFactory* storagesFactory, CertificateStorageFactory* certificateStorageFactory, Dock* dock, TogglableNotifier* togglableNotifier, URIHandler* uriHandler, IdleDetector* idleDetector, const std::map<std::string, std::string>& emoticons, bool useDelayForLatency, bool createdInCombobox);
+			MainController(boost::shared_ptr<Account> account, EventLoop* eventLoop, UIEventStream* uiEventStream, EventController* eventController, NetworkFactories* networkFactories, UIFactory* uiFactories, HighlightManager* highlightManager, HighlightEditorController* highlightEditorController, FileTransferListController* ftlController, LoginWindow* loginWindow, MainWindow* mainWindow, XMLConsoleController* xmlConsoleController, SettingsProvider* settings, SystemTrayController* systemTrayController, SoundPlayer* soundPlayer, StoragesFactory* storagesFactory, CertificateStorageFactory* certificateStorageFactory, Dock* dock, TogglableNotifier* togglableNotifier, URIHandler* uriHandler, IdleDetector* idleDetector, const std::map<std::string, std::string>& emoticons, bool useDelayForLatency, bool createdInCombobox);
 			~MainController();
 
 			const std::string getJIDString() const;
@@ -161,6 +162,7 @@ namespace Swift {
 			EventWindowController* eventWindowController_;
 			AdHocManager* adHocManager_;
 			LoginWindow* loginWindow_;
+			MainWindow* mainWindow_;
 			XMLConsoleController* xmlConsoleController_;
 			HistoryViewController* historyViewController_;
 			HistoryController* historyController_;
