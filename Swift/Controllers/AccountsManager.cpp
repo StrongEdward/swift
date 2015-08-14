@@ -299,6 +299,10 @@ void AccountsManager::removeAccount(const std::string& username) {
 	}
 }
 
+MainWindow*AccountsManager::getMainWindow() const {
+	return mainWindow_;
+}
+
 void AccountsManager::handleLoginRequestTriggeredByCombobox(const std::string &username, const std::string &password, const std::string& certificatePath, const ClientOptions& options, bool remember, bool loginAutomatically) {
 	JID tempJid = JID(username);
 	if (options.singleSignOn && (!tempJid.isValid() || !tempJid.getNode().empty())) {

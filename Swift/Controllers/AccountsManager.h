@@ -59,6 +59,7 @@ namespace Swift {
 			int accountsCount();
 			void addAccount(boost::shared_ptr<Account> account = boost::shared_ptr<Account>());
 			void removeAccount(const std::string& username);
+			MainWindow* getMainWindow() const;
 
 		private:
 			void loadAccounts();

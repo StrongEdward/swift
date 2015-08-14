@@ -70,6 +70,7 @@ namespace Swift {
 
 		private slots:
 			void loginClicked();
+			void handleOkClicked();
 			void handleCertficateChecked(bool);
 			void handleQuit();
 			void handleShowXMLConsole();

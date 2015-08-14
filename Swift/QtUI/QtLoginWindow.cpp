@@ -141,8 +141,9 @@ QtLoginWindow::QtLoginWindow(UIEventStream* uiEventStream, SettingsProvider* set
 	okButton_->setAutoDefault(true);
 	okButton_->setDefault(true);
 	okButton_->setAccessibleName(tr("Done. Go to roster."));
+	connect(okButton_, SIGNAL(clicked()), this, SLOT(handleOkClicked()));
 	accountsListLayout->addWidget(okButton_);
-	okButton_->hide(); // For now: when enabling/connecting to one account it automatically goes to roster so no need to show it. Then it will be useful when we have connected all accounts that we want and clicking it would get us to roster.
+	//okButton_->hide(); // For now: when enabling/connecting to one account it automatically goes to roster so no need to show it. Then it will be useful when we have connected all accounts that we want and clicking it would get us to roster.
 
 	layout->addWidget(accountsListWrapper_);
 	accountsListWrapper_->hide();
@@ -453,9 +454,9 @@ void QtLoginWindow::loggedOut() {
 
 void QtLoginWindow::setIsLoggingIn(bool loggingIn) {
 	/* Change the for loop as well if you add to this.*/
-	QWidget* widgets[7] = {username_, password_, remember_, loginAutomatically_, certificateButton_, viewLabel_, accountsListWrapper_};
+	QWidget* widgets[6] = {username_, password_, remember_, loginAutomatically_, certificateButton_, viewLabel_};
 	loginButton_->setText(loggingIn ? tr("Cancel") : tr("Connect"));
-	for (int i = 0; i < 7; i++) {
+	for (int i = 0; i < 6; i++) {
 		widgets[i]->setEnabled(!loggingIn);
 	}
 	bool eagle = settings_->getSetting(SettingConstants::FORGET_PASSWORDS);
@@ -491,6 +492,10 @@ void QtLoginWindow::loginClicked() {
 	else {
 		onCancelLoginRequest(Q2PSTRING(username_->lineEdit()->text()));
 	}
+}
+
+void QtLoginWindow::handleOkClicked() {
+	morphInto(accountsManager_->getMainWindow());
 }
 
 // To be deleted? We set 'login automatically' after username_ text changed
