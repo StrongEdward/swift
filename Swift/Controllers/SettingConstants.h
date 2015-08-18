@@ -4,6 +4,12 @@
  * See the COPYING file for more information.
  */
 
+/*
+ * Copyright (c) 2015 Daniel Baczynski
+ * Licensed under the Simplified BSD license.
+ * See Documentation/Licenses/BSD-simplified.txt for more information.
+ */
+
 #pragma once
 
 #include <Swift/Controllers/Settings/SettingsProvider.h>
@@ -22,7 +28,7 @@ namespace Swift {
 			 */
 			static const SettingsProvider::Setting<bool> IDLE_GOES_OFFLINE;
 			/**
-			 * The #IDLE_TIMEOUT setting specifieds the seconds the user has to be inactive at the 
+			 * The #IDLE_TIMEOUT setting specifieds the seconds the user has to be inactive at the
 			 * desktop so the user is regarded as idle.
 			 */
 			static const SettingsProvider::Setting<int> IDLE_TIMEOUT;
@@ -37,7 +43,7 @@ namespace Swift {
 			static const SettingsProvider::Setting<std::string> LAST_LOGIN_JID;
 			static const SettingsProvider::Setting<bool> LOGIN_AUTOMATICALLY;
 			/**
-			 * The #SHOW_OFFLINE setting specifies whether or not to show offline contacts in the 
+			 * The #SHOW_OFFLINE setting specifies whether or not to show offline contacts in the
 			 * roster.
 			 *
 			 * If set true Swift will show offline contacts; else not.
@@ -63,12 +69,12 @@ namespace Swift {
 			static const SettingsProvider::Setting<std::string> DICT_FILE;
 			/**
 			 * The #INVITE_AUTO_ACCEPT_MODE setting specifies how to handle invites to chat rooms.
-			 * 
+			 *
 			 * Supported values are:
 			 * - "no" : It is up to the user whether to accept the invitation and enter a room or not.
-			 * - "presence" : The invitation is automatically accepted if it is from a contact that is 
+			 * - "presence" : The invitation is automatically accepted if it is from a contact that is
 			 *   already allowed to see the user's presence status.
-			 * - "domain" : The invitation is automatically accepted if it is from a contact that is 
+			 * - "domain" : The invitation is automatically accepted if it is from a contact that is
 			 *   already allowed to see the user's presence status or from a contact of user's domain.
 			 */
 			static const SettingsProvider::Setting<std::string> INVITE_AUTO_ACCEPT_MODE;
@@ -80,7 +86,7 @@ namespace Swift {
 			 */
 			static const SettingsProvider::Setting<std::string> TRELLIS_GRID_SIZE;
 			/**
-			 * The #TRELLIS_GRID_POSITIONS setting specifies where conversations to contacts or rooms go 
+			 * The #TRELLIS_GRID_POSITIONS setting specifies where conversations to contacts or rooms go
 			 * in the trellis grid.
 			 *
 			 * Its value is a Qt serialized representation.
@@ -104,5 +110,9 @@ namespace Swift {
 			 * log in the user; else not.
 			 */
 			static const SettingsProvider::Setting<bool> SINGLE_SIGN_ON;
+			/**
+			 * The #MULTIACCOUNT_ENABLED setting specifies wheter to show options that enables a user to go to multiaccount view.
+			 */
+			static const SettingsProvider::Setting<bool> MULTIACCOUNT_ENABLED;
 	};
 }

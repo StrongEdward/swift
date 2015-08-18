@@ -4,6 +4,12 @@
  * See the COPYING file for more information.
  */
 
+/*
+ * Copyright (c) 2015 Daniel Baczynski
+ * Licensed under the Simplified BSD license.
+ * See Documentation/Licenses/BSD-simplified.txt for more information.
+ */
+
 #pragma once
 
 #include <boost/program_options/variables_map.hpp>
@@ -25,34 +31,35 @@
 #include "SwifTools/Idle/PlatformIdleQuerier.h"
 #include "SwifTools/Idle/ActualIdleDetector.h"
 
+
 namespace po = boost::program_options;
 
 class QSplitter;
 
 namespace Swift {
-	class QtUIFactory;
-	class CertificateStorageFactory;
-	class Dock;
-	class Notifier;
-	class StoragesFactory;
-	class AutoUpdater;
+	class AccountsManager;
 	class ApplicationPathProvider;
+	class AutoUpdater;
 	class AvatarStorage;
 	class CapsStorage;
-	class MainController;
-	class QtSystemTray;
+	class CertificateStorageFactory;
+	class Dock;
+	class EventLoop;
+	class Notifier;
 	class QtChatTabsBase;
 	class QtChatWindowFactory;
-	class QtSoundPlayer;
 	class QtMUCSearchWindowFactory;
-	class QtUserSearchWindowFactory;
-	class EventLoop;
-	class URIHandler;
-	class SettingsProviderHierachy;
-	class XMLSettingsProvider;
-	class StatusCache;
 	class QtSingleWindow;
-		
+	class QtSoundPlayer;
+	class QtSystemTray;
+	class QtUIFactory;
+	class QtUserSearchWindowFactory;
+	class SettingsProviderHierachy;
+	class StatusCache;
+	class StoragesFactory;
+	class URIHandler;
+	class XMLSettingsProvider;
+
 	class QtSwift : public QObject {
 		Q_OBJECT
 		public:
@@ -62,12 +69,13 @@ namespace Swift {
 		private:
 			XMLSettingsProvider* loadSettingsFile(const QString& fileName);
 			void loadEmoticonsFile(const QString& fileName, std::map<std::string, std::string>& emoticons);
+
 		private:
 			QtEventLoop clientMainThreadCaller_;
 			PlatformTLSFactories tlsFactories_;
 			BoostNetworkFactories networkFactories_;
 			QtChatWindowFactory* chatWindowFactory_;
-			std::vector<MainController*> mainControllers_;
+			std::vector<AccountsManager*> accountsManagers_;
 			std::vector<QtSystemTray*> systemTrays_;
 			std::vector<QtUIFactory*> uiFactories_;
 			QtSettingsProvider* qtSettings_;

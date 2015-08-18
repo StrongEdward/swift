@@ -4,6 +4,12 @@
  * See the COPYING file for more information.
  */
 
+/*
+ * Copyright (c) 2015 Daniel Baczynski
+ * Licensed under the Simplified BSD license.
+ * See Documentation/Licenses/BSD-simplified.txt for more information.
+ */
+
 #include <Swift/Controllers/SettingConstants.h>
 
 namespace Swift {
@@ -29,4 +35,5 @@ const SettingsProvider::Setting<std::string> SettingConstants::TRELLIS_GRID_SIZE
 const SettingsProvider::Setting<std::string> SettingConstants::TRELLIS_GRID_POSITIONS("trellisGridPositions", "");
 const SettingsProvider::Setting<bool> SettingConstants::DISCONNECT_ON_CARD_REMOVAL("disconnectOnCardRemoval", true);
 const SettingsProvider::Setting<bool> SettingConstants::SINGLE_SIGN_ON("singleSignOn", false);
+const SettingsProvider::Setting<bool> SettingConstants::MULTIACCOUNT_ENABLED("multiaccountEnabled", false);
 }

@@ -4,6 +4,12 @@
  * See the COPYING file for more information.
  */
 
+/*
+ * Copyright (c) 2015 Daniel Baczynski
+ * Licensed under the Simplified BSD license.
+ * See Documentation/Licenses/BSD-simplified.txt for more information.
+ */
+
 #include <Swift/Controllers/MainController.h>
 
 #include <cstdlib>
@@ -100,6 +106,7 @@ static const std::string CLIENT_NODE = "http://swift.im";
 
 MainController::MainController(
 		EventLoop* eventLoop,
+		UIEventStream* uiEventStream,
 		NetworkFactories* networkFactories,
 		UIFactory* uiFactories,
 		SettingsProvider* settings,
@@ -114,6 +121,7 @@ MainController::MainController(
 		const std::map<std::string, std::string>& emoticons,
 		bool useDelayForLatency) :
 			eventLoop_(eventLoop),
+			uiEventStream_(uiEventStream),
 			networkFactories_(networkFactories),
 			uiFactory_(uiFactories),
 			storagesFactory_(storagesFactory),
@@ -154,7 +162,6 @@ MainController::MainController(
 
 	timeBeforeNextReconnect_ = -1;
 	dock_ = dock;
-	uiEventStream_ = new UIEventStream();
 
 	notifier_ = new TogglableNotifier(notifier);
 	notifier_->setPersistentEnabled(settings_->getSetting(SettingConstants::SHOW_NOTIFICATIONS));
@@ -242,7 +249,6 @@ MainController::~MainController() {
 	delete systemTrayController_;
 	delete eventController_;
 	delete notifier_;
-	delete uiEventStream_;
 }
 
 void MainController::purgeCachedCredentials() {

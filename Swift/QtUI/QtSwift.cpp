@@ -4,6 +4,12 @@
  * See the COPYING file for more information.
  */
 
+/*
+ * Copyright (c) 2015 Daniel Baczynski
+ * Licensed under the Simplified BSD license.
+ * See Documentation/Licenses/BSD-simplified.txt for more information.
+ */
+
 #include <Swift/QtUI/QtSwift.h>
 
 #include <string>
@@ -33,8 +39,8 @@
 #include <Swift/Controllers/Storages/FileStoragesFactory.h>
 #include <Swift/Controllers/Settings/XMLSettingsProvider.h>
 #include <Swift/Controllers/Settings/SettingsProviderHierachy.h>
+#include <Swift/Controllers/AccountsManager.h>
 #include <Swift/Controllers/SettingConstants.h>
-#include <Swift/Controllers/MainController.h>
 #include <Swift/Controllers/ApplicationInfo.h>
 #include <Swift/Controllers/BuildVersion.h>
 #include <Swift/Controllers/StatusCache.h>
@@ -78,7 +84,7 @@ namespace Swift{
 
 #if defined(SWIFTEN_PLATFORM_MACOSX)
 //#define SWIFT_APPCAST_URL "http://swift.im/appcast/swift-mac-dev.xml"
-#else 
+#else
 //#define SWIFT_APPCAST_URL ""
 #endif
 
@@ -92,6 +98,7 @@ po::options_description QtSwift::getOptionsDescription() {
 		("no-tabs", "Don't manage chat windows in tabs (unsupported)")
 		("latency-debug", "Use latency debugging (unsupported)")
 		("multi-account", po::value<int>()->default_value(1), "Number of accounts to open windows for (unsupported)")
+		("multi-account-gui", "Enable experimental multi account GUI (unsupported)")
 		("start-minimized", "Don't show the login/roster window at startup")
 		("enable-jid-adhocs", "Enable AdHoc commands to custom JID's.")
 		("trellis", "Enable support for trellis layout")
@@ -154,7 +161,8 @@ QtSwift::QtSwift(const po::variables_map& options) : networkFactories_(&clientMa
 
 	if (options.count("netbook-mode")) {
 		splitter_ = new QtSingleWindow(qtSettings_);
-	} else {
+	}
+	else {
 		splitter_ = NULL;
 	}
 
@@ -220,31 +228,20 @@ QtSwift::QtSwift(const po::variables_map& options) : networkFactories_(&clientMa
 		splitter_->show();
 	}
 
+	settingsHierachy_->storeSetting(SettingConstants::MULTIACCOUNT_ENABLED, options.count("multi-account-gui"));
+
 	for (int i = 0; i < numberOfAccounts; i++) {
 		if (i > 0) {
 			// Don't add the first tray (see note above)
 			systemTrays_.push_back(new QtSystemTray());
 		}
+
 		QtUIFactory* uiFactory = new QtUIFactory(settingsHierachy_, qtSettings_, tabs_, splitter_, systemTrays_[i], chatWindowFactory_, networkFactories_.getTimerFactory(), statusCache_, startMinimized, !emoticons.empty(), enableAdHocCommandOnJID);
 		uiFactories_.push_back(uiFactory);
-		MainController* mainController = new MainController(
-				&clientMainThreadCaller_,
-				&networkFactories_,
-				uiFactory,
-				settingsHierachy_,
-				systemTrays_[i],
-				soundPlayer_,
-				storagesFactory_,
-				certificateStorageFactory_,
-				dock_,
-				notifier_,
-				uriHandler_,
-				&idleDetector_,
-				emoticons,
-				options.count("latency-debug") > 0);
-		mainControllers_.push_back(mainController);
-	}
 
+		AccountsManager* accountsManager = new AccountsManager(&clientMainThreadCaller_, &networkFactories_, uiFactory, settingsHierachy_, systemTrays_[i], soundPlayer_, storagesFactory_, certificateStorageFactory_, dock_, notifier_, uriHandler_, &idleDetector_, emoticons, options.count("latency-debug") > 0);
+		accountsManagers_.push_back(accountsManager);
+	}
 
 	// PlatformAutoUpdaterFactory autoUpdaterFactory;
 	// if (autoUpdaterFactory.isSupported()) {
@@ -258,13 +255,16 @@ QtSwift::~QtSwift() {
 	foreach (QtUIFactory* factory, uiFactories_) {
 		delete factory;
 	}
-	foreach (MainController* controller, mainControllers_) {
-		delete controller;
+
+	foreach (AccountsManager* manager, accountsManagers_) {
+		delete manager;
 	}
+
 	delete notifier_;
 	foreach (QtSystemTray* tray, systemTrays_) {
 		delete tray;
 	}
+
 	delete tabs_;
 	delete splitter_;
 	delete settingsHierachy_;
