@@ -29,6 +29,7 @@ namespace Swift {
 	class SoundPlayer;
 	class StoragesFactory;
 	class SystemTray;
+	class TogglableNotifier;
 	class UIEventStream;
 	class UIFactory;
 	class URIHandler;
@@ -56,6 +57,7 @@ namespace Swift {
 			IdleDetector* idleDetector_;
 			const std::map<std::string, std::string> emoticons_;
 			bool useDelayForLatency_;
+			TogglableNotifier* togglableNotifier_;
 	};
 }
 

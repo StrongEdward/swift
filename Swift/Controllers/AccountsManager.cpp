@@ -18,9 +18,10 @@
 
 #include <SwifTools/Dock/Dock.h>
 #include <SwifTools/Idle/IdleDetector.h>
-#include <SwifTools/Notifier/Notifier.h>
+#include <SwifTools/Notifier/TogglableNotifier.h>
 
 #include <Swift/Controllers/MainController.h>
+#include <Swift/Controllers/SettingConstants.h>
 #include <Swift/Controllers/Settings/SettingsProvider.h>
 #include <Swift/Controllers/SoundPlayer.h>
 #include <Swift/Controllers/Storages/StoragesFactory.h>
@@ -48,10 +49,13 @@ AccountsManager::AccountsManager(EventLoop* eventLoop, NetworkFactories* network
 
 	uiEventStream_ = new UIEventStream();
 
+	togglableNotifier_ = new TogglableNotifier(notifier);
+	togglableNotifier_->setPersistentEnabled(settings_->getSetting(SettingConstants::SHOW_NOTIFICATIONS));
+
 	loginWindow_ = uiFactory_->createLoginWindow(uiEventStream_);
 	loginWindow_->setShowNotificationToggle(!notifier->isExternallyConfigured());
 
-	MainController* mainController = new MainController(eventLoop_, uiEventStream_, networkFactories_, uiFactory_, loginWindow_, settings_, systemTray, soundPlayer_, storagesFactory_, certificateStorageFactory_, dock_, notifier, uriHandler_, idleDetector_, emoticons_, useDelayForLatency_);
+	MainController* mainController = new MainController(eventLoop_, uiEventStream_, networkFactories_, uiFactory_, loginWindow_, settings_, systemTray, soundPlayer_, storagesFactory_, certificateStorageFactory_, dock_, togglableNotifier_, uriHandler_, idleDetector_, emoticons_, useDelayForLatency_);
 	mainControllers_.push_back(mainController);
 }
 
@@ -59,7 +63,7 @@ AccountsManager::~AccountsManager() {
 	foreach (MainController* controller, mainControllers_) {
 		delete controller;
 	}
-
+	delete togglableNotifier_;
 	delete uiEventStream_;
 }
 

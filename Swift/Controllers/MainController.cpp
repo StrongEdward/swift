@@ -104,7 +104,7 @@ static const std::string CLIENT_NAME = "Swift";
 static const std::string CLIENT_NODE = "http://swift.im";
 
 
-MainController::MainController(EventLoop* eventLoop, UIEventStream* uiEventStream, NetworkFactories* networkFactories, UIFactory* uiFactories, LoginWindow* loginWindow, SettingsProvider* settings, SystemTray* systemTray, SoundPlayer* soundPlayer, StoragesFactory* storagesFactory, CertificateStorageFactory* certificateStorageFactory, Dock* dock, Notifier* notifier, URIHandler* uriHandler, IdleDetector* idleDetector, const std::map<std::string, std::string>& emoticons, bool useDelayForLatency) :
+MainController::MainController(EventLoop* eventLoop, UIEventStream* uiEventStream, NetworkFactories* networkFactories, UIFactory* uiFactories, LoginWindow* loginWindow, SettingsProvider* settings, SystemTray* systemTray, SoundPlayer* soundPlayer, StoragesFactory* storagesFactory, CertificateStorageFactory* certificateStorageFactory, Dock* dock, TogglableNotifier* togglableNotifier, URIHandler* uriHandler, IdleDetector* idleDetector, const std::map<std::string, std::string>& emoticons, bool useDelayForLatency) :
 	eventLoop_(eventLoop),
 	uiEventStream_(uiEventStream),
 	networkFactories_(networkFactories),
@@ -115,6 +115,7 @@ MainController::MainController(EventLoop* eventLoop, UIEventStream* uiEventStrea
 	settings_(settings),
 	uriHandler_(uriHandler),
 	idleDetector_(idleDetector),
+	togglableNotifier_(togglableNotifier),
 	useDelayForLatency_(useDelayForLatency),
 	ftOverview_(NULL),
 	emoticons_(emoticons) {
@@ -149,8 +150,6 @@ MainController::MainController(EventLoop* eventLoop, UIEventStream* uiEventStrea
 	timeBeforeNextReconnect_ = -1;
 	dock_ = dock;
 
-	notifier_ = new TogglableNotifier(notifier);
-	notifier_->setPersistentEnabled(settings_->getSetting(SettingConstants::SHOW_NOTIFICATIONS));
 	eventController_ = new EventController();
 	eventController_->onEventQueueLengthChange.connect(boost::bind(&MainController::handleEventQueueLengthChange, this, _1));
 
@@ -232,7 +231,6 @@ MainController::~MainController() {
 	delete soundEventController_;
 	delete systemTrayController_;
 	delete eventController_;
-	delete notifier_;
 }
 
 void MainController::purgeCachedCredentials() {
@@ -302,7 +300,7 @@ void MainController::resetClient() {
 
 void MainController::handleSettingChanged(const std::string& settingPath) {
 	if (settingPath == SettingConstants::SHOW_NOTIFICATIONS.getKey()) {
-		notifier_->setPersistentEnabled(settings_->getSetting(SettingConstants::SHOW_NOTIFICATIONS));
+		togglableNotifier_->setPersistentEnabled(settings_->getSetting(SettingConstants::SHOW_NOTIFICATIONS));
 	}
 }
 
@@ -466,7 +464,7 @@ void MainController::sendPresence(boost::shared_ptr<Presence> presence) {
 	rosterController_->getWindow()->setMyStatusType(presence->getShow());
 	rosterController_->getWindow()->setMyStatusText(presence->getStatus());
 	systemTrayController_->setMyStatusType(presence->getShow());
-	notifier_->setTemporarilyDisabled(presence->getShow() == StatusShow::DND);
+	togglableNotifier_->setTemporarilyDisabled(presence->getShow() == StatusShow::DND);
 
 	// Add information and send
 	presence->updatePayload(boost::make_shared<VCardUpdate>(vCardPhotoHash_));
@@ -594,9 +592,9 @@ void MainController::performLoginFromCachedCredentials() {
 		client_->setSoftwareVersion(CLIENT_NAME, buildVersion);
 
 		client_->getVCardManager()->onVCardChanged.connect(boost::bind(&MainController::handleVCardReceived, this, _1, _2));
-		presenceNotifier_ = new PresenceNotifier(client_->getStanzaChannel(), notifier_, client_->getMUCRegistry(), client_->getAvatarManager(), client_->getNickResolver(), client_->getPresenceOracle(), networkFactories_->getTimerFactory());
+		presenceNotifier_ = new PresenceNotifier(client_->getStanzaChannel(), togglableNotifier_, client_->getMUCRegistry(), client_->getAvatarManager(), client_->getNickResolver(), client_->getPresenceOracle(), networkFactories_->getTimerFactory());
 		presenceNotifier_->onNotificationActivated.connect(boost::bind(&MainController::handleNotificationClicked, this, _1));
-		eventNotifier_ = new EventNotifier(eventController_, notifier_, client_->getAvatarManager(), client_->getNickResolver());
+		eventNotifier_ = new EventNotifier(eventController_, togglableNotifier_, client_->getAvatarManager(), client_->getNickResolver());
 		eventNotifier_->onNotificationActivated.connect(boost::bind(&MainController::handleNotificationClicked, this, _1));
 		if (certificate_ && !certificate_->isNull()) {
 			client_->setCertificate(certificate_);

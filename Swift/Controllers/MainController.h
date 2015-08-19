@@ -51,7 +51,6 @@ namespace Swift {
 	class LoginWindow;
 	class EventLoop;
 	class MUCController;
-	class Notifier;
 	class ProfileController;
 	class ShowProfileController;
 	class ContactEditController;
@@ -90,7 +89,7 @@ namespace Swift {
 
 	class MainController {
 		public:
-			MainController(EventLoop* eventLoop, UIEventStream* uiEventStream, NetworkFactories* networkFactories, UIFactory* uiFactories, LoginWindow* loginWindow, SettingsProvider *settings, SystemTray* systemTray, SoundPlayer* soundPlayer, StoragesFactory* storagesFactory, CertificateStorageFactory* certificateStorageFactory, Dock* dock, Notifier* notifier, URIHandler* uriHandler, IdleDetector* idleDetector, const std::map<std::string, std::string>& emoticons, bool useDelayForLatency);
+			MainController(EventLoop* eventLoop, UIEventStream* uiEventStream, NetworkFactories* networkFactories, UIFactory* uiFactories, LoginWindow* loginWindow, SettingsProvider *settings, SystemTray* systemTray, SoundPlayer* soundPlayer, StoragesFactory* storagesFactory, CertificateStorageFactory* certificateStorageFactory, Dock* dock, TogglableNotifier* togglableNotifier, URIHandler* uriHandler, IdleDetector* idleDetector, const std::map<std::string, std::string>& emoticons, bool useDelayForLatency);
 			~MainController();
 
 
@@ -143,7 +142,7 @@ namespace Swift {
 			Dock* dock_;
 			URIHandler* uriHandler_;
 			IdleDetector* idleDetector_;
-			TogglableNotifier* notifier_;
+			TogglableNotifier* togglableNotifier_;
 			PresenceNotifier* presenceNotifier_;
 			EventNotifier* eventNotifier_;
 			RosterController* rosterController_;
