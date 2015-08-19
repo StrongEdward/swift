@@ -104,35 +104,21 @@ static const std::string CLIENT_NAME = "Swift";
 static const std::string CLIENT_NODE = "http://swift.im";
 
 
-MainController::MainController(
-		EventLoop* eventLoop,
-		UIEventStream* uiEventStream,
-		NetworkFactories* networkFactories,
-		UIFactory* uiFactories,
-		SettingsProvider* settings,
-		SystemTray* systemTray,
-		SoundPlayer* soundPlayer,
-		StoragesFactory* storagesFactory,
-		CertificateStorageFactory* certificateStorageFactory,
-		Dock* dock,
-		Notifier* notifier,
-		URIHandler* uriHandler,
-		IdleDetector* idleDetector,
-		const std::map<std::string, std::string>& emoticons,
-		bool useDelayForLatency) :
-			eventLoop_(eventLoop),
-			uiEventStream_(uiEventStream),
-			networkFactories_(networkFactories),
-			uiFactory_(uiFactories),
-			storagesFactory_(storagesFactory),
-			certificateStorageFactory_(certificateStorageFactory),
-			settings_(settings),
-			uriHandler_(uriHandler),
-			idleDetector_(idleDetector),
-			loginWindow_(NULL) ,
-			useDelayForLatency_(useDelayForLatency),
-			ftOverview_(NULL),
-			emoticons_(emoticons) {
+MainController::MainController(EventLoop* eventLoop, UIEventStream* uiEventStream, NetworkFactories* networkFactories, UIFactory* uiFactories, LoginWindow* loginWindow, SettingsProvider* settings, SystemTray* systemTray, SoundPlayer* soundPlayer, StoragesFactory* storagesFactory, CertificateStorageFactory* certificateStorageFactory, Dock* dock, Notifier* notifier, URIHandler* uriHandler, IdleDetector* idleDetector, const std::map<std::string, std::string>& emoticons, bool useDelayForLatency) :
+	eventLoop_(eventLoop),
+	uiEventStream_(uiEventStream),
+	networkFactories_(networkFactories),
+	uiFactory_(uiFactories),
+	loginWindow_(loginWindow),
+	storagesFactory_(storagesFactory),
+	certificateStorageFactory_(certificateStorageFactory),
+	settings_(settings),
+	uriHandler_(uriHandler),
+	idleDetector_(idleDetector),
+	useDelayForLatency_(useDelayForLatency),
+	ftOverview_(NULL),
+	emoticons_(emoticons) {
+
 	storages_ = NULL;
 	certificateStorage_ = NULL;
 	certificateTrustChecker_ = NULL;
@@ -169,8 +155,6 @@ MainController::MainController(
 	eventController_->onEventQueueLengthChange.connect(boost::bind(&MainController::handleEventQueueLengthChange, this, _1));
 
 	systemTrayController_ = new SystemTrayController(eventController_, systemTray);
-	loginWindow_ = uiFactory_->createLoginWindow(uiEventStream_);
-	loginWindow_->setShowNotificationToggle(!notifier->isExternallyConfigured());
 
 	highlightManager_ = new HighlightManager(settings_);
 	highlightEditorController_ = new HighlightEditorController(uiEventStream_, uiFactory_, highlightManager_);

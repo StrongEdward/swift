@@ -18,6 +18,7 @@
 
 #include <SwifTools/Dock/Dock.h>
 #include <SwifTools/Idle/IdleDetector.h>
+#include <SwifTools/Notifier/Notifier.h>
 
 #include <Swift/Controllers/MainController.h>
 #include <Swift/Controllers/Settings/SettingsProvider.h>
@@ -25,6 +26,7 @@
 #include <Swift/Controllers/Storages/StoragesFactory.h>
 #include <Swift/Controllers/SystemTray.h>
 #include <Swift/Controllers/UIEvents/UIEventStream.h>
+#include <Swift/Controllers/UIInterfaces/LoginWindow.h>
 #include <Swift/Controllers/UIInterfaces/UIFactory.h>
 
 
@@ -46,7 +48,10 @@ AccountsManager::AccountsManager(EventLoop* eventLoop, NetworkFactories* network
 
 	uiEventStream_ = new UIEventStream();
 
-	MainController* mainController = new MainController(eventLoop_, uiEventStream_, networkFactories_, uiFactory_, settings_, systemTray, soundPlayer_, storagesFactory_, certificateStorageFactory_, dock_, notifier, uriHandler_, idleDetector_, emoticons_, useDelayForLatency_);
+	loginWindow_ = uiFactory_->createLoginWindow(uiEventStream_);
+	loginWindow_->setShowNotificationToggle(!notifier->isExternallyConfigured());
+
+	MainController* mainController = new MainController(eventLoop_, uiEventStream_, networkFactories_, uiFactory_, loginWindow_, settings_, systemTray, soundPlayer_, storagesFactory_, certificateStorageFactory_, dock_, notifier, uriHandler_, idleDetector_, emoticons_, useDelayForLatency_);
 	mainControllers_.push_back(mainController);
 }
 

@@ -21,6 +21,7 @@ namespace Swift {
 	class Dock;
 	class EventLoop;
 	class IdleDetector;
+	class LoginWindow;
 	class MainController;
 	class NetworkFactories;
 	class Notifier;
@@ -39,6 +40,7 @@ namespace Swift {
 
 		private:
 			std::vector<MainController*> mainControllers_;
+			LoginWindow* loginWindow_;
 
 			UIEventStream* uiEventStream_;
 			SettingsProvider* settings_;
