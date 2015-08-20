@@ -80,7 +80,6 @@
 #include <Swift/Controllers/Storages/CertificateStorageFactory.h>
 #include <Swift/Controllers/Storages/CertificateStorageTrustChecker.h>
 #include <Swift/Controllers/Storages/StoragesFactory.h>
-#include <Swift/Controllers/SystemTray.h>
 #include <Swift/Controllers/SystemTrayController.h>
 #include <Swift/Controllers/UIEvents/JoinMUCUIEvent.h>
 #include <Swift/Controllers/UIEvents/RequestChatUIEvent.h>
@@ -104,7 +103,7 @@ static const std::string CLIENT_NAME = "Swift";
 static const std::string CLIENT_NODE = "http://swift.im";
 
 
-MainController::MainController(EventLoop* eventLoop, UIEventStream* uiEventStream, NetworkFactories* networkFactories, UIFactory* uiFactories, LoginWindow* loginWindow, SettingsProvider* settings, SystemTray* systemTray, SoundPlayer* soundPlayer, StoragesFactory* storagesFactory, CertificateStorageFactory* certificateStorageFactory, Dock* dock, TogglableNotifier* togglableNotifier, URIHandler* uriHandler, IdleDetector* idleDetector, const std::map<std::string, std::string>& emoticons, bool useDelayForLatency) :
+MainController::MainController(EventLoop* eventLoop, UIEventStream* uiEventStream, EventController* eventController, NetworkFactories* networkFactories, UIFactory* uiFactories, LoginWindow* loginWindow, SettingsProvider* settings, SystemTrayController* systemTrayController, SoundPlayer* soundPlayer, StoragesFactory* storagesFactory, CertificateStorageFactory* certificateStorageFactory, Dock* dock, TogglableNotifier* togglableNotifier, URIHandler* uriHandler, IdleDetector* idleDetector, const std::map<std::string, std::string>& emoticons, bool useDelayForLatency) :
 	eventLoop_(eventLoop),
 	uiEventStream_(uiEventStream),
 	networkFactories_(networkFactories),
@@ -116,6 +115,8 @@ MainController::MainController(EventLoop* eventLoop, UIEventStream* uiEventStrea
 	uriHandler_(uriHandler),
 	idleDetector_(idleDetector),
 	togglableNotifier_(togglableNotifier),
+	eventController_(eventController),
+	systemTrayController_(systemTrayController),
 	useDelayForLatency_(useDelayForLatency),
 	ftOverview_(NULL),
 	emoticons_(emoticons) {
@@ -150,10 +151,7 @@ MainController::MainController(EventLoop* eventLoop, UIEventStream* uiEventStrea
 	timeBeforeNextReconnect_ = -1;
 	dock_ = dock;
 
-	eventController_ = new EventController();
 	eventController_->onEventQueueLengthChange.connect(boost::bind(&MainController::handleEventQueueLengthChange, this, _1));
-
-	systemTrayController_ = new SystemTrayController(eventController_, systemTray);
 
 	highlightManager_ = new HighlightManager(settings_);
 	highlightEditorController_ = new HighlightEditorController(uiEventStream_, uiFactory_, highlightManager_);
@@ -229,8 +227,6 @@ MainController::~MainController() {
 	delete xmlConsoleController_;
 	delete xmppURIController_;
 	delete soundEventController_;
-	delete systemTrayController_;
-	delete eventController_;
 }
 
 void MainController::purgeCachedCredentials() {

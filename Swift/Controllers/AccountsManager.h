@@ -19,6 +19,7 @@
 namespace Swift {
 	class CertificateStorageFactory;
 	class Dock;
+	class EventController;
 	class EventLoop;
 	class IdleDetector;
 	class LoginWindow;
@@ -29,6 +30,7 @@ namespace Swift {
 	class SoundPlayer;
 	class StoragesFactory;
 	class SystemTray;
+	class SystemTrayController;
 	class TogglableNotifier;
 	class UIEventStream;
 	class UIFactory;
@@ -58,6 +60,8 @@ namespace Swift {
 			const std::map<std::string, std::string> emoticons_;
 			bool useDelayForLatency_;
 			TogglableNotifier* togglableNotifier_;
+			EventController* eventController_;
+			SystemTrayController* systemTrayController_;
 	};
 }
 

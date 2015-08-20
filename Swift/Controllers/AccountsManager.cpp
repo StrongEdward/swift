@@ -26,9 +26,11 @@
 #include <Swift/Controllers/SoundPlayer.h>
 #include <Swift/Controllers/Storages/StoragesFactory.h>
 #include <Swift/Controllers/SystemTray.h>
+#include <Swift/Controllers/SystemTrayController.h>
 #include <Swift/Controllers/UIEvents/UIEventStream.h>
 #include <Swift/Controllers/UIInterfaces/LoginWindow.h>
 #include <Swift/Controllers/UIInterfaces/UIFactory.h>
+#include <Swift/Controllers/XMPPEvents/EventController.h>
 
 
 namespace Swift {
@@ -48,6 +50,9 @@ AccountsManager::AccountsManager(EventLoop* eventLoop, NetworkFactories* network
 	useDelayForLatency_(useDelayForLatency) {
 
 	uiEventStream_ = new UIEventStream();
+	eventController_ = new EventController();
+
+	systemTrayController_ = new SystemTrayController(eventController_, systemTray);
 
 	togglableNotifier_ = new TogglableNotifier(notifier);
 	togglableNotifier_->setPersistentEnabled(settings_->getSetting(SettingConstants::SHOW_NOTIFICATIONS));
@@ -55,7 +60,7 @@ AccountsManager::AccountsManager(EventLoop* eventLoop, NetworkFactories* network
 	loginWindow_ = uiFactory_->createLoginWindow(uiEventStream_);
 	loginWindow_->setShowNotificationToggle(!notifier->isExternallyConfigured());
 
-	MainController* mainController = new MainController(eventLoop_, uiEventStream_, networkFactories_, uiFactory_, loginWindow_, settings_, systemTray, soundPlayer_, storagesFactory_, certificateStorageFactory_, dock_, togglableNotifier_, uriHandler_, idleDetector_, emoticons_, useDelayForLatency_);
+	MainController* mainController = new MainController(eventLoop_, uiEventStream_, eventController_, networkFactories_, uiFactory_, loginWindow_, settings_, systemTrayController_, soundPlayer_, storagesFactory_, certificateStorageFactory_, dock_, togglableNotifier_, uriHandler_, idleDetector_, emoticons_, useDelayForLatency_);
 	mainControllers_.push_back(mainController);
 }
 
@@ -64,6 +69,8 @@ AccountsManager::~AccountsManager() {
 		delete controller;
 	}
 	delete togglableNotifier_;
+	delete systemTrayController_;
+	delete eventController_;
 	delete uiEventStream_;
 }
 
